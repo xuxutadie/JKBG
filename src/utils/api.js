@@ -1,6 +1,16 @@
 const inferBaseUrl = () => {
+  const envBaseUrl = typeof import.meta !== 'undefined' ? import.meta.env?.VITE_API_BASE_URL : '';
+  if (envBaseUrl) {
+    return String(envBaseUrl).replace(/\/$/, '');
+  }
+
   if (typeof window !== 'undefined' && window.location?.origin) {
-    return `${window.location.origin}/api`;
+    const { protocol, hostname, port, origin } = window.location;
+    const isLocalHost = ['localhost', '127.0.0.1'].includes(hostname);
+    if (isLocalHost && port && port !== '3000') {
+      return `${protocol}//${hostname}:3000/api`;
+    }
+    return `${origin}/api`;
   }
   return 'http://localhost:3000/api';
 };

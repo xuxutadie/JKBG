@@ -937,8 +937,8 @@ export const generateHealthGuidance = async (patientPayload) => {
       payload: patientPayload
     });
     return response?.result || {};
-    return parseAiJson(content);
   } catch (error) {
     console.error('AI 建议生成失败:', error);
     throw new Error(error?.message || 'AI 建议生成失败');
   }
+};
