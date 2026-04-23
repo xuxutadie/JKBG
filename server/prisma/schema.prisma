@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  admin
+  doctor
+  staff
+}
+
+enum PatientStatus {
+  draft
+  ready
+  archived
+}
+
+enum GuidanceStatus {
+  pending
+  completed
+  failed
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         UserRole @default(staff)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Patient {
+  id           String        @id @default(cuid())
+  patientCode  String        @unique
+  name         String
+  gender       String?
+  age          String?
+  status       PatientStatus @default(ready)
+  statusText   String?
+  reportDate   String?
+  latestScore  Int?
+  sourceLabels Json?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  reports      Report[]
+  guidances    Guidance[]
+
+  @@index([updatedAt(sort: Desc)])
+}
+
+model Report {
+  id            String     @id @default(cuid())
+  patientId     String
+  patient       Patient    @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  fileName      String?
+  sourceType    String?
+  sourceTypes   Json?
+  status        String?
+  score         Int?
+  reportDate    String?
+  rawRecord     Json?
+  reportData    Json
+  guidanceInput Json?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  guidances     Guidance[]
+
+  @@index([patientId, createdAt(sort: Desc)])
+}
+
+model Guidance {
+  id             String         @id @default(cuid())
+  patientId      String
+  reportId       String?
+  patient        Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  report         Report?        @relation(fields: [reportId], references: [id], onDelete: SetNull)
+  status         GuidanceStatus @default(completed)
+  summary        String?
+  healthAdvice   Json?
+  dietAdvice     Json?
+  exerciseAdvice Json?
+  dietTags       Json?
+  provider       String?
+  model          String?
+  errorMessage   String?
+  rawResponse    Json?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([patientId, createdAt(sort: Desc)])
+}
