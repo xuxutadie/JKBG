@@ -1,4 +1,18 @@
+const getRuntimeBaseUrl = () => {
+  if (typeof window === 'undefined') {
+    return '';
+  }
+
+  const runtimeBaseUrl = window.__APP_CONFIG__?.VITE_API_BASE_URL;
+  return runtimeBaseUrl ? String(runtimeBaseUrl).replace(/\/$/, '') : '';
+};
+
 const inferBaseUrl = () => {
+  const runtimeBaseUrl = getRuntimeBaseUrl();
+  if (runtimeBaseUrl) {
+    return runtimeBaseUrl;
+  }
+
   const envBaseUrl = typeof import.meta !== 'undefined' ? import.meta.env?.VITE_API_BASE_URL : '';
   if (envBaseUrl) {
     return String(envBaseUrl).replace(/\/$/, '');
