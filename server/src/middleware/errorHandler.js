@@ -18,6 +18,8 @@ export const errorHandler = (error, _req, res, _next) => {
 
   console.error(error);
   return res.status(500).json({
-    message: '服务器内部错误'
+    message: '服务器内部错误',
+    errorName: error?.name || null,
+    errorDetail: error?.message || null
   });
 };
