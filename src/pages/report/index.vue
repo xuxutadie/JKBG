@@ -285,6 +285,19 @@
                         </tr>
                       </tbody>
                     </table>
+                    <div class="insight-list" v-if="reportViewModel.crossAnalysis.length" style="margin-top: 18px;">
+                      <div class="insight-item" v-for="(item, index) in reportViewModel.crossAnalysis" :key="`cross-analysis-${index}`">
+                        <div class="insight-icon" :class="`tone-${item.tone}`" aria-hidden="true">
+                          <svg class="report-inline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path v-for="(path, iconIndex) in getReportIconPaths(item.iconKey)" :key="`cross-analysis-icon-${index}-${iconIndex}`" :d="path" />
+                          </svg>
+                        </div>
+                        <div class="insight-content">
+                          <h5>{{ item.title }}</h5>
+                          <p>{{ item.text }}</p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -731,6 +744,164 @@ const getValueByLabels = (items, labels) => {
   return '';
 };
 
+const getManualMetricItem = (patient, label) => {
+  return (getPatientSection(patient, 'manual-metrics')?.items || []).find(item => item?.label === label) || null;
+};
+
+const parseBloodPressureValue = (value) => {
+  const matched = String(value || '').match(/(\d{2,3})\s*\/\s*(\d{2,3})/);
+  if (!matched) return null;
+  return {
+    systolic: Number(matched[1]),
+    diastolic: Number(matched[2])
+  };
+};
+
+const getBiochemicalAssessment = (patient) => {
+  const bloodGlucoseItem = getManualMetricItem(patient, '血糖');
+  const bloodPressureItem = getManualMetricItem(patient, '血压');
+  const bloodLipidsItem = getManualMetricItem(patient, '血脂');
+  const uricAcidItem = getManualMetricItem(patient, '尿酸');
+  const bmiMetric =
+    (getPatientSection(patient, 'obesity-analysis')?.rows || []).find(item => String(item?.metric || '').includes('BMI')) ||
+    (patient?.highlightMetrics || []).find(item => String(item?.label || '').includes('BMI')) ||
+    null;
+  const bodyFatMetric =
+    (getPatientSection(patient, 'obesity-analysis')?.rows || []).find(item => String(item?.metric || '').includes('体脂')) ||
+    (patient?.highlightMetrics || []).find(item => String(item?.label || '').includes('体脂')) ||
+    null;
+  const sleepEfficiencyMetric =
+    (getPatientSection(patient, 'sleep-metrics')?.rows || []).find(item => String(item?.metric || '').includes('睡眠效率')) ||
+    null;
+  const stressMetric =
+    (getPatientSection(patient, 'stress-metrics')?.items || []).find(item => {
+      const text = String(item?.label || '');
+      return text.includes('压力') || text.includes('交感') || text.includes('神经');
+    }) || null;
+
+  const bloodGlucose = parseNumber(bloodGlucoseItem?.value);
+  const bloodLipids = parseNumber(bloodLipidsItem?.value);
+  const uricAcid = parseNumber(uricAcidItem?.value);
+  const bloodPressure = parseBloodPressureValue(bloodPressureItem?.value);
+  const bmi = parseNumber(bmiMetric?.value);
+  const bodyFat = parseNumber(bodyFatMetric?.value);
+  const sleepEfficiency = parseNumber(sleepEfficiencyMetric?.value);
+
+  const statuses = [];
+  const scoreItems = [];
+
+  if (bloodGlucose !== null) {
+    const status = bloodGlucose >= 7 ? '偏高' : bloodGlucose >= 6.1 ? '临界偏高' : bloodGlucose < 3.9 ? '偏低' : '正常';
+    statuses.push({
+      label: '血糖',
+      value: `${bloodGlucose}${bloodGlucoseItem?.unit ? ` ${bloodGlucoseItem.unit}` : ' mmol/L'}`,
+      status
+    });
+    scoreItems.push({
+      value: bloodGlucose >= 7 ? 58 : bloodGlucose >= 6.1 ? 72 : bloodGlucose < 3.9 ? 68 : 90,
+      weight: 0.3
+    });
+  }
+
+  if (bloodPressure) {
+    const status =
+      bloodPressure.systolic >= 140 || bloodPressure.diastolic >= 90
+        ? '偏高'
+        : bloodPressure.systolic >= 130 || bloodPressure.diastolic >= 85
+          ? '临界偏高'
+          : bloodPressure.systolic < 90 || bloodPressure.diastolic < 60
+            ? '偏低'
+            : '正常';
+    statuses.push({
+      label: '血压',
+      value: `${bloodPressure.systolic}/${bloodPressure.diastolic} mmHg`,
+      status
+    });
+    scoreItems.push({
+      value:
+        bloodPressure.systolic >= 140 || bloodPressure.diastolic >= 90
+          ? 58
+          : bloodPressure.systolic >= 130 || bloodPressure.diastolic >= 85
+            ? 72
+            : bloodPressure.systolic < 90 || bloodPressure.diastolic < 60
+              ? 70
+              : 90,
+      weight: 0.25
+    });
+  }
+
+  if (bloodLipids !== null) {
+    const status = bloodLipids >= 6.2 ? '偏高' : bloodLipids >= 5.2 ? '临界偏高' : '正常';
+    statuses.push({
+      label: '血脂',
+      value: `${bloodLipids}${bloodLipidsItem?.unit ? ` ${bloodLipidsItem.unit}` : ' mmol/L'}`,
+      status
+    });
+    scoreItems.push({
+      value: bloodLipids >= 6.2 ? 58 : bloodLipids >= 5.2 ? 72 : 88,
+      weight: 0.2
+    });
+  }
+
+  if (uricAcid !== null) {
+    const status = uricAcid >= 540 ? '明显偏高' : uricAcid >= 420 ? '偏高' : '正常';
+    statuses.push({
+      label: '尿酸',
+      value: `${uricAcid}${uricAcidItem?.unit ? ` ${uricAcidItem.unit}` : ' μmol/L'}`,
+      status
+    });
+    scoreItems.push({
+      value: uricAcid >= 540 ? 55 : uricAcid >= 420 ? 68 : 88,
+      weight: 0.15
+    });
+  }
+
+  const insights = [];
+
+  if ((bloodGlucose !== null && bloodGlucose >= 6.1) || (bloodPressure && (bloodPressure.systolic >= 130 || bloodPressure.diastolic >= 85))) {
+    insights.push({
+      title: '糖压联动风险',
+      text: `当前${bloodGlucose !== null ? `血糖 ${bloodGlucose} mmol/L` : '血糖指标'}${bloodPressure ? `、血压 ${bloodPressure.systolic}/${bloodPressure.diastolic} mmHg` : ''}已提示代谢与血管负担增加，若同时存在睡眠不足、体脂偏高或精神压力偏高，往往更容易出现晨起血压波动、餐后血糖控制变差和恢复效率下降。`,
+      iconKey: 'summary',
+      tone: 'orange'
+    });
+  }
+
+  if ((bloodLipids !== null && bloodLipids >= 5.2) || (bodyFat !== null && bodyFat >= 25) || (bmi !== null && bmi >= 24)) {
+    insights.push({
+      title: '体脂与血脂同向影响',
+      text: `当前${bloodLipids !== null ? `血脂 ${bloodLipids} mmol/L` : '血脂指标'}${bodyFat !== null ? `、体脂 ${bodyFat}%` : ''}${bmi !== null ? `、BMI ${bmi}` : ''}提示脂代谢与体重管理需要同步干预，若只控制体重而不调整饮食结构，血脂改善通常有限，运动方案也应兼顾有氧消耗与抗阻保肌。`,
+      iconKey: 'body',
+      tone: 'red'
+    });
+  }
+
+  if ((uricAcid !== null && uricAcid >= 420) || (sleepEfficiency !== null && sleepEfficiency < 85) || stressMetric) {
+    const stressLabel = stressMetric?.label ? `${stressMetric.label}` : '压力恢复指标';
+    insights.push({
+      title: '恢复能力与尿酸管理',
+      text: `当前${uricAcid !== null ? `尿酸 ${uricAcid} μmol/L` : '尿酸指标'}${sleepEfficiency !== null ? `、睡眠效率 ${sleepEfficiency}%` : ''}${stressMetric ? `、${stressLabel}` : ''}提示恢复能力可能不足。熬夜、脱水、压力偏高和高嘌呤饮食会共同推高尿酸波动，因此报告中的饮食、补水和运动强度安排需要一起调整。`,
+      iconKey: 'stress',
+      tone: 'purple'
+    });
+  }
+
+  if (!insights.length && statuses.length) {
+    insights.push({
+      title: '代谢状态总体可控',
+      text: `当前已录入的${statuses.map(item => `${item.label}${item.status === '正常' ? '基本稳定' : item.status}`).join('、')}，结合已采集的睡眠、压力和体成分数据，建议继续通过规律作息、饮食结构优化和稳定运动量维持整体代谢平衡。`,
+      iconKey: 'summary',
+      tone: 'green'
+    });
+  }
+
+  return {
+    statuses,
+    insights: insights.slice(0, 3),
+    score: clampScore(weightedAverage(scoreItems))
+  };
+};
+
 const buildProfileSummary = (patient, basicInfo) => {
   return [
     { label: '姓名', value: patient.name },
@@ -812,7 +983,7 @@ const evaluateSleepMetricScore = (label, value) => {
   return null;
 };
 
-const buildCompositeAssessment = ({ sections, highlightMetrics, inbodyScore }) => {
+const buildCompositeAssessment = ({ patient, sections, highlightMetrics, inbodyScore }) => {
   const sectionSignals = [];
 
   sections.forEach(section => {
@@ -874,6 +1045,7 @@ const buildCompositeAssessment = ({ sections, highlightMetrics, inbodyScore }) =
   })();
 
   const warningScore = Math.max(52, 90 - warningCount * 6);
+  const biochemicalAssessment = getBiochemicalAssessment(patient);
   const keywordScore = keywordScores.length
     ? keywordScores.reduce((sum, score) => sum + score, 0) / keywordScores.length
     : null;
@@ -886,7 +1058,8 @@ const buildCompositeAssessment = ({ sections, highlightMetrics, inbodyScore }) =
     { value: sleepScore, weight: 0.25 },
     { value: bmiScore, weight: 0.15 },
     { value: bodyFatScore, weight: 0.10 },
-    { value: warningScore, weight: 0.15 }
+    { value: warningScore, weight: 0.10 },
+    { value: biochemicalAssessment.score, weight: 0.15 }
   ]);
 
   const finalScore = clampScore(weightedAverage([
@@ -901,7 +1074,7 @@ const buildCompositeAssessment = ({ sections, highlightMetrics, inbodyScore }) =
   return {
     score: finalScore,
     note: dataPoints
-      ? `基于 ${dataPoints} 项真实检测数据综合评估`
+      ? `基于 ${dataPoints} 项真实检测数据综合评估，已纳入睡眠、压力、体成分及生化指标联动分析`
       : '基于当前已采集真实数据综合评估'
   };
 };
@@ -1090,9 +1263,11 @@ const buildPatientRecord = (record) => {
   const highlightMetrics = buildHighlightMetrics(reportData);
   const sections = buildSections(reportData);
   const profileSummary = buildProfileSummary({ name, gender, age, date }, basicInfo);
-  const compositeAssessment = buildCompositeAssessment({ sections, highlightMetrics, inbodyScore });
+  const draftPatient = { ...record, name, gender, age, date, highlightMetrics, sections };
+  const compositeAssessment = buildCompositeAssessment({ patient: draftPatient, sections, highlightMetrics, inbodyScore });
   const score = compositeAssessment.score;
   const metricSummary = buildMetricSummary(score, highlightMetrics, inbodyScore);
+  const biochemicalAssessment = getBiochemicalAssessment(draftPatient);
 
   return {
     ...record,
@@ -1107,6 +1282,7 @@ const buildPatientRecord = (record) => {
     sections,
     profileSummary,
     compositeAssessment,
+    biochemicalAssessment,
     inbodyScore,
     metricSummary,
     reportGroups: buildReportGroups(sections, metricSummary, profileSummary)
@@ -1248,7 +1424,8 @@ const buildGuidancePayload = (patient) => {
       muscleFat: pickMeaningfulRows(getPatientSection(patient, 'muscle-fat')?.rows),
       obesity: pickMeaningfulRows(getPatientSection(patient, 'obesity-analysis')?.rows)
     },
-    manualMetrics: pickMeaningfulItems(getPatientSection(patient, 'manual-metrics')?.items)
+    manualMetrics: pickMeaningfulItems(getPatientSection(patient, 'manual-metrics')?.items),
+    biochemicalAssessment: patient?.biochemicalAssessment || {}
   };
 };
 
@@ -1429,25 +1606,29 @@ const buildExerciseAdvice = (patient) => {
   const bodyFat = parseNumber(bodyFatMetric?.value);
   const weight = parseNumber(weightMetric?.value);
   const score = patient?.score;
+  const biochemicalAssessment = patient?.biochemicalAssessment || getBiochemicalAssessment(patient);
+  const bloodGlucoseStatus = biochemicalAssessment.statuses?.find(item => item.label === '血糖');
+  const bloodPressureStatus = biochemicalAssessment.statuses?.find(item => item.label === '血压');
+  const uricAcidStatus = biochemicalAssessment.statuses?.find(item => item.label === '尿酸');
   const suggestions = [];
 
   if (bmi !== null || bodyFat !== null) {
     if ((bmi !== null && bmi >= 28) || (bodyFat !== null && bodyFat >= 30)) {
       suggestions.push({
         title: '以减脂有氧为主',
-        text: `当前${bmi !== null ? `BMI为 ${bmi}` : '体脂偏高'}，建议每周进行 5 次中低强度有氧运动，每次 40-60 分钟，可选择快走、椭圆机、骑行或游泳。`,
+        text: `当前${bmi !== null ? `BMI为 ${bmi}` : '体脂偏高'}，建议每周进行 5 次中低强度有氧运动，每次 40-60 分钟，可选择快走、椭圆机、骑行或游泳，并配合每周 2 次下肢与核心力量训练，避免只做单一有氧导致肌肉量继续下降。`,
         iconKey: 'body'
       });
     } else if ((bmi !== null && bmi >= 24) || (bodyFat !== null && bodyFat >= 25)) {
       suggestions.push({
         title: '有氧结合力量训练',
-        text: `当前${bmi !== null ? `BMI为 ${bmi}` : '体脂略高'}，建议每周 3-4 次有氧运动，每次 30-45 分钟，并增加 2 次基础力量训练以提升代谢。`,
+        text: `当前${bmi !== null ? `BMI为 ${bmi}` : '体脂略高'}，建议每周 3-4 次有氧运动，每次 30-45 分钟，并增加 2 次基础力量训练以提升代谢；若同时睡眠不足或压力偏高，运动后应保留 1 天恢复窗口。`,
         iconKey: 'body'
       });
     } else {
       suggestions.push({
         title: '保持规律运动',
-        text: '当前体重控制整体尚可，建议每周保持 3 次以上中等强度运动，每次 30 分钟以上，重点维持心肺和肌肉状态。',
+        text: '当前体重控制整体尚可，建议每周保持 3 次以上中等强度运动，每次 30 分钟以上，重点维持心肺和肌肉状态，同时通过步行、拉伸和轻阻训练稳定代谢和恢复能力。',
         iconKey: 'body'
       });
     }
@@ -1470,8 +1651,32 @@ const buildExerciseAdvice = (patient) => {
   if (weight !== null) {
     suggestions.push({
       title: '关注周运动量',
-      text: `当前体重约 ${weight} kg，建议将每周累计运动时间控制在 150-300 分钟之间，并保持日常步行活跃度，减少久坐时间。`,
+      text: `当前体重约 ${weight} kg，建议将每周累计运动时间控制在 150-300 分钟之间，并保持日常步行活跃度，减少久坐时间；若久坐办公，每 1 小时起身活动 3-5 分钟有助于改善血糖与血脂代谢。`,
       iconKey: 'obesity'
+    });
+  }
+
+  if (bloodGlucoseStatus && /(偏高|临界)/.test(bloodGlucoseStatus.status)) {
+    suggestions.push({
+      title: '控糖运动要点',
+      text: `结合${bloodGlucoseStatus.label}${bloodGlucoseStatus.value}的情况，建议优先采用餐后 30-60 分钟快走、骑行或椭圆机等中等强度运动，每次 20-40 分钟；空腹高强度训练容易增加应激波动，不建议作为当前主方案。`,
+      iconKey: 'summary'
+    });
+  }
+
+  if (bloodPressureStatus && /(偏高|临界)/.test(bloodPressureStatus.status)) {
+    suggestions.push({
+      title: '血压偏高时的训练边界',
+      text: `当前${bloodPressureStatus.label}${bloodPressureStatus.value}提示训练强度需循序渐进，建议以中等强度有氧和呼吸放松为主，力量训练时避免憋气和突然冲刺，运动前后都应监测心率与主观疲劳感。`,
+      iconKey: 'stress'
+    });
+  }
+
+  if (uricAcidStatus && /偏高/.test(uricAcidStatus.status)) {
+    suggestions.push({
+      title: '高尿酸阶段避免过冲训练',
+      text: `当前${uricAcidStatus.label}${uricAcidStatus.value}提示恢复与补水管理很关键，建议避免连续高强度爆发训练和长时间空腹运动，训练日分次补水并优先选择稳定可持续的快走、游泳或骑行。`,
+      iconKey: 'body'
     });
   }
 
@@ -1485,7 +1690,7 @@ const buildExerciseAdvice = (patient) => {
     }
   });
 
-  return deduped.slice(0, 3);
+  return deduped.slice(0, 5);
 };
 
 const normalizeAiAdviceItems = (items, fallbackIconKey) => {
@@ -1500,7 +1705,61 @@ const normalizeAiAdviceItems = (items, fallbackIconKey) => {
     .slice(0, 6);
 };
 
-const pushUniqueAdviceItem = (list, item, maxLength = 4) => {
+const normalizeAiCrossAnalysis = (items) => {
+  const tones = ['red', 'orange', 'purple', 'blue', 'green'];
+  return (Array.isArray(items) ? items : [])
+    .filter(Boolean)
+    .map((item, index) => ({
+      title: normalizeValue(item?.title) || `联动解读 ${index + 1}`,
+      text: normalizeValue(item?.text),
+      iconKey: item?.iconKey || 'summary',
+      tone: item?.tone || tones[index % tones.length]
+    }))
+    .filter(item => item.text)
+    .slice(0, 5);
+};
+
+const buildCrossAnalysis = (patient) => {
+  const biochemicalAssessment = patient?.biochemicalAssessment || getBiochemicalAssessment(patient);
+  const insights = Array.isArray(biochemicalAssessment?.insights) ? [...biochemicalAssessment.insights] : [];
+  const sleepSummary = getPatientSection(patient, 'sleep-summary')?.text || '';
+  const stressStats = buildStressStats(patient);
+
+  if (hasMeaningfulValue(sleepSummary) && stressStats.length) {
+    insights.push({
+      title: '睡眠与压力共同影响恢复',
+      text: `当前睡眠总结提示${String(sleepSummary).split(/[。；\n]/).map(item => item.trim()).filter(Boolean)[0]}，同时${stressStats[0].label}等压力相关指标也已纳入评估。若夜间睡眠片段化或恢复不足，第二天更容易出现交感兴奋、食欲波动和运动耐受下降。`,
+      iconKey: 'sleep',
+      tone: 'blue'
+    });
+  }
+
+  if (patient?.score !== null && patient?.highlightMetrics?.length) {
+    const keyMetric = patient.highlightMetrics.find(item => item.isWarning) || patient.highlightMetrics[0];
+    if (keyMetric) {
+      insights.push({
+        title: '综合评分来源不是单一指标',
+        text: `当前综合评分 ${patient.score} 分并不是由单一项目决定，而是结合${keyMetric.label}${keyMetric.value}${keyMetric.unit ? ` ${keyMetric.unit}` : ''}、睡眠表现、压力状态、体成分以及生化指标共同得出，因此干预方案也必须同步覆盖饮食、运动、作息与恢复。`,
+        iconKey: 'summary',
+        tone: 'green'
+      });
+    }
+  }
+
+  const unique = [];
+  const seen = new Set();
+  insights.forEach(item => {
+    const key = `${item.title}-${item.text}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      unique.push(item);
+    }
+  });
+
+  return unique.slice(0, 4);
+};
+
+const pushUniqueAdviceItem = (list, item, maxLength = 6) => {
   if (!item?.title || !item?.text || list.length >= maxLength) return;
   const key = `${item.title}-${item.text}`;
   if (!list.some(current => `${current.title}-${current.text}` === key)) {
@@ -1521,115 +1780,172 @@ const buildAdviceItems = (patient, type) => {
   });
   const weightMetric = (patient?.highlightMetrics || []).find(item => String(item?.label || '').includes('体重'));
   const score = patient?.score ?? null;
+  const biochemicalAssessment = patient?.biochemicalAssessment || getBiochemicalAssessment(patient);
+  const bloodGlucoseStatus = biochemicalAssessment.statuses?.find(item => item.label === '血糖');
+  const bloodPressureStatus = biochemicalAssessment.statuses?.find(item => item.label === '血压');
+  const bloodLipidsStatus = biochemicalAssessment.statuses?.find(item => item.label === '血脂');
+  const uricAcidStatus = biochemicalAssessment.statuses?.find(item => item.label === '尿酸');
 
   if (hasMeaningfulValue(sleepSummary)) {
     pushUniqueAdviceItem(healthAdvice, {
       title: '规律作息',
-      text: String(sleepSummary).split(/[。；\n]/).map(item => item.trim()).filter(Boolean)[0],
+      text: `结合睡眠监测结果，当前报告提示${String(sleepSummary).split(/[。；\n]/).map(item => item.trim()).filter(Boolean)[0]}。建议将入睡、起床、光照暴露和晚间电子设备控制同步纳入管理，否则血糖、血压和恢复能力往往会一起受影响。`,
       iconKey: 'sleep'
     });
     pushUniqueAdviceItem(dietAdvice, {
       title: '晚间饮食控制',
-      text: '结合睡眠监测结果，建议晚间减少浓茶、咖啡及高糖夜宵摄入。',
+      text: '结合睡眠监测结果，建议晚间减少浓茶、咖啡及高糖夜宵摄入，晚餐尽量提前到睡前 3 小时完成；如果本身存在血糖或血脂异常，夜间加餐会进一步放大代谢负担。',
       iconKey: 'sleep'
+    });
+  }
+
+  if (bloodGlucoseStatus && /(偏高|临界)/.test(bloodGlucoseStatus.status)) {
+    pushUniqueAdviceItem(healthAdvice, {
+      title: '优先稳住血糖波动',
+      text: `当前${bloodGlucoseStatus.label}${bloodGlucoseStatus.value}${bloodGlucoseStatus.status}，建议连续 2-4 周记录空腹或餐后血糖、三餐时间和运动时间，并将睡眠不足、情绪紧张和久坐时段一起记录，便于判断波动触发因素。`,
+      iconKey: 'summary'
+    });
+    pushUniqueAdviceItem(dietAdvice, {
+      title: '控糖同时保留蛋白与纤维',
+      text: `针对${bloodGlucoseStatus.label}${bloodGlucoseStatus.value}，主食不宜一次性过量，优先粗杂粮、豆类和高纤维蔬菜，搭配足量蛋白质以降低餐后波动；若同时体脂偏高，更要减少精制糖和含糖饮料。`,
+      iconKey: 'diet'
+    });
+  }
+
+  if (bloodPressureStatus && /(偏高|临界)/.test(bloodPressureStatus.status)) {
+    pushUniqueAdviceItem(healthAdvice, {
+      title: '血压管理要和压力恢复同步',
+      text: `当前${bloodPressureStatus.label}${bloodPressureStatus.value}${bloodPressureStatus.status}，建议把晨起血压、睡眠时长、情绪压力和每日步数放在同一张记录表里观察；很多血压波动并非单独出现，而是与睡眠不足和交感神经兴奋共同加重。`,
+      iconKey: 'stress'
+    });
+    pushUniqueAdviceItem(dietAdvice, {
+      title: '限盐并控制加工食品',
+      text: `针对${bloodPressureStatus.label}${bloodPressureStatus.value}，建议每日盐摄入控制在 5g 以内，减少腌制品、卤味、外卖汤汁和高钠零食；如果还伴随血脂或体脂偏高，需同步减少油炸和高热量外食。`,
+      iconKey: 'diet'
+    });
+  }
+
+  if (bloodLipidsStatus && /(偏高|临界)/.test(bloodLipidsStatus.status)) {
+    pushUniqueAdviceItem(healthAdvice, {
+      title: '血脂改善依赖体脂与活动量',
+      text: `当前${bloodLipidsStatus.label}${bloodLipidsStatus.value}${bloodLipidsStatus.status}，单靠短期忌口通常不够，建议同时结合腰围、体重、体脂、步数和每周运动总量来追踪；只有形成持续热量缺口并保住肌肉量，血脂改善才更稳定。`,
+      iconKey: 'body'
+    });
+    pushUniqueAdviceItem(dietAdvice, {
+      title: '减少饱和脂肪与精制零食',
+      text: `结合${bloodLipidsStatus.label}${bloodLipidsStatus.value}，优先减少肥肉、奶茶、糕点、油炸小吃和反式脂肪来源，改用深海鱼、豆制品、坚果和橄榄油等更有利于脂代谢的食物结构。`,
+      iconKey: 'obesity'
+    });
+  }
+
+  if (uricAcidStatus && /偏高/.test(uricAcidStatus.status)) {
+    pushUniqueAdviceItem(healthAdvice, {
+      title: '尿酸管理要结合补水与恢复',
+      text: `当前${uricAcidStatus.label}${uricAcidStatus.value}${uricAcidStatus.status}，建议把每日饮水量、出汗情况、睡眠时长与运动强度一起管理；熬夜、脱水和高强度训练叠加时，尿酸波动通常会更明显。`,
+      iconKey: 'summary'
+    });
+    pushUniqueAdviceItem(dietAdvice, {
+      title: '控制高嘌呤与酒精摄入',
+      text: `针对${uricAcidStatus.label}${uricAcidStatus.value}，建议减少浓肉汤、动物内脏、啤酒、海鲜火锅和高果糖饮料，优先选择清淡烹调、足量饮水和稳定进食节奏，避免暴饮暴食后尿酸突然上升。`,
+      iconKey: 'diet'
     });
   }
 
   warningMetrics.forEach(metric => {
     const valueText = `${metric.value}${metric.unit ? ` ${metric.unit}` : ''}`.trim();
-    if ((metric.label.includes('压力') || metric.label.includes('神经')) && healthAdvice.length < 4) {
+    if ((metric.label.includes('压力') || metric.label.includes('神经')) && healthAdvice.length < 6) {
       pushUniqueAdviceItem(healthAdvice, {
         title: '减压恢复',
-        text: `${metric.label}当前为 ${valueText}，建议增加轻运动、呼吸训练和规律休息。`,
+        text: `${metric.label}当前为 ${valueText}，说明当前恢复和神经调节可能承压，建议将呼吸训练、晚间放松、午后咖啡因控制和固定休息时间一起执行，否则睡眠、血压和主观疲劳往往会一起恶化。`,
         iconKey: 'stress'
       });
     }
 
-    if ((metric.label.includes('BMI') || metric.label.includes('体脂') || metric.label.includes('脂肪') || metric.label.includes('体重')) && dietAdvice.length < 4) {
+    if ((metric.label.includes('BMI') || metric.label.includes('体脂') || metric.label.includes('脂肪') || metric.label.includes('体重')) && dietAdvice.length < 6) {
       pushUniqueAdviceItem(dietAdvice, {
         title: '饮食管理',
-        text: `${metric.label}当前为 ${valueText}，建议减少油炸、精制糖和高热量零食摄入。`,
+        text: `${metric.label}当前为 ${valueText}，建议减少油炸、精制糖和高热量零食摄入，并把主食份量、蛋白质占比和晚餐时间一起管理；如果同时合并血脂或血糖偏高，更不能只做“少吃”而忽略结构调整。`,
         iconKey: 'obesity'
       });
     }
 
-    if ((metric.label.includes('肌肉') || metric.label.includes('水分')) && healthAdvice.length < 4) {
+    if ((metric.label.includes('肌肉') || metric.label.includes('水分')) && healthAdvice.length < 6) {
       pushUniqueAdviceItem(healthAdvice, {
         title: '体成分维护',
-        text: `${metric.label}当前为 ${valueText}，建议保持规律训练并关注蛋白质和饮水摄入。`,
+        text: `${metric.label}当前为 ${valueText}，建议保持规律训练并关注蛋白质和饮水摄入；如果正在减重或控糖，尤其要避免体重下降过快却伴随肌肉量和恢复能力一起下降。`,
         iconKey: 'body'
       });
     }
   });
 
-  if (healthAdvice.length < 4) {
+  if (healthAdvice.length < 6) {
     pushUniqueAdviceItem(healthAdvice, {
       title: '固定作息节律',
-      text: '建议尽量保持固定上床和起床时间，睡前 1 小时减少手机和高刺激内容，帮助睡眠质量逐步稳定。',
+      text: '建议尽量保持固定上床和起床时间，睡前 1 小时减少手机和高刺激内容，帮助睡眠质量逐步稳定；稳定的昼夜节律不仅影响精力状态，也会影响血糖、食欲和血压控制。',
       iconKey: 'sleep'
     });
   }
 
-  if (healthAdvice.length < 4 && score !== null) {
+  if (healthAdvice.length < 6 && score !== null) {
     pushUniqueAdviceItem(healthAdvice, {
       title: '循序改善状态',
-      text: `当前综合评分为 ${score} 分，建议先稳住作息、步行和拉伸等基础习惯，再逐步增加训练和生活管理强度。`,
+      text: `当前综合评分为 ${score} 分，建议先稳住作息、步行和拉伸等基础习惯，再逐步增加训练和生活管理强度；评分提升通常来自睡眠、压力、体成分与生化指标的同步改善，而不是单点突击。`,
       iconKey: 'summary'
     });
   }
 
-  if (healthAdvice.length < 4) {
+  if (healthAdvice.length < 6) {
     pushUniqueAdviceItem(healthAdvice, {
       title: '增加日间活动',
-      text: '建议每工作 1 小时起身活动 3-5 分钟，并将步行、拉伸和轻量力量训练安排进日常节奏。',
+      text: '建议每工作 1 小时起身活动 3-5 分钟，并将步行、拉伸和轻量力量训练安排进日常节奏；这种看似基础的活动量管理，对餐后血糖、体脂和血压波动都有实际帮助。',
       iconKey: 'body'
     });
   }
 
-  if (healthAdvice.length < 4) {
+  if (healthAdvice.length < 6) {
     pushUniqueAdviceItem(healthAdvice, {
       title: '重视恢复管理',
-      text: '每周安排 1-2 天低强度恢复，配合补水、舒缓拉伸和呼吸放松，减少持续疲劳对状态的影响。',
+      text: '每周安排 1-2 天低强度恢复，配合补水、舒缓拉伸和呼吸放松，减少持续疲劳对状态的影响；如果存在尿酸偏高、压力偏高或睡眠效率下降，这一步尤其重要。',
       iconKey: 'stress'
     });
   }
 
-  if (dietAdvice.length < 4 && bmiRow?.value) {
+  if (dietAdvice.length < 6 && bmiRow?.value) {
     pushUniqueAdviceItem(dietAdvice, {
       title: '关注 BMI 管理',
-      text: `当前 BMI 为 ${bmiRow.value}，建议主食定量、晚餐不过饱，并优先采用蒸煮炖等低油烹调方式。`,
+      text: `当前 BMI 为 ${bmiRow.value}，建议主食定量、晚餐不过饱，并优先采用蒸煮炖等低油烹调方式；若同时伴随血脂或血糖异常，更要避免“白天忍、晚上补”的进食模式。`,
       iconKey: 'obesity'
     });
   }
 
-  if (dietAdvice.length < 4 && bodyFatRow?.value) {
+  if (dietAdvice.length < 6 && bodyFatRow?.value) {
     pushUniqueAdviceItem(dietAdvice, {
       title: '优化体脂饮食结构',
-      text: `当前${bodyFatRow.item || bodyFatRow.metric}为 ${bodyFatRow.value}${bodyFatRow.unit ? ` ${bodyFatRow.unit}` : ''}，建议减少含糖饮料和高油零食，提高蔬菜与蛋白质占比。`,
+      text: `当前${bodyFatRow.item || bodyFatRow.metric}为 ${bodyFatRow.value}${bodyFatRow.unit ? ` ${bodyFatRow.unit}` : ''}，建议减少含糖饮料和高油零食，提高蔬菜与蛋白质占比；体脂控制得越稳定，血脂、血压和运动耐受度改善通常越明显。`,
       iconKey: 'obesity'
     });
   }
 
-  if (dietAdvice.length < 4 && weightMetric?.value) {
+  if (dietAdvice.length < 6 && weightMetric?.value) {
     pushUniqueAdviceItem(dietAdvice, {
       title: '规律三餐摄入',
-      text: `结合当前体重 ${weightMetric.value}${weightMetric.unit ? ` ${weightMetric.unit}` : ''}，建议保持规律三餐，避免长时间空腹后暴食或夜间加餐。`,
+      text: `结合当前体重 ${weightMetric.value}${weightMetric.unit ? ` ${weightMetric.unit}` : ''}，建议保持规律三餐，避免长时间空腹后暴食或夜间加餐；进食节律越混乱，越容易同时影响血糖波动、体脂累积和夜间睡眠质量。`,
       iconKey: 'diet'
     });
   }
 
-  if (dietAdvice.length < 4) {
+  if (dietAdvice.length < 6) {
     pushUniqueAdviceItem(dietAdvice, {
       title: '优先高蛋白早餐',
-      text: '早餐可优先选择鸡蛋、牛奶、无糖酸奶、豆制品等优质蛋白，帮助提升饱腹感并减少全天额外进食。',
+      text: '早餐可优先选择鸡蛋、牛奶、无糖酸奶、豆制品等优质蛋白，帮助提升饱腹感并减少全天额外进食；如果需要控糖或控脂，早餐更不能只吃精制碳水。',
       iconKey: 'diet'
     });
   }
 
-  if (dietAdvice.length < 4) {
+  if (dietAdvice.length < 6) {
     pushUniqueAdviceItem(dietAdvice, {
       title: '补充蔬果与饮水',
-      text: '建议每日保证足量饮水，并在两餐中加入深色蔬菜、水果和粗杂粮，帮助控制总热量并改善代谢状态。',
+      text: '建议每日保证足量饮水，并在两餐中加入深色蔬菜、水果和粗杂粮，帮助控制总热量并改善代谢状态；若尿酸偏高，应把补水和低嘌呤饮食同时执行，而不是只靠单一控制。',
       iconKey: 'diet'
     });
   }
@@ -1641,7 +1957,7 @@ const buildAdviceItems = (patient, type) => {
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
-    }).slice(0, 4);
+    }).slice(0, 6);
   };
 
   return type === 'diet' ? deduped(dietAdvice) : deduped(healthAdvice);
@@ -1653,8 +1969,11 @@ const buildDietTags = (dietAdvice) => {
     if (item.text.includes('高热量') || item.text.includes('精制糖')) tags.push('控糖控油');
     if (item.text.includes('蛋白质')) tags.push('优质蛋白');
     if (item.text.includes('夜宵')) tags.push('晚餐清淡');
+    if (item.text.includes('嘌呤') || item.text.includes('尿酸')) tags.push('低嘌呤');
+    if (item.text.includes('限盐') || item.text.includes('高钠') || item.text.includes('血压')) tags.push('限盐管理');
+    if (item.text.includes('粗杂粮') || item.text.includes('纤维')) tags.push('高纤维');
   });
-  return [...new Set(tags)].slice(0, 4);
+  return [...new Set(tags)].slice(0, 6);
 };
 
 const ensurePatientGuidance = async (patient) => {
@@ -1670,6 +1989,7 @@ const ensurePatientGuidance = async (patient) => {
       ...aiGuidanceMap.value,
       [patient.id]: {
         summary: normalizeValue(result?.summary),
+        crossAnalysis: normalizeAiCrossAnalysis(result?.crossAnalysis),
         healthAdvice: normalizeAiAdviceItems(result?.healthAdvice, 'summary'),
         dietAdvice: normalizeAiAdviceItems(result?.dietAdvice, 'obesity'),
         exerciseAdvice: normalizeAiAdviceItems(result?.exerciseAdvice, 'body'),
@@ -1692,6 +2012,7 @@ const reportViewModel = computed(() => {
   const stressStats = buildStressStats(patient);
   const fallbackDietAdvice = buildAdviceItems(patient, 'diet');
   const aiGuidance = aiGuidanceMap.value[patient.id] || null;
+  const crossAnalysis = aiGuidance?.crossAnalysis?.length ? aiGuidance.crossAnalysis : buildCrossAnalysis(patient);
   const healthAdvice = aiGuidance?.healthAdvice?.length ? aiGuidance.healthAdvice : buildAdviceItems(patient, 'health');
   const dietAdvice = aiGuidance?.dietAdvice?.length ? aiGuidance.dietAdvice : fallbackDietAdvice;
   const exerciseAdvice = aiGuidance?.exerciseAdvice?.length ? aiGuidance.exerciseAdvice : buildExerciseAdvice(patient);
@@ -1710,6 +2031,7 @@ const reportViewModel = computed(() => {
     bodyBars: buildBodyBars(patient),
     obesityCards: buildObesityCards(patient),
     manualMetricsPairs: buildManualMetricsPairs(patient),
+    crossAnalysis,
     exerciseAdvice,
     exerciseAdvicePreview,
     healthAdvice,
