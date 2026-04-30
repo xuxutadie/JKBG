@@ -179,12 +179,24 @@
                   <div class="reference-section-body">
                     <div class="autonomic-age-panel" v-if="reportViewModel.stressOverview.hasAge || reportViewModel.stressOverview.hasBalance">
                       <div class="autonomic-age-chart">
-                        <div class="autonomic-balance-donut" :style="reportViewModel.stressOverview.balanceStyle">
-                          <div class="autonomic-balance-inner">
-                            <div class="autonomic-balance-inner-label">平衡状态</div>
-                            <div class="autonomic-balance-inner-value">{{ reportViewModel.stressOverview.balanceText }}</div>
-                          </div>
-                        </div>
+                        <svg class="autonomic-pie-svg" viewBox="0 0 280 220" aria-hidden="true">
+                          <defs>
+                            <pattern :id="reportViewModel.stressOverview.symPatternId" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+                              <rect width="8" height="8" fill="#ff2f2f" />
+                              <line x1="0" y1="0" x2="0" y2="8" stroke="#ffd5d5" stroke-width="2" />
+                            </pattern>
+                            <pattern :id="reportViewModel.stressOverview.vagPatternId" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+                              <rect width="8" height="8" fill="#1f43ff" />
+                              <line x1="0" y1="0" x2="0" y2="8" stroke="#9fb3ff" stroke-width="2" />
+                            </pattern>
+                          </defs>
+                          <g class="autonomic-pie-scale">
+                            <text v-for="tick in reportViewModel.stressOverview.ageTicks" :key="`age-tick-${tick.label}`" class="autonomic-pie-tick" :x="tick.x" :y="tick.y">{{ tick.label }}</text>
+                            <circle cx="132" cy="98" r="70" :fill="`url(#${reportViewModel.stressOverview.vagPatternId})`" />
+                            <path v-if="reportViewModel.stressOverview.sympatheticArcPath" :d="reportViewModel.stressOverview.sympatheticArcPath" :fill="`url(#${reportViewModel.stressOverview.symPatternId})`" />
+                            <circle cx="132" cy="98" r="70" fill="none" stroke="#dbe6fb" stroke-width="1.5" />
+                          </g>
+                        </svg>
                         <div class="autonomic-legend">
                           <span class="autonomic-legend-item tone-red">
                             <i></i>
@@ -1598,6 +1610,37 @@ const buildEnergyGradient = (count) => {
   return `conic-gradient(${segments.join(', ')})`;
 };
 
+const polarToCartesian = (centerX, centerY, radius, angleDeg) => {
+  const angleRad = (angleDeg - 90) * Math.PI / 180;
+  return {
+    x: centerX + radius * Math.cos(angleRad),
+    y: centerY + radius * Math.sin(angleRad)
+  };
+};
+
+const describePieSlice = (centerX, centerY, radius, startAngle, endAngle) => {
+  const angleSpan = Math.max(0, Math.min(359.999, endAngle - startAngle));
+  if (angleSpan <= 0.01) return '';
+  if (angleSpan >= 359.9) {
+    return [
+      `M ${centerX} ${centerY}`,
+      `m 0 ${-radius}`,
+      `a ${radius} ${radius} 0 1 1 0 ${radius * 2}`,
+      `a ${radius} ${radius} 0 1 1 0 ${-radius * 2}`,
+      'Z'
+    ].join(' ');
+  }
+  const start = polarToCartesian(centerX, centerY, radius, endAngle);
+  const end = polarToCartesian(centerX, centerY, radius, startAngle);
+  const largeArcFlag = angleSpan > 180 ? 1 : 0;
+  return [
+    `M ${centerX} ${centerY}`,
+    `L ${start.x} ${start.y}`,
+    `A ${radius} ${radius} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`,
+    'Z'
+  ].join(' ');
+};
+
 const buildStressOverview = (patient) => {
   const signals = getStressSignals(patient);
   const ageSignal = findStressSignal(signals, ['自律神经年龄', 'ANS Age']);
@@ -1623,9 +1666,17 @@ const buildStressOverview = (patient) => {
   const parasympathetic = vagValue !== null ? Math.max(vagValue, 0.1) : 50;
   const balanceTotal = sympathetic + parasympathetic;
   const sympatheticPercent = Math.round((sympathetic / balanceTotal) * 100);
-  const balanceStyle = {
-    background: `conic-gradient(#ff5d5d 0 ${sympatheticPercent}%, #2e63ff ${sympatheticPercent}% 100%)`
-  };
+  const chartIdSuffix = String(patient?.id || 'report').replace(/[^a-zA-Z0-9_-]/g, '');
+  const symPatternId = `autonomic-sym-${chartIdSuffix}`;
+  const vagPatternId = `autonomic-vag-${chartIdSuffix}`;
+  const pieStartAngle = 230;
+  const pieEndAngle = pieStartAngle + (sympatheticPercent / 100) * 360;
+  const sympatheticArcPath = describePieSlice(132, 98, 70, pieStartAngle, pieEndAngle);
+  const ageTicks = [20, 30, 40, 50, 60, 70, 80].map((label, index) => ({
+    label: String(label),
+    x: 16,
+    y: 39 + index * 20
+  }));
 
   const ageCaption = (() => {
     if (autonomicAge !== null && actualAge !== null) {
@@ -1695,7 +1746,10 @@ const buildStressOverview = (patient) => {
     balanceText: balanceSignal?.value ? normalizeValue(balanceSignal.value) : (symValue !== null && vagValue !== null ? (symValue > vagValue ? '交感偏高' : vagValue > symValue ? '副交感偏高' : '基本平衡') : '待分析'),
     sympatheticValue: symSignal?.value ? normalizeValue(symSignal.value) : '--',
     parasympatheticValue: vagSignal?.value ? normalizeValue(vagSignal.value) : '--',
-    balanceStyle,
+    sympatheticArcPath,
+    ageTicks,
+    symPatternId,
+    vagPatternId,
     overviewType,
     overviewDescription,
     energyScore,
@@ -2386,7 +2440,7 @@ const exportReportForH5 = async () => {
             width: 100%;
             height: 100%;
             box-sizing: border-box;
-            padding: 14px 16px;
+            padding: 10px 12px;
             overflow: hidden;
           }
           .print-page-scale {
@@ -2397,13 +2451,13 @@ const exportReportForH5 = async () => {
           .print-page-surface {
             min-height: calc(167.0625mm - 28px);
             box-sizing: border-box;
-            padding: 14px;
+            padding: 10px;
             border-radius: 18px;
             background: linear-gradient(180deg, #fefefe 0%, #f7fbff 100%);
             box-shadow: inset 0 0 0 1px #dce7f6;
           }
           .print-page-item + .print-page-item {
-            margin-top: 10px;
+            margin-top: 8px;
           }
           .print-page.has-document-footer .print-page-surface {
             display: flex;
@@ -2455,11 +2509,11 @@ const exportReportForH5 = async () => {
             margin-bottom: 0;
           }
           .print-page .reference-report {
-            gap: 10px;
+            gap: 8px;
           }
           .print-page .reference-header {
-            gap: 10px;
-            padding: 12px 14px;
+            gap: 8px;
+            padding: 10px 12px;
           }
           .print-page .reference-title-text h2 {
             font-size: 28px;
@@ -2494,15 +2548,15 @@ const exportReportForH5 = async () => {
             font-size: 11px;
           }
           .print-page .reference-row {
-            grid-template-columns: minmax(0, 1.18fr) minmax(250px, 0.98fr);
-            gap: 10px;
+            grid-template-columns: minmax(0, 1.14fr) minmax(226px, 0.92fr);
+            gap: 8px;
           }
           .print-page .reference-row-bottom {
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 10px;
+            gap: 8px;
           }
           .print-page .reference-section-body {
-            padding: 9px 10px 10px;
+            padding: 8px 8px 9px;
           }
           .print-page .reference-section-title {
             min-height: 28px;
@@ -2554,9 +2608,41 @@ const exportReportForH5 = async () => {
           .print-page .guidance-summary,
           .print-page .guidance-status,
           .print-page .exercise-advice-box,
-          .print-page .reference-balance-box {
+          .print-page .reference-balance-box,
+          .print-page .stress-overview-box,
+          .print-page .autonomic-age-panel {
             margin-bottom: 7px;
-            padding: 8px 9px;
+            padding: 7px 8px;
+          }
+          .print-page .autonomic-age-panel,
+          .print-page .stress-overview-main,
+          .print-page .stress-energy-card {
+            gap: 8px;
+          }
+          .print-page .autonomic-pie-svg {
+            width: 160px;
+            height: 126px;
+          }
+          .print-page .autonomic-balance-donut,
+          .print-page .stress-energy-donut {
+            width: 96px;
+            height: 96px;
+          }
+          .print-page .autonomic-age-value {
+            font-size: 28px;
+          }
+          .print-page .autonomic-age-caption,
+          .print-page .stress-type-value {
+            font-size: 18px;
+          }
+          .print-page .stress-energy-metrics,
+          .print-page .stress-overview-notes {
+            gap: 6px;
+          }
+          .print-page .stress-overview-note,
+          .print-page .stress-energy-metric,
+          .print-page .stress-type-card {
+            padding: 7px 8px;
           }
           .print-page .reference-tag {
             min-height: 24px;
@@ -2621,6 +2707,7 @@ const exportReportForH5 = async () => {
               ? Array.from(report.children).filter((node) => node.classList && node.classList.contains('reference-row'))
               : [];
             const items = [header, ...rowNodes, footer].filter(Boolean).map((node) => node.cloneNode(true));
+            const MIN_PAGE_SCALE = 0.84;
 
             const createPage = () => {
               const page = document.createElement('section');
@@ -2654,6 +2741,10 @@ const exportReportForH5 = async () => {
               pageObj.page.style.setProperty('--page-scale', scaleValue.toFixed(4));
             };
 
+            const wouldFitWithScale = (pageObj) => {
+              return pageObj.scale.scrollHeight <= (pageObj.frame.clientHeight / MIN_PAGE_SCALE) + 2;
+            };
+
             let currentPage = createPage();
 
             items.forEach((item) => {
@@ -2664,6 +2755,9 @@ const exportReportForH5 = async () => {
 
               const exceedsPage = currentPage.scale.scrollHeight > currentPage.frame.clientHeight + 2;
               if (exceedsPage && currentPage.content.children.length > 1) {
+                if (wouldFitWithScale(currentPage)) {
+                  return;
+                }
                 currentPage.content.removeChild(holder);
                 finalizePage(currentPage);
                 currentPage = createPage();
@@ -4093,6 +4187,18 @@ const exportReport = async () => {
   gap: 12px;
 }
 
+.autonomic-pie-svg {
+  width: 230px;
+  height: 180px;
+  overflow: visible;
+}
+
+.autonomic-pie-tick {
+  fill: #485f80;
+  font-size: 13px;
+  font-weight: 500;
+}
+
 .autonomic-balance-donut,
 .stress-energy-donut {
   position: relative;
@@ -4180,6 +4286,7 @@ const exportReport = async () => {
   line-height: 1;
   font-weight: 800;
   color: #1c1f2a;
+  letter-spacing: 1px;
 }
 
 .autonomic-age-caption {
@@ -4657,6 +4764,11 @@ const exportReport = async () => {
 
   .stress-type-value {
     font-size: 24px;
+  }
+
+  .autonomic-pie-svg {
+    width: 190px;
+    height: 148px;
   }
 
   .stress-energy-donut,
