@@ -10,7 +10,7 @@ export const app = express();
 
 app.use(
   cors({
-    origin: config.corsOrigin === '*' ? true : config.corsOrigin.split(',').map(item => item.trim()),
+    origin: true,
     credentials: true
   })
 );
