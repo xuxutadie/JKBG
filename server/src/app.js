@@ -10,8 +10,13 @@ export const app = express();
 
 app.use(
   cors({
-    origin: config.corsOrigin === '*' ? true : config.corsOrigin.split(',').map(item => item.trim()),
-    credentials: true
+    origin: function (origin, callback) {
+      // 允许所有 origin，即使没有 origin 也能通过（比如移动端、本地等）
+      callback(null, true);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
   })
 );
 app.use(express.json({ limit: '10mb' }));

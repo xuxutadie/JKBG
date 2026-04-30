@@ -154,7 +154,7 @@
                 </div>
               </div>
 
-              <div class="reference-row reference-row-single">
+              <div class="reference-row">
                 <div class="reference-section reference-section-main">
                   <div class="reference-section-title tone-blue">2 自律神经检测结果</div>
                   <div class="reference-section-body">
@@ -173,19 +173,27 @@
                     <div class="reference-empty-block" v-else>暂无可展示的自律神经检测数据</div>
                   </div>
                 </div>
-              </div>
 
-              <div class="reference-row reference-row-single">
-                <div class="reference-section reference-section-side reference-section-stress-overview">
+                <div class="reference-section reference-section-side">
                   <div class="reference-section-title tone-green">自律神经年龄与总体评估</div>
                   <div class="reference-section-body">
                     <div class="autonomic-age-panel" v-if="reportViewModel.stressOverview.hasAge || reportViewModel.stressOverview.hasBalance">
                       <div class="autonomic-age-chart">
-                        <svg class="autonomic-pie-svg" viewBox="0 0 280 220" aria-hidden="true" data-print-chart="stress-age">
+                        <svg class="autonomic-pie-svg" viewBox="0 0 280 220" aria-hidden="true">
+                          <defs>
+                            <pattern :id="reportViewModel.stressOverview.symPatternId" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+                              <rect width="8" height="8" fill="#ff2f2f" />
+                              <line x1="0" y1="0" x2="0" y2="8" stroke="#ffd5d5" stroke-width="2" />
+                            </pattern>
+                            <pattern :id="reportViewModel.stressOverview.vagPatternId" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+                              <rect width="8" height="8" fill="#1f43ff" />
+                              <line x1="0" y1="0" x2="0" y2="8" stroke="#9fb3ff" stroke-width="2" />
+                            </pattern>
+                          </defs>
                           <g class="autonomic-pie-scale">
                             <text v-for="tick in reportViewModel.stressOverview.ageTicks" :key="`age-tick-${tick.label}`" class="autonomic-pie-tick" :x="tick.x" :y="tick.y">{{ tick.label }}</text>
-                            <circle cx="132" cy="98" r="70" fill="#1f43ff" stroke="none" />
-                            <path v-if="reportViewModel.stressOverview.sympatheticArcPath" :d="reportViewModel.stressOverview.sympatheticArcPath" fill="#ff2f2f" stroke="none" />
+                            <circle cx="132" cy="98" r="70" :fill="`url(#${reportViewModel.stressOverview.vagPatternId})`" />
+                            <path v-if="reportViewModel.stressOverview.sympatheticArcPath" :d="reportViewModel.stressOverview.sympatheticArcPath" :fill="`url(#${reportViewModel.stressOverview.symPatternId})`" />
                             <circle cx="132" cy="98" r="70" fill="none" stroke="#dbe6fb" stroke-width="1.5" />
                           </g>
                         </svg>
@@ -212,133 +220,35 @@
                       <div class="stress-overview-title">总体评估</div>
                       <div class="stress-overview-main">
                         <div class="stress-type-card">
-                          <svg class="stress-type-svg" viewBox="0 0 400 250" aria-hidden="true" data-print-chart="stress-type">
-                            <defs>
-                              <filter id="stressTypeShadow" x="-30%" y="-30%" width="160%" height="160%">
-                                <feDropShadow dx="0" dy="8" stdDeviation="7" flood-color="#000000" flood-opacity="0.22" />
-                              </filter>
-                            </defs>
-                            <g transform="translate(18 12)">
-                              <circle cx="108" cy="108" r="103" fill="#ececec" stroke="#0f0f0f" stroke-width="2.4" />
-                              <circle cx="108" cy="108" r="96" fill="#f2f0ee" stroke="#ffffff" stroke-width="2.2" />
-                              <g :transform="`rotate(${reportViewModel.stressOverview.typeWheelRotation} 108 108)`">
-                                <path
-                                  v-for="(segment, index) in reportViewModel.stressOverview.typeChartSegments"
-                                  :key="`type-segment-${index}`"
-                                  :d="segment.path"
-                                  :fill="segment.fill"
-                                  :filter="segment.isActive ? 'url(#stressTypeShadow)' : ''"
-                                  :stroke="segment.isActive ? '#43372f' : '#f4efe8'"
-                                  :stroke-width="segment.isActive ? 2.2 : 1.4"
-                                />
-                                <text
-                                  v-for="(segment, index) in reportViewModel.stressOverview.typeChartSegments"
-                                  :key="`type-segment-label-${index}`"
-                                  :x="segment.labelX"
-                                  :y="segment.labelY"
-                                  :transform="segment.labelRotate"
-                                  class="stress-type-ring-text"
-                                  text-anchor="middle"
-                                  dominant-baseline="middle"
-                                >
-                                  {{ segment.label }}
-                                </text>
-                              </g>
-                              <circle cx="108" cy="108" r="70" fill="#7e7e7e" opacity="0.26" />
-                              <circle cx="108" cy="108" r="61" fill="#2f2f2f" stroke="#f7f7f7" stroke-width="3.6" />
-                              <circle cx="108" cy="108" r="69" fill="none" stroke="#717171" stroke-width="5.5" opacity="0.96" />
-                              <text x="108" y="99" class="stress-type-center-label" text-anchor="middle">评估</text>
-                              <text x="108" y="127" class="stress-type-center-label" text-anchor="middle">类型</text>
-                              <g transform="translate(205 108)">
-                                <path d="M 0 -22 L 154 -33 L 154 33 L 0 22 L 0 8 L -18 0 L 0 -8 Z" fill="#e5ad7e" stroke="#40362e" stroke-width="2.8" />
-                                <path d="M 154 -34 L 165 -32 L 165 32 L 154 34 Z" fill="#3a3530" />
-                                <text x="77" y="9" class="stress-type-callout-text" text-anchor="middle">
-                                  {{ reportViewModel.stressOverview.typeCallout.text }}
-                                </text>
-                              </g>
-                            </g>
-                          </svg>
+                          <div class="stress-type-label">评估类型</div>
+                          <div class="stress-type-value">{{ reportViewModel.stressOverview.overviewType }}</div>
+                          <div class="stress-type-desc">{{ reportViewModel.stressOverview.overviewDescription }}</div>
                         </div>
-                        <div class="stress-energy-card">
-                          <svg class="stress-energy-svg" viewBox="-20 -20 260 260" aria-hidden="true" data-print-chart="stress-energy" preserveAspectRatio="xMidYMid meet">
-                            <defs>
-                              <filter id="stressEnergyShadow" x="-30%" y="-30%" width="160%" height="160%">
-                                <feDropShadow dx="0" dy="10" stdDeviation="8" flood-color="#000000" flood-opacity="0.24" />
-                              </filter>
-                            </defs>
-                            <g transform="translate(15 15)">
-                              <circle cx="100" cy="100" r="98" fill="#ededed" stroke="#121212" stroke-width="2.2" />
-                              <circle cx="100" cy="100" r="92" fill="none" stroke="#ffffff" stroke-width="9" opacity="0.72" />
-                              <path
-                                v-for="segment in reportViewModel.stressOverview.energyChartSegments"
-                                :key="segment.key"
-                                :d="segment.path"
-                                :fill="segment.color"
-                                stroke="#ffffff"
-                                stroke-width="2.8"
-                              />
-                              <circle cx="100" cy="100" r="62" fill="#3b3b3b" filter="url(#stressEnergyShadow)" />
-                              <circle cx="100" cy="100" r="45" fill="#2f2f2f" />
-                              <circle cx="100" cy="100" r="60" fill="none" stroke="#f4f4f4" stroke-width="1.8" opacity="0.95" />
-                              <text
-                                v-for="segment in reportViewModel.stressOverview.energyChartSegments"
-                                :key="`${segment.key}-percent`"
-                                :x="segment.percentX"
-                                :y="segment.percentY"
-                                class="stress-energy-percent"
-                                :text-anchor="segment.textAnchor"
-                              >
-                                {{ segment.display }}
-                              </text>
-                              <text
-                                v-for="segment in reportViewModel.stressOverview.energyChartSegments"
-                                :key="`${segment.key}-ring`"
-                                :x="segment.ringX"
-                                :y="segment.ringY"
-                                class="stress-energy-ring-text"
-                                text-anchor="middle"
-                                :transform="segment.ringRotate"
-                              >
-                                {{ segment.label }}
-                              </text>
-                              <text x="100" y="96" class="stress-energy-center-label" text-anchor="middle">身心</text>
-                              <text x="100" y="126" class="stress-energy-center-label" text-anchor="middle">能量</text>
-                            </g>
-                          </svg>
-                          <div class="stress-energy-footer">
-                            <div class="stress-energy-range">50-100分 正常范围（椭圆形较佳）</div>
+                        <div class="stress-energy-card" v-if="reportViewModel.stressOverview.energyMetrics.length">
+                          <div class="stress-energy-donut" :style="reportViewModel.stressOverview.energyStyle">
+                            <div class="stress-energy-inner">
+                              <div class="stress-energy-label">身心能量</div>
+                              <div class="stress-energy-value">{{ reportViewModel.stressOverview.energyScore }}%</div>
+                            </div>
+                          </div>
+                          <div class="stress-energy-metrics">
+                            <div class="stress-energy-metric" v-for="item in reportViewModel.stressOverview.energyMetrics" :key="item.label">
+                              <span>{{ item.label }}</span>
+                              <strong>{{ item.display }}</strong>
+                            </div>
                           </div>
                         </div>
-                      </div>
-
-                      <div class="stress-overview-detail">
-                        <div class="stress-overview-detail-title">{{ reportViewModel.stressOverview.detailTitle }}</div>
-                        <div class="stress-overview-detail-block">
-                          <div class="stress-overview-detail-heading">健康状况</div>
-                          <p v-for="(line, index) in reportViewModel.stressOverview.healthStatusLines" :key="`health-status-${index}`">
-                            {{ line }}
-                          </p>
-                        </div>
-                        <div class="stress-overview-detail-block">
-                          <div class="stress-overview-detail-heading">健康建议</div>
-                          <p v-for="(line, index) in reportViewModel.stressOverview.recommendationLines" :key="`health-recommendation-${index}`">
-                            {{ line }}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div class="stress-overview-desc" v-if="reportViewModel.stressOverview.overviewDescription">
-                        {{ reportViewModel.stressOverview.overviewDescription }}
                       </div>
 
                       <div class="stress-overview-notes" v-if="reportViewModel.stressOverview.notes.length">
                         <div class="stress-overview-note" v-for="(item, index) in reportViewModel.stressOverview.notes" :key="`stress-note-${index}`">
                           <div class="stress-overview-note-label">{{ item.label }}</div>
                           <div class="stress-overview-note-value">{{ item.value }}</div>
-                          <div class="stress-overview-note-text" v-if="item.note">{{ item.note }}</div>
+                          <div class="stress-overview-note-text">{{ item.note }}</div>
                         </div>
                       </div>
                     </div>
+
                     <div class="reference-stat-grid" v-if="reportViewModel.stressStats.length">
                       <div class="reference-stat-card" v-for="(item, index) in reportViewModel.stressStats" :key="`stress-stat-${index}`">
                         <div class="reference-stat-top">
@@ -353,16 +263,7 @@
                         <div class="reference-stat-note" v-if="item.note">{{ item.note }}</div>
                       </div>
                     </div>
-                    <div class="reference-balance-box" v-if="reportViewModel.stressMarkers.length">
-                      <div class="reference-balance-title">自律神经平衡状态</div>
-                      <div class="reference-balance-track">
-                        <span v-for="(marker, index) in reportViewModel.stressMarkers" :key="`marker-${index}`" :class="`tone-${marker.tone}`" :style="{ width: `${marker.width}%` }"></span>
-                      </div>
-                      <div class="reference-balance-labels">
-                        <span v-for="(marker, index) in reportViewModel.stressMarkers" :key="`marker-label-${index}`">{{ marker.label }}</span>
-                      </div>
-                    </div>
-                    <div class="reference-empty-block" v-if="!reportViewModel.stressStats.length && !reportViewModel.stressMarkers.length && !reportViewModel.stressOverview.hasAge && !reportViewModel.stressOverview.hasOverview">当前档案暂无可提取的核心指标摘要</div>
+                    <div class="reference-empty-block" v-if="!reportViewModel.stressStats.length && !reportViewModel.stressOverview.hasAge && !reportViewModel.stressOverview.hasOverview">当前档案暂无可提取的自律神经评估摘要</div>
                   </div>
                 </div>
               </div>
@@ -426,6 +327,37 @@
                             <h5>{{ item.title }}</h5>
                             <p>{{ item.text }}</p>
                           </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="reference-row" v-if="reportViewModel.manualMetricsPairs.length">
+                <div class="reference-section reference-section-main" style="flex: 1;">
+                  <div class="reference-section-title tone-red">生化指标</div>
+                  <div class="reference-section-body">
+                    <table class="reference-pairs-table">
+                      <tbody>
+                        <tr v-for="(row, index) in reportViewModel.manualMetricsPairs" :key="`manual-${index}`">
+                          <th>{{ row.left.label }}</th>
+                          <td>{{ row.left.value }}</td>
+                          <th>{{ row.right ? row.right.label : '--' }}</th>
+                          <td>{{ row.right ? row.right.value : '--' }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <div class="insight-list" v-if="reportViewModel.crossAnalysis.length" style="margin-top: 18px;">
+                      <div class="insight-item" v-for="(item, index) in reportViewModel.crossAnalysis" :key="`cross-analysis-${index}`">
+                        <div class="insight-icon" :class="`tone-${item.tone}`" aria-hidden="true">
+                          <svg class="report-inline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path v-for="(path, iconIndex) in getReportIconPaths(item.iconKey)" :key="`cross-analysis-icon-${index}-${iconIndex}`" :d="path" />
+                          </svg>
+                        </div>
+                        <div class="insight-content">
+                          <h5>{{ item.title }}</h5>
+                          <p>{{ item.text }}</p>
                         </div>
                       </div>
                     </div>
@@ -758,6 +690,13 @@ const buildHighlightMetrics = (reportData) => {
     pushMetric(item.metric, item.value, item.unit, '睡眠监测');
   });
 
+  if (reportData?.manualMetrics) {
+    if (reportData.manualMetrics.bloodGlucose) pushMetric('血糖', reportData.manualMetrics.bloodGlucose, 'mmol/L', '生化指标');
+    if (reportData.manualMetrics.bloodPressure) pushMetric('血压', reportData.manualMetrics.bloodPressure, 'mmHg', '生化指标');
+    if (reportData.manualMetrics.bloodLipids) pushMetric('血脂', reportData.manualMetrics.bloodLipids, 'mmol/L', '生化指标');
+    if (reportData.manualMetrics.uricAcid) pushMetric('尿酸', reportData.manualMetrics.uricAcid, 'μmol/L', '生化指标');
+  }
+
   return Array.from(mapped.values()).slice(0, 12);
 };
 
@@ -817,6 +756,23 @@ const buildSections = (reportData) => {
   pushSection(buildDynamicTableSection('daily-statistics', reportData?.dailyStatistics, '每日统计'));
   pushSection(buildTextSection('sleep-summary', '睡眠总结', reportData?.sleepSummaryText));
 
+  if (reportData?.manualMetrics) {
+    const manualItems = [];
+    if (reportData.manualMetrics.bloodGlucose) manualItems.push({ label: '血糖', value: reportData.manualMetrics.bloodGlucose, unit: 'mmol/L' });
+    if (reportData.manualMetrics.bloodPressure) manualItems.push({ label: '血压', value: reportData.manualMetrics.bloodPressure, unit: 'mmHg' });
+    if (reportData.manualMetrics.bloodLipids) manualItems.push({ label: '血脂', value: reportData.manualMetrics.bloodLipids, unit: 'mmol/L' });
+    if (reportData.manualMetrics.uricAcid) manualItems.push({ label: '尿酸', value: reportData.manualMetrics.uricAcid, unit: 'μmol/L' });
+    
+    if (manualItems.length > 0) {
+      pushSection({
+        key: 'manual-metrics',
+        title: '手动生化指标',
+        type: 'profile',
+        items: manualItems
+      });
+    }
+  }
+
   return sections;
 };
 
@@ -849,6 +805,164 @@ const getValueByLabels = (items, labels) => {
     if (matched) return matched.value;
   }
   return '';
+};
+
+const getManualMetricItem = (patient, label) => {
+  return (getPatientSection(patient, 'manual-metrics')?.items || []).find(item => item?.label === label) || null;
+};
+
+const parseBloodPressureValue = (value) => {
+  const matched = String(value || '').match(/(\d{2,3})\s*\/\s*(\d{2,3})/);
+  if (!matched) return null;
+  return {
+    systolic: Number(matched[1]),
+    diastolic: Number(matched[2])
+  };
+};
+
+const getBiochemicalAssessment = (patient) => {
+  const bloodGlucoseItem = getManualMetricItem(patient, '血糖');
+  const bloodPressureItem = getManualMetricItem(patient, '血压');
+  const bloodLipidsItem = getManualMetricItem(patient, '血脂');
+  const uricAcidItem = getManualMetricItem(patient, '尿酸');
+  const bmiMetric =
+    (getPatientSection(patient, 'obesity-analysis')?.rows || []).find(item => String(item?.metric || '').includes('BMI')) ||
+    (patient?.highlightMetrics || []).find(item => String(item?.label || '').includes('BMI')) ||
+    null;
+  const bodyFatMetric =
+    (getPatientSection(patient, 'obesity-analysis')?.rows || []).find(item => String(item?.metric || '').includes('体脂')) ||
+    (patient?.highlightMetrics || []).find(item => String(item?.label || '').includes('体脂')) ||
+    null;
+  const sleepEfficiencyMetric =
+    (getPatientSection(patient, 'sleep-metrics')?.rows || []).find(item => String(item?.metric || '').includes('睡眠效率')) ||
+    null;
+  const stressMetric =
+    (getPatientSection(patient, 'stress-metrics')?.items || []).find(item => {
+      const text = String(item?.label || '');
+      return text.includes('压力') || text.includes('交感') || text.includes('神经');
+    }) || null;
+
+  const bloodGlucose = parseNumber(bloodGlucoseItem?.value);
+  const bloodLipids = parseNumber(bloodLipidsItem?.value);
+  const uricAcid = parseNumber(uricAcidItem?.value);
+  const bloodPressure = parseBloodPressureValue(bloodPressureItem?.value);
+  const bmi = parseNumber(bmiMetric?.value);
+  const bodyFat = parseNumber(bodyFatMetric?.value);
+  const sleepEfficiency = parseNumber(sleepEfficiencyMetric?.value);
+
+  const statuses = [];
+  const scoreItems = [];
+
+  if (bloodGlucose !== null) {
+    const status = bloodGlucose >= 7 ? '偏高' : bloodGlucose >= 6.1 ? '临界偏高' : bloodGlucose < 3.9 ? '偏低' : '正常';
+    statuses.push({
+      label: '血糖',
+      value: `${bloodGlucose}${bloodGlucoseItem?.unit ? ` ${bloodGlucoseItem.unit}` : ' mmol/L'}`,
+      status
+    });
+    scoreItems.push({
+      value: bloodGlucose >= 7 ? 58 : bloodGlucose >= 6.1 ? 72 : bloodGlucose < 3.9 ? 68 : 90,
+      weight: 0.3
+    });
+  }
+
+  if (bloodPressure) {
+    const status =
+      bloodPressure.systolic >= 140 || bloodPressure.diastolic >= 90
+        ? '偏高'
+        : bloodPressure.systolic >= 130 || bloodPressure.diastolic >= 85
+          ? '临界偏高'
+          : bloodPressure.systolic < 90 || bloodPressure.diastolic < 60
+            ? '偏低'
+            : '正常';
+    statuses.push({
+      label: '血压',
+      value: `${bloodPressure.systolic}/${bloodPressure.diastolic} mmHg`,
+      status
+    });
+    scoreItems.push({
+      value:
+        bloodPressure.systolic >= 140 || bloodPressure.diastolic >= 90
+          ? 58
+          : bloodPressure.systolic >= 130 || bloodPressure.diastolic >= 85
+            ? 72
+            : bloodPressure.systolic < 90 || bloodPressure.diastolic < 60
+              ? 70
+              : 90,
+      weight: 0.25
+    });
+  }
+
+  if (bloodLipids !== null) {
+    const status = bloodLipids >= 6.2 ? '偏高' : bloodLipids >= 5.2 ? '临界偏高' : '正常';
+    statuses.push({
+      label: '血脂',
+      value: `${bloodLipids}${bloodLipidsItem?.unit ? ` ${bloodLipidsItem.unit}` : ' mmol/L'}`,
+      status
+    });
+    scoreItems.push({
+      value: bloodLipids >= 6.2 ? 58 : bloodLipids >= 5.2 ? 72 : 88,
+      weight: 0.2
+    });
+  }
+
+  if (uricAcid !== null) {
+    const status = uricAcid >= 540 ? '明显偏高' : uricAcid >= 420 ? '偏高' : '正常';
+    statuses.push({
+      label: '尿酸',
+      value: `${uricAcid}${uricAcidItem?.unit ? ` ${uricAcidItem.unit}` : ' μmol/L'}`,
+      status
+    });
+    scoreItems.push({
+      value: uricAcid >= 540 ? 55 : uricAcid >= 420 ? 68 : 88,
+      weight: 0.15
+    });
+  }
+
+  const insights = [];
+
+  if ((bloodGlucose !== null && bloodGlucose >= 6.1) || (bloodPressure && (bloodPressure.systolic >= 130 || bloodPressure.diastolic >= 85))) {
+    insights.push({
+      title: '糖压联动风险',
+      text: `当前${bloodGlucose !== null ? `血糖 ${bloodGlucose} mmol/L` : '血糖指标'}${bloodPressure ? `、血压 ${bloodPressure.systolic}/${bloodPressure.diastolic} mmHg` : ''}已提示代谢与血管负担增加，若同时存在睡眠不足、体脂偏高或精神压力偏高，往往更容易出现晨起血压波动、餐后血糖控制变差和恢复效率下降。`,
+      iconKey: 'summary',
+      tone: 'orange'
+    });
+  }
+
+  if ((bloodLipids !== null && bloodLipids >= 5.2) || (bodyFat !== null && bodyFat >= 25) || (bmi !== null && bmi >= 24)) {
+    insights.push({
+      title: '体脂与血脂同向影响',
+      text: `当前${bloodLipids !== null ? `血脂 ${bloodLipids} mmol/L` : '血脂指标'}${bodyFat !== null ? `、体脂 ${bodyFat}%` : ''}${bmi !== null ? `、BMI ${bmi}` : ''}提示脂代谢与体重管理需要同步干预，若只控制体重而不调整饮食结构，血脂改善通常有限，运动方案也应兼顾有氧消耗与抗阻保肌。`,
+      iconKey: 'body',
+      tone: 'red'
+    });
+  }
+
+  if ((uricAcid !== null && uricAcid >= 420) || (sleepEfficiency !== null && sleepEfficiency < 85) || stressMetric) {
+    const stressLabel = stressMetric?.label ? `${stressMetric.label}` : '压力恢复指标';
+    insights.push({
+      title: '恢复能力与尿酸管理',
+      text: `当前${uricAcid !== null ? `尿酸 ${uricAcid} μmol/L` : '尿酸指标'}${sleepEfficiency !== null ? `、睡眠效率 ${sleepEfficiency}%` : ''}${stressMetric ? `、${stressLabel}` : ''}提示恢复能力可能不足。熬夜、脱水、压力偏高和高嘌呤饮食会共同推高尿酸波动，因此报告中的饮食、补水和运动强度安排需要一起调整。`,
+      iconKey: 'stress',
+      tone: 'purple'
+    });
+  }
+
+  if (!insights.length && statuses.length) {
+    insights.push({
+      title: '代谢状态总体可控',
+      text: `当前已录入的${statuses.map(item => `${item.label}${item.status === '正常' ? '基本稳定' : item.status}`).join('、')}，结合已采集的睡眠、压力和体成分数据，建议继续通过规律作息、饮食结构优化和稳定运动量维持整体代谢平衡。`,
+      iconKey: 'summary',
+      tone: 'green'
+    });
+  }
+
+  return {
+    statuses,
+    insights: insights.slice(0, 3),
+    score: clampScore(weightedAverage(scoreItems))
+  };
 };
 
 const buildProfileSummary = (patient, basicInfo) => {
@@ -932,7 +1046,7 @@ const evaluateSleepMetricScore = (label, value) => {
   return null;
 };
 
-const buildCompositeAssessment = ({ sections, highlightMetrics, inbodyScore }) => {
+const buildCompositeAssessment = ({ patient, sections, highlightMetrics, inbodyScore }) => {
   const sectionSignals = [];
 
   sections.forEach(section => {
@@ -994,6 +1108,7 @@ const buildCompositeAssessment = ({ sections, highlightMetrics, inbodyScore }) =
   })();
 
   const warningScore = Math.max(52, 90 - warningCount * 6);
+  const biochemicalAssessment = getBiochemicalAssessment(patient);
   const keywordScore = keywordScores.length
     ? keywordScores.reduce((sum, score) => sum + score, 0) / keywordScores.length
     : null;
@@ -1006,7 +1121,8 @@ const buildCompositeAssessment = ({ sections, highlightMetrics, inbodyScore }) =
     { value: sleepScore, weight: 0.25 },
     { value: bmiScore, weight: 0.15 },
     { value: bodyFatScore, weight: 0.10 },
-    { value: warningScore, weight: 0.15 }
+    { value: warningScore, weight: 0.10 },
+    { value: biochemicalAssessment.score, weight: 0.15 }
   ]);
 
   const finalScore = clampScore(weightedAverage([
@@ -1021,7 +1137,7 @@ const buildCompositeAssessment = ({ sections, highlightMetrics, inbodyScore }) =
   return {
     score: finalScore,
     note: dataPoints
-      ? `基于 ${dataPoints} 项真实检测数据综合评估`
+      ? `基于 ${dataPoints} 项真实检测数据综合评估，已纳入睡眠、压力、体成分及生化指标联动分析`
       : '基于当前已采集真实数据综合评估'
   };
 };
@@ -1113,6 +1229,16 @@ const buildReportGroups = (sections, metricSummary, profileSummary) => {
   }
 
   pushSectionGroup({
+    key: 'manual',
+    index: '1.5',
+    title: '生化指标',
+    subtitle: '核心指标数据',
+    tone: 'red',
+    layout: 'compact',
+    keys: ['manual-metrics']
+  });
+
+  pushSectionGroup({
     key: 'stress',
     index: '2',
     title: '自律神经检测结果',
@@ -1200,9 +1326,11 @@ const buildPatientRecord = (record) => {
   const highlightMetrics = buildHighlightMetrics(reportData);
   const sections = buildSections(reportData);
   const profileSummary = buildProfileSummary({ name, gender, age, date }, basicInfo);
-  const compositeAssessment = buildCompositeAssessment({ sections, highlightMetrics, inbodyScore });
+  const draftPatient = { ...record, name, gender, age, date, highlightMetrics, sections };
+  const compositeAssessment = buildCompositeAssessment({ patient: draftPatient, sections, highlightMetrics, inbodyScore });
   const score = compositeAssessment.score;
   const metricSummary = buildMetricSummary(score, highlightMetrics, inbodyScore);
+  const biochemicalAssessment = getBiochemicalAssessment(draftPatient);
 
   return {
     ...record,
@@ -1217,6 +1345,7 @@ const buildPatientRecord = (record) => {
     sections,
     profileSummary,
     compositeAssessment,
+    biochemicalAssessment,
     inbodyScore,
     metricSummary,
     reportGroups: buildReportGroups(sections, metricSummary, profileSummary)
@@ -1357,7 +1486,9 @@ const buildGuidancePayload = (patient) => {
       table: pickMeaningfulRows(getPatientSection(patient, 'inbody-table')?.rows),
       muscleFat: pickMeaningfulRows(getPatientSection(patient, 'muscle-fat')?.rows),
       obesity: pickMeaningfulRows(getPatientSection(patient, 'obesity-analysis')?.rows)
-    }
+    },
+    manualMetrics: pickMeaningfulItems(getPatientSection(patient, 'manual-metrics')?.items),
+    biochemicalAssessment: patient?.biochemicalAssessment || {}
   };
 };
 
@@ -1510,30 +1641,6 @@ const describePieSlice = (centerX, centerY, radius, startAngle, endAngle) => {
   ].join(' ');
 };
 
-const describeDonutSlice = (centerX, centerY, outerRadius, innerRadius, startAngle, endAngle) => {
-  const angleSpan = Math.max(0, Math.min(359.999, endAngle - startAngle));
-  if (angleSpan <= 0.01) return '';
-
-  const outerStart = polarToCartesian(centerX, centerY, outerRadius, endAngle);
-  const outerEnd = polarToCartesian(centerX, centerY, outerRadius, startAngle);
-  const innerStart = polarToCartesian(centerX, centerY, innerRadius, startAngle);
-  const innerEnd = polarToCartesian(centerX, centerY, innerRadius, endAngle);
-  const largeArcFlag = angleSpan > 180 ? 1 : 0;
-
-  return [
-    `M ${outerStart.x} ${outerStart.y}`,
-    `A ${outerRadius} ${outerRadius} 0 ${largeArcFlag} 0 ${outerEnd.x} ${outerEnd.y}`,
-    `L ${innerStart.x} ${innerStart.y}`,
-    `A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 1 ${innerEnd.x} ${innerEnd.y}`,
-    'Z'
-  ].join(' ');
-};
-
-const clampPercent = (value, fallback = 80) => {
-  if (typeof value !== 'number' || Number.isNaN(value)) return fallback;
-  return Math.max(50, Math.min(100, Math.round(value)));
-};
-
 const buildStressOverview = (patient) => {
   const signals = getStressSignals(patient);
   const ageSignal = findStressSignal(signals, ['自律神经年龄', 'ANS Age']);
@@ -1559,6 +1666,9 @@ const buildStressOverview = (patient) => {
   const parasympathetic = vagValue !== null ? Math.max(vagValue, 0.1) : 50;
   const balanceTotal = sympathetic + parasympathetic;
   const sympatheticPercent = Math.round((sympathetic / balanceTotal) * 100);
+  const chartIdSuffix = String(patient?.id || 'report').replace(/[^a-zA-Z0-9_-]/g, '');
+  const symPatternId = `autonomic-sym-${chartIdSuffix}`;
+  const vagPatternId = `autonomic-vag-${chartIdSuffix}`;
   const pieStartAngle = 230;
   const pieEndAngle = pieStartAngle + (sympatheticPercent / 100) * 360;
   const sympatheticArcPath = describePieSlice(132, 98, 70, pieStartAngle, pieEndAngle);
@@ -1592,19 +1702,14 @@ const buildStressOverview = (patient) => {
     return balanceSignal?.note || ansSignal?.note || '';
   })();
 
-  const emotionPercent = clampPercent(parseNumber(emotionSignal?.value), 95);
-  const antiStressPercent = clampPercent(parseNumber(antiStressSignal?.value), 80);
-  const vitalityPercent = clampPercent(parseNumber(vitalitySignal?.value), 90);
-  const sleepPercent = clampPercent(parseNumber(sleepSignal?.value), 70);
-
   const energyMetrics = [
-    { label: '睡眠指数', value: sleepPercent, display: `${sleepPercent}%` },
-    { label: '情绪指数', value: emotionPercent, display: `${emotionPercent}%` },
-    { label: '活力指数', value: vitalityPercent, display: `${vitalityPercent}%` },
-    { label: '抗压力指数', value: antiStressPercent, display: `${antiStressPercent}%` }
-  ];
+    { label: '睡眠活性', value: parseNumber(sleepSignal?.value), display: formatAgeDisplay(sleepSignal?.value).replace('岁', '分') },
+    { label: '情绪稳定', value: parseNumber(emotionSignal?.value), display: formatAgeDisplay(emotionSignal?.value).replace('岁', '分') },
+    { label: '活力储备', value: parseNumber(vitalitySignal?.value), display: formatAgeDisplay(vitalitySignal?.value).replace('岁', '分') },
+    { label: '抗压能力', value: parseNumber(antiStressSignal?.value), display: formatAgeDisplay(antiStressSignal?.value).replace('岁', '分') }
+  ].filter(item => item.value !== null);
 
-  const energyScore = clampScore(weightedAverage(energyMetrics.map(item => ({ value: item.value, weight: 1 })))) || 84;
+  const energyScore = clampScore(weightedAverage(energyMetrics.map(item => ({ value: item.value, weight: 1 })))) || 0;
 
   const overviewType = (() => {
     if (balanceValue !== null) {
@@ -1624,168 +1729,12 @@ const buildStressOverview = (patient) => {
     return '当前交感与副交感功能总体可读，建议结合睡眠、压力、血糖血压和日常活动习惯做持续管理。';
   })();
 
-  const typeSegmentDefs = [
-    { label: '迟缓平和', color: '#a9cdb3' },
-    { label: '精神抖擞', color: '#cdb8cf' },
-    { label: '萎靡不振', color: '#b7c7d8' },
-    { label: '焦躁不安', color: '#93c3dc' },
-    { label: '力拔山河', color: '#b7d36d' },
-    { label: '身强体壮', color: '#e7865e' },
-    { label: '兴致索然', color: '#e5ad7e' },
-    { label: '积劳成疾', color: '#a7cec1' },
-    { label: '焦虑不安', color: '#d5c7dd' },
-    { label: '身心减耗', color: '#d9c6ba' },
-    { label: '力不从心', color: '#c6c99d' },
-    { label: '精疲力竭', color: '#d8cf86' }
-  ];
-
-  const activeTypeIndexMap = {
-    '副交感偏高型': 0,
-    '调节稳健型': 5,
-    '平衡调节型': 1,
-    '交感偏亢型': 3,
-    '恢复不足型': 6
-  };
-  const activeTypeIndex = activeTypeIndexMap[overviewType] ?? 4;
-  const typeChartStartAngle = -105;
-  const typeChartStep = 30;
-  const typeChartGap = 2.2;
-  const typeWheelRotation = 90 - activeTypeIndex * typeChartStep;
-  const typeChartSegments = typeSegmentDefs.map((segment, index) => {
-    const startAngle = typeChartStartAngle + index * typeChartStep + typeChartGap / 2;
-    const endAngle = typeChartStartAngle + (index + 1) * typeChartStep - typeChartGap / 2;
-    const midAngle = (startAngle + endAngle) / 2;
-    const labelPoint = polarToCartesian(108, 108, 77, midAngle);
-    const isActive = index === activeTypeIndex;
-
-    return {
-      ...segment,
-      startAngle,
-      endAngle,
-      midAngle,
-      isActive,
-      path: describeDonutSlice(108, 108, isActive ? 100 : 94, 54, startAngle, endAngle),
-      labelX: labelPoint.x,
-      labelY: labelPoint.y,
-      labelRotate: `rotate(${midAngle + 90} ${labelPoint.x} ${labelPoint.y})`,
-      fill: isActive ? segment.color : `${segment.color}dd`
-    };
-  });
-
-  const activeTypeSegment = typeChartSegments[activeTypeIndex] || typeChartSegments[4];
-  const typeCallout = {
-    text: activeTypeSegment.label
-  };
-
-  const energyChartSegments = [
-    {
-      key: 'emotion',
-      label: '情绪指数',
-      display: `${emotionPercent}%`,
-      value: emotionPercent,
-      color: '#98d26f',
-      path: describeDonutSlice(100, 100, 88, 49, -45, 45),
-      percentX: 100,
-      percentY: 8,
-      ringX: 100,
-      ringY: 44,
-      ringRotate: '',
-      textAnchor: 'middle'
-    },
-    {
-      key: 'anti-stress',
-      label: '抗压力指数',
-      display: `${antiStressPercent}%`,
-      value: antiStressPercent,
-      color: '#66b3df',
-      path: describeDonutSlice(100, 100, 88, 49, 45, 135),
-      percentX: 208,
-      percentY: 108,
-      ringX: 151,
-      ringY: 100,
-      ringRotate: 'rotate(90 151 100)',
-      textAnchor: 'middle'
-    },
-    {
-      key: 'vitality',
-      label: '活力指数',
-      display: `${vitalityPercent}%`,
-      value: vitalityPercent,
-      color: '#eab94f',
-      path: describeDonutSlice(100, 100, 88, 49, 135, 225),
-      percentX: 100,
-      percentY: 216,
-      ringX: 100,
-      ringY: 156,
-      ringRotate: '',
-      textAnchor: 'middle'
-    },
-    {
-      key: 'sleep',
-      label: '睡眠指数',
-      display: `${sleepPercent}%`,
-      value: sleepPercent,
-      color: '#5f69d5',
-      path: describeDonutSlice(100, 100, 88, 49, 225, 315),
-      percentX: -8,
-      percentY: 108,
-      ringX: 49,
-      ringY: 100,
-      ringRotate: 'rotate(-90 49 100)',
-      textAnchor: 'middle'
-    }
-  ];
-
   const notes = [
     ageSignal ? { label: '自律神经年龄', value: formatAgeDisplay(ageSignal.value), note: ageCaption } : null,
     ansSignal ? { label: '总体功能', value: normalizeValue(ansSignal.value), note: ansSignal.note || '反映整体神经调节能力' } : null,
     sdnnSignal ? { label: 'SDNN', value: normalizeValue(sdnnSignal.value), note: sdnnSignal.note || '反映心率变异与恢复弹性' } : null,
     balanceSignal ? { label: '偏向值', value: normalizeValue(balanceSignal.value), note: balanceSignal.note || '用于判断交感与副交感偏向' } : null
   ].filter(Boolean).slice(0, 4);
-
-  const detailTitle = `${typeCallout.text}型`;
-
-  const healthStatusLines = [
-    sdnnValue !== null ? `SDNN为 ${sdnnValue.toFixed(2)}，${sdnnValue >= 100 ? '提示心率变异性储备较强。' : sdnnValue >= 50 ? '提示自主神经恢复能力基本可读。' : '提示当前恢复储备偏弱，需要重点关注休息与减压。'}` : '',
-    autonomicAge !== null ? `自律神经年龄评估为 ${formatAgeDisplay(ageSignal?.value)}，${ageCaption}。` : '',
-    overviewDescription
-  ].filter(Boolean);
-
-  const recommendationLines = (() => {
-    if (overviewType === '交感偏亢型') {
-      return [
-        '饮食方面：减少咖啡因、酒精和高糖刺激性摄入，晚餐尽量清淡，避免夜间继续推高交感兴奋。',
-        '运动方面：优先做中低强度有氧、拉伸和呼吸训练，先把恢复质量稳定下来，再逐步增加训练刺激。',
-        '生活方面：固定入睡时间，减少熬夜和持续高压工作，重点观察睡眠、血压与晨起疲劳是否同步改善。'
-      ];
-    }
-    if (overviewType === '副交感偏高型') {
-      return [
-        '饮食方面：保持规律三餐和足量蛋白，避免进食过少导致白天能量不足。',
-        '运动方面：增加步行、有氧和基础力量训练，避免活动量长期偏低造成精力下降。',
-        '生活方面：维持稳定作息和白天日照暴露，帮助精神唤醒与昼夜节律保持平衡。'
-      ];
-    }
-    if (overviewType === '恢复不足型') {
-      return [
-        '饮食方面：优先保证规律进食、补水和优质蛋白，不建议用节食方式继续给身体增加压力。',
-        '运动方面：先以恢复型训练和轻中强度活动为主，避免连续高强度冲刺。',
-        '生活方面：连续 2-4 周优先修复睡眠与疲劳，减少熬夜、久坐和精神透支。'
-      ];
-    }
-    if (overviewType === '调节稳健型') {
-      return [
-        '饮食方面：继续维持清淡均衡饮食结构，减少不必要的高油高糖波动。',
-        '运动方面：在保证恢复的前提下加入规律有氧和抗阻训练，进一步提升代谢与体能。',
-        '生活方面：保持现有节律，同时持续跟踪睡眠、压力和体成分变化，巩固当前状态。'
-      ];
-    }
-    return [
-      '饮食方面：维持规律三餐和清淡饮食，减少高油高糖与夜宵对恢复节律的干扰。',
-      '运动方面：保持稳定活动量，采用有氧结合轻力量训练的方式增强整体恢复能力。',
-      '生活方面：保证充足睡眠、适度减压和固定作息，让交感与副交感功能维持在更平衡的区间。'
-    ];
-  })();
 
   return {
     hasAge: !!ageSignal,
@@ -1799,23 +1748,19 @@ const buildStressOverview = (patient) => {
     parasympatheticValue: vagSignal?.value ? normalizeValue(vagSignal.value) : '--',
     sympatheticArcPath,
     ageTicks,
+    symPatternId,
+    vagPatternId,
     overviewType,
     overviewDescription,
     energyScore,
     energyMetrics,
-    energyChartSegments,
-    typeWheelRotation,
-    typeChartSegments,
-    typeCallout,
-    detailTitle,
-    healthStatusLines,
-    recommendationLines,
     energyStyle: {
       background: buildEnergyGradient(energyMetrics.length)
     },
     notes
   };
 };
+
 const buildStressMarkers = (stressStats) => {
   if (!stressStats.length) return [];
   const width = Number((100 / stressStats.length).toFixed(2));
@@ -1843,6 +1788,17 @@ const buildBodyPairs = (patient) => {
     }));
 
   return toPairRows([...profileItems, ...tableItems].filter(item => hasMeaningfulValue(item.label) && hasMeaningfulValue(item.value)).slice(0, 10));
+};
+
+const buildManualMetricsPairs = (patient) => {
+  const profileItems = (getPatientSection(patient, 'manual-metrics')?.items || [])
+    .filter(Boolean)
+    .map(item => ({
+      label: item.label,
+      value: joinItemValue(item)
+    }));
+
+  return toPairRows(profileItems);
 };
 
 const parseNumber = (value) => {
@@ -1910,25 +1866,29 @@ const buildExerciseAdvice = (patient) => {
   const bodyFat = parseNumber(bodyFatMetric?.value);
   const weight = parseNumber(weightMetric?.value);
   const score = patient?.score;
+  const biochemicalAssessment = patient?.biochemicalAssessment || getBiochemicalAssessment(patient);
+  const bloodGlucoseStatus = biochemicalAssessment.statuses?.find(item => item.label === '血糖');
+  const bloodPressureStatus = biochemicalAssessment.statuses?.find(item => item.label === '血压');
+  const uricAcidStatus = biochemicalAssessment.statuses?.find(item => item.label === '尿酸');
   const suggestions = [];
 
   if (bmi !== null || bodyFat !== null) {
     if ((bmi !== null && bmi >= 28) || (bodyFat !== null && bodyFat >= 30)) {
       suggestions.push({
         title: '以减脂有氧为主',
-        text: `当前${bmi !== null ? `BMI为 ${bmi}` : '体脂偏高'}，建议每周进行 5 次中低强度有氧运动，每次 40-60 分钟，可选择快走、椭圆机、骑行或游泳。`,
+        text: `当前${bmi !== null ? `BMI为 ${bmi}` : '体脂偏高'}，建议每周进行 5 次中低强度有氧运动，每次 40-60 分钟，可选择快走、椭圆机、骑行或游泳，并配合每周 2 次下肢与核心力量训练，避免只做单一有氧导致肌肉量继续下降。`,
         iconKey: 'body'
       });
     } else if ((bmi !== null && bmi >= 24) || (bodyFat !== null && bodyFat >= 25)) {
       suggestions.push({
         title: '有氧结合力量训练',
-        text: `当前${bmi !== null ? `BMI为 ${bmi}` : '体脂略高'}，建议每周 3-4 次有氧运动，每次 30-45 分钟，并增加 2 次基础力量训练以提升代谢。`,
+        text: `当前${bmi !== null ? `BMI为 ${bmi}` : '体脂略高'}，建议每周 3-4 次有氧运动，每次 30-45 分钟，并增加 2 次基础力量训练以提升代谢；若同时睡眠不足或压力偏高，运动后应保留 1 天恢复窗口。`,
         iconKey: 'body'
       });
     } else {
       suggestions.push({
         title: '保持规律运动',
-        text: '当前体重控制整体尚可，建议每周保持 3 次以上中等强度运动，每次 30 分钟以上，重点维持心肺和肌肉状态。',
+        text: '当前体重控制整体尚可，建议每周保持 3 次以上中等强度运动，每次 30 分钟以上，重点维持心肺和肌肉状态，同时通过步行、拉伸和轻阻训练稳定代谢和恢复能力。',
         iconKey: 'body'
       });
     }
@@ -1951,8 +1911,32 @@ const buildExerciseAdvice = (patient) => {
   if (weight !== null) {
     suggestions.push({
       title: '关注周运动量',
-      text: `当前体重约 ${weight} kg，建议将每周累计运动时间控制在 150-300 分钟之间，并保持日常步行活跃度，减少久坐时间。`,
+      text: `当前体重约 ${weight} kg，建议将每周累计运动时间控制在 150-300 分钟之间，并保持日常步行活跃度，减少久坐时间；若久坐办公，每 1 小时起身活动 3-5 分钟有助于改善血糖与血脂代谢。`,
       iconKey: 'obesity'
+    });
+  }
+
+  if (bloodGlucoseStatus && /(偏高|临界)/.test(bloodGlucoseStatus.status)) {
+    suggestions.push({
+      title: '控糖运动要点',
+      text: `结合${bloodGlucoseStatus.label}${bloodGlucoseStatus.value}的情况，建议优先采用餐后 30-60 分钟快走、骑行或椭圆机等中等强度运动，每次 20-40 分钟；空腹高强度训练容易增加应激波动，不建议作为当前主方案。`,
+      iconKey: 'summary'
+    });
+  }
+
+  if (bloodPressureStatus && /(偏高|临界)/.test(bloodPressureStatus.status)) {
+    suggestions.push({
+      title: '血压偏高时的训练边界',
+      text: `当前${bloodPressureStatus.label}${bloodPressureStatus.value}提示训练强度需循序渐进，建议以中等强度有氧和呼吸放松为主，力量训练时避免憋气和突然冲刺，运动前后都应监测心率与主观疲劳感。`,
+      iconKey: 'stress'
+    });
+  }
+
+  if (uricAcidStatus && /偏高/.test(uricAcidStatus.status)) {
+    suggestions.push({
+      title: '高尿酸阶段避免过冲训练',
+      text: `当前${uricAcidStatus.label}${uricAcidStatus.value}提示恢复与补水管理很关键，建议避免连续高强度爆发训练和长时间空腹运动，训练日分次补水并优先选择稳定可持续的快走、游泳或骑行。`,
+      iconKey: 'body'
     });
   }
 
@@ -1966,7 +1950,7 @@ const buildExerciseAdvice = (patient) => {
     }
   });
 
-  return deduped.slice(0, 3);
+  return deduped.slice(0, 5);
 };
 
 const normalizeAiAdviceItems = (items, fallbackIconKey) => {
@@ -1981,7 +1965,61 @@ const normalizeAiAdviceItems = (items, fallbackIconKey) => {
     .slice(0, 6);
 };
 
-const pushUniqueAdviceItem = (list, item, maxLength = 4) => {
+const normalizeAiCrossAnalysis = (items) => {
+  const tones = ['red', 'orange', 'purple', 'blue', 'green'];
+  return (Array.isArray(items) ? items : [])
+    .filter(Boolean)
+    .map((item, index) => ({
+      title: normalizeValue(item?.title) || `联动解读 ${index + 1}`,
+      text: normalizeValue(item?.text),
+      iconKey: item?.iconKey || 'summary',
+      tone: item?.tone || tones[index % tones.length]
+    }))
+    .filter(item => item.text)
+    .slice(0, 5);
+};
+
+const buildCrossAnalysis = (patient) => {
+  const biochemicalAssessment = patient?.biochemicalAssessment || getBiochemicalAssessment(patient);
+  const insights = Array.isArray(biochemicalAssessment?.insights) ? [...biochemicalAssessment.insights] : [];
+  const sleepSummary = getPatientSection(patient, 'sleep-summary')?.text || '';
+  const stressStats = buildStressStats(patient);
+
+  if (hasMeaningfulValue(sleepSummary) && stressStats.length) {
+    insights.push({
+      title: '睡眠与压力共同影响恢复',
+      text: `当前睡眠总结提示${String(sleepSummary).split(/[。；\n]/).map(item => item.trim()).filter(Boolean)[0]}，同时${stressStats[0].label}等压力相关指标也已纳入评估。若夜间睡眠片段化或恢复不足，第二天更容易出现交感兴奋、食欲波动和运动耐受下降。`,
+      iconKey: 'sleep',
+      tone: 'blue'
+    });
+  }
+
+  if (patient?.score !== null && patient?.highlightMetrics?.length) {
+    const keyMetric = patient.highlightMetrics.find(item => item.isWarning) || patient.highlightMetrics[0];
+    if (keyMetric) {
+      insights.push({
+        title: '综合评分来源不是单一指标',
+        text: `当前综合评分 ${patient.score} 分并不是由单一项目决定，而是结合${keyMetric.label}${keyMetric.value}${keyMetric.unit ? ` ${keyMetric.unit}` : ''}、睡眠表现、压力状态、体成分以及生化指标共同得出，因此干预方案也必须同步覆盖饮食、运动、作息与恢复。`,
+        iconKey: 'summary',
+        tone: 'green'
+      });
+    }
+  }
+
+  const unique = [];
+  const seen = new Set();
+  insights.forEach(item => {
+    const key = `${item.title}-${item.text}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      unique.push(item);
+    }
+  });
+
+  return unique.slice(0, 4);
+};
+
+const pushUniqueAdviceItem = (list, item, maxLength = 6) => {
   if (!item?.title || !item?.text || list.length >= maxLength) return;
   const key = `${item.title}-${item.text}`;
   if (!list.some(current => `${current.title}-${current.text}` === key)) {
@@ -2002,115 +2040,172 @@ const buildAdviceItems = (patient, type) => {
   });
   const weightMetric = (patient?.highlightMetrics || []).find(item => String(item?.label || '').includes('体重'));
   const score = patient?.score ?? null;
+  const biochemicalAssessment = patient?.biochemicalAssessment || getBiochemicalAssessment(patient);
+  const bloodGlucoseStatus = biochemicalAssessment.statuses?.find(item => item.label === '血糖');
+  const bloodPressureStatus = biochemicalAssessment.statuses?.find(item => item.label === '血压');
+  const bloodLipidsStatus = biochemicalAssessment.statuses?.find(item => item.label === '血脂');
+  const uricAcidStatus = biochemicalAssessment.statuses?.find(item => item.label === '尿酸');
 
   if (hasMeaningfulValue(sleepSummary)) {
     pushUniqueAdviceItem(healthAdvice, {
       title: '规律作息',
-      text: String(sleepSummary).split(/[。；\n]/).map(item => item.trim()).filter(Boolean)[0],
+      text: `结合睡眠监测结果，当前报告提示${String(sleepSummary).split(/[。；\n]/).map(item => item.trim()).filter(Boolean)[0]}。建议将入睡、起床、光照暴露和晚间电子设备控制同步纳入管理，否则血糖、血压和恢复能力往往会一起受影响。`,
       iconKey: 'sleep'
     });
     pushUniqueAdviceItem(dietAdvice, {
       title: '晚间饮食控制',
-      text: '结合睡眠监测结果，建议晚间减少浓茶、咖啡及高糖夜宵摄入。',
+      text: '结合睡眠监测结果，建议晚间减少浓茶、咖啡及高糖夜宵摄入，晚餐尽量提前到睡前 3 小时完成；如果本身存在血糖或血脂异常，夜间加餐会进一步放大代谢负担。',
       iconKey: 'sleep'
+    });
+  }
+
+  if (bloodGlucoseStatus && /(偏高|临界)/.test(bloodGlucoseStatus.status)) {
+    pushUniqueAdviceItem(healthAdvice, {
+      title: '优先稳住血糖波动',
+      text: `当前${bloodGlucoseStatus.label}${bloodGlucoseStatus.value}${bloodGlucoseStatus.status}，建议连续 2-4 周记录空腹或餐后血糖、三餐时间和运动时间，并将睡眠不足、情绪紧张和久坐时段一起记录，便于判断波动触发因素。`,
+      iconKey: 'summary'
+    });
+    pushUniqueAdviceItem(dietAdvice, {
+      title: '控糖同时保留蛋白与纤维',
+      text: `针对${bloodGlucoseStatus.label}${bloodGlucoseStatus.value}，主食不宜一次性过量，优先粗杂粮、豆类和高纤维蔬菜，搭配足量蛋白质以降低餐后波动；若同时体脂偏高，更要减少精制糖和含糖饮料。`,
+      iconKey: 'diet'
+    });
+  }
+
+  if (bloodPressureStatus && /(偏高|临界)/.test(bloodPressureStatus.status)) {
+    pushUniqueAdviceItem(healthAdvice, {
+      title: '血压管理要和压力恢复同步',
+      text: `当前${bloodPressureStatus.label}${bloodPressureStatus.value}${bloodPressureStatus.status}，建议把晨起血压、睡眠时长、情绪压力和每日步数放在同一张记录表里观察；很多血压波动并非单独出现，而是与睡眠不足和交感神经兴奋共同加重。`,
+      iconKey: 'stress'
+    });
+    pushUniqueAdviceItem(dietAdvice, {
+      title: '限盐并控制加工食品',
+      text: `针对${bloodPressureStatus.label}${bloodPressureStatus.value}，建议每日盐摄入控制在 5g 以内，减少腌制品、卤味、外卖汤汁和高钠零食；如果还伴随血脂或体脂偏高，需同步减少油炸和高热量外食。`,
+      iconKey: 'diet'
+    });
+  }
+
+  if (bloodLipidsStatus && /(偏高|临界)/.test(bloodLipidsStatus.status)) {
+    pushUniqueAdviceItem(healthAdvice, {
+      title: '血脂改善依赖体脂与活动量',
+      text: `当前${bloodLipidsStatus.label}${bloodLipidsStatus.value}${bloodLipidsStatus.status}，单靠短期忌口通常不够，建议同时结合腰围、体重、体脂、步数和每周运动总量来追踪；只有形成持续热量缺口并保住肌肉量，血脂改善才更稳定。`,
+      iconKey: 'body'
+    });
+    pushUniqueAdviceItem(dietAdvice, {
+      title: '减少饱和脂肪与精制零食',
+      text: `结合${bloodLipidsStatus.label}${bloodLipidsStatus.value}，优先减少肥肉、奶茶、糕点、油炸小吃和反式脂肪来源，改用深海鱼、豆制品、坚果和橄榄油等更有利于脂代谢的食物结构。`,
+      iconKey: 'obesity'
+    });
+  }
+
+  if (uricAcidStatus && /偏高/.test(uricAcidStatus.status)) {
+    pushUniqueAdviceItem(healthAdvice, {
+      title: '尿酸管理要结合补水与恢复',
+      text: `当前${uricAcidStatus.label}${uricAcidStatus.value}${uricAcidStatus.status}，建议把每日饮水量、出汗情况、睡眠时长与运动强度一起管理；熬夜、脱水和高强度训练叠加时，尿酸波动通常会更明显。`,
+      iconKey: 'summary'
+    });
+    pushUniqueAdviceItem(dietAdvice, {
+      title: '控制高嘌呤与酒精摄入',
+      text: `针对${uricAcidStatus.label}${uricAcidStatus.value}，建议减少浓肉汤、动物内脏、啤酒、海鲜火锅和高果糖饮料，优先选择清淡烹调、足量饮水和稳定进食节奏，避免暴饮暴食后尿酸突然上升。`,
+      iconKey: 'diet'
     });
   }
 
   warningMetrics.forEach(metric => {
     const valueText = `${metric.value}${metric.unit ? ` ${metric.unit}` : ''}`.trim();
-    if ((metric.label.includes('压力') || metric.label.includes('神经')) && healthAdvice.length < 4) {
+    if ((metric.label.includes('压力') || metric.label.includes('神经')) && healthAdvice.length < 6) {
       pushUniqueAdviceItem(healthAdvice, {
         title: '减压恢复',
-        text: `${metric.label}当前为 ${valueText}，建议增加轻运动、呼吸训练和规律休息。`,
+        text: `${metric.label}当前为 ${valueText}，说明当前恢复和神经调节可能承压，建议将呼吸训练、晚间放松、午后咖啡因控制和固定休息时间一起执行，否则睡眠、血压和主观疲劳往往会一起恶化。`,
         iconKey: 'stress'
       });
     }
 
-    if ((metric.label.includes('BMI') || metric.label.includes('体脂') || metric.label.includes('脂肪') || metric.label.includes('体重')) && dietAdvice.length < 4) {
+    if ((metric.label.includes('BMI') || metric.label.includes('体脂') || metric.label.includes('脂肪') || metric.label.includes('体重')) && dietAdvice.length < 6) {
       pushUniqueAdviceItem(dietAdvice, {
         title: '饮食管理',
-        text: `${metric.label}当前为 ${valueText}，建议减少油炸、精制糖和高热量零食摄入。`,
+        text: `${metric.label}当前为 ${valueText}，建议减少油炸、精制糖和高热量零食摄入，并把主食份量、蛋白质占比和晚餐时间一起管理；如果同时合并血脂或血糖偏高，更不能只做“少吃”而忽略结构调整。`,
         iconKey: 'obesity'
       });
     }
 
-    if ((metric.label.includes('肌肉') || metric.label.includes('水分')) && healthAdvice.length < 4) {
+    if ((metric.label.includes('肌肉') || metric.label.includes('水分')) && healthAdvice.length < 6) {
       pushUniqueAdviceItem(healthAdvice, {
         title: '体成分维护',
-        text: `${metric.label}当前为 ${valueText}，建议保持规律训练并关注蛋白质和饮水摄入。`,
+        text: `${metric.label}当前为 ${valueText}，建议保持规律训练并关注蛋白质和饮水摄入；如果正在减重或控糖，尤其要避免体重下降过快却伴随肌肉量和恢复能力一起下降。`,
         iconKey: 'body'
       });
     }
   });
 
-  if (healthAdvice.length < 4) {
+  if (healthAdvice.length < 6) {
     pushUniqueAdviceItem(healthAdvice, {
       title: '固定作息节律',
-      text: '建议尽量保持固定上床和起床时间，睡前 1 小时减少手机和高刺激内容，帮助睡眠质量逐步稳定。',
+      text: '建议尽量保持固定上床和起床时间，睡前 1 小时减少手机和高刺激内容，帮助睡眠质量逐步稳定；稳定的昼夜节律不仅影响精力状态，也会影响血糖、食欲和血压控制。',
       iconKey: 'sleep'
     });
   }
 
-  if (healthAdvice.length < 4 && score !== null) {
+  if (healthAdvice.length < 6 && score !== null) {
     pushUniqueAdviceItem(healthAdvice, {
       title: '循序改善状态',
-      text: `当前综合评分为 ${score} 分，建议先稳住作息、步行和拉伸等基础习惯，再逐步增加训练和生活管理强度。`,
+      text: `当前综合评分为 ${score} 分，建议先稳住作息、步行和拉伸等基础习惯，再逐步增加训练和生活管理强度；评分提升通常来自睡眠、压力、体成分与生化指标的同步改善，而不是单点突击。`,
       iconKey: 'summary'
     });
   }
 
-  if (healthAdvice.length < 4) {
+  if (healthAdvice.length < 6) {
     pushUniqueAdviceItem(healthAdvice, {
       title: '增加日间活动',
-      text: '建议每工作 1 小时起身活动 3-5 分钟，并将步行、拉伸和轻量力量训练安排进日常节奏。',
+      text: '建议每工作 1 小时起身活动 3-5 分钟，并将步行、拉伸和轻量力量训练安排进日常节奏；这种看似基础的活动量管理，对餐后血糖、体脂和血压波动都有实际帮助。',
       iconKey: 'body'
     });
   }
 
-  if (healthAdvice.length < 4) {
+  if (healthAdvice.length < 6) {
     pushUniqueAdviceItem(healthAdvice, {
       title: '重视恢复管理',
-      text: '每周安排 1-2 天低强度恢复，配合补水、舒缓拉伸和呼吸放松，减少持续疲劳对状态的影响。',
+      text: '每周安排 1-2 天低强度恢复，配合补水、舒缓拉伸和呼吸放松，减少持续疲劳对状态的影响；如果存在尿酸偏高、压力偏高或睡眠效率下降，这一步尤其重要。',
       iconKey: 'stress'
     });
   }
 
-  if (dietAdvice.length < 4 && bmiRow?.value) {
+  if (dietAdvice.length < 6 && bmiRow?.value) {
     pushUniqueAdviceItem(dietAdvice, {
       title: '关注 BMI 管理',
-      text: `当前 BMI 为 ${bmiRow.value}，建议主食定量、晚餐不过饱，并优先采用蒸煮炖等低油烹调方式。`,
+      text: `当前 BMI 为 ${bmiRow.value}，建议主食定量、晚餐不过饱，并优先采用蒸煮炖等低油烹调方式；若同时伴随血脂或血糖异常，更要避免“白天忍、晚上补”的进食模式。`,
       iconKey: 'obesity'
     });
   }
 
-  if (dietAdvice.length < 4 && bodyFatRow?.value) {
+  if (dietAdvice.length < 6 && bodyFatRow?.value) {
     pushUniqueAdviceItem(dietAdvice, {
       title: '优化体脂饮食结构',
-      text: `当前${bodyFatRow.item || bodyFatRow.metric}为 ${bodyFatRow.value}${bodyFatRow.unit ? ` ${bodyFatRow.unit}` : ''}，建议减少含糖饮料和高油零食，提高蔬菜与蛋白质占比。`,
+      text: `当前${bodyFatRow.item || bodyFatRow.metric}为 ${bodyFatRow.value}${bodyFatRow.unit ? ` ${bodyFatRow.unit}` : ''}，建议减少含糖饮料和高油零食，提高蔬菜与蛋白质占比；体脂控制得越稳定，血脂、血压和运动耐受度改善通常越明显。`,
       iconKey: 'obesity'
     });
   }
 
-  if (dietAdvice.length < 4 && weightMetric?.value) {
+  if (dietAdvice.length < 6 && weightMetric?.value) {
     pushUniqueAdviceItem(dietAdvice, {
       title: '规律三餐摄入',
-      text: `结合当前体重 ${weightMetric.value}${weightMetric.unit ? ` ${weightMetric.unit}` : ''}，建议保持规律三餐，避免长时间空腹后暴食或夜间加餐。`,
+      text: `结合当前体重 ${weightMetric.value}${weightMetric.unit ? ` ${weightMetric.unit}` : ''}，建议保持规律三餐，避免长时间空腹后暴食或夜间加餐；进食节律越混乱，越容易同时影响血糖波动、体脂累积和夜间睡眠质量。`,
       iconKey: 'diet'
     });
   }
 
-  if (dietAdvice.length < 4) {
+  if (dietAdvice.length < 6) {
     pushUniqueAdviceItem(dietAdvice, {
       title: '优先高蛋白早餐',
-      text: '早餐可优先选择鸡蛋、牛奶、无糖酸奶、豆制品等优质蛋白，帮助提升饱腹感并减少全天额外进食。',
+      text: '早餐可优先选择鸡蛋、牛奶、无糖酸奶、豆制品等优质蛋白，帮助提升饱腹感并减少全天额外进食；如果需要控糖或控脂，早餐更不能只吃精制碳水。',
       iconKey: 'diet'
     });
   }
 
-  if (dietAdvice.length < 4) {
+  if (dietAdvice.length < 6) {
     pushUniqueAdviceItem(dietAdvice, {
       title: '补充蔬果与饮水',
-      text: '建议每日保证足量饮水，并在两餐中加入深色蔬菜、水果和粗杂粮，帮助控制总热量并改善代谢状态。',
+      text: '建议每日保证足量饮水，并在两餐中加入深色蔬菜、水果和粗杂粮，帮助控制总热量并改善代谢状态；若尿酸偏高，应把补水和低嘌呤饮食同时执行，而不是只靠单一控制。',
       iconKey: 'diet'
     });
   }
@@ -2122,7 +2217,7 @@ const buildAdviceItems = (patient, type) => {
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
-    }).slice(0, 4);
+    }).slice(0, 6);
   };
 
   return type === 'diet' ? deduped(dietAdvice) : deduped(healthAdvice);
@@ -2134,8 +2229,11 @@ const buildDietTags = (dietAdvice) => {
     if (item.text.includes('高热量') || item.text.includes('精制糖')) tags.push('控糖控油');
     if (item.text.includes('蛋白质')) tags.push('优质蛋白');
     if (item.text.includes('夜宵')) tags.push('晚餐清淡');
+    if (item.text.includes('嘌呤') || item.text.includes('尿酸')) tags.push('低嘌呤');
+    if (item.text.includes('限盐') || item.text.includes('高钠') || item.text.includes('血压')) tags.push('限盐管理');
+    if (item.text.includes('粗杂粮') || item.text.includes('纤维')) tags.push('高纤维');
   });
-  return [...new Set(tags)].slice(0, 4);
+  return [...new Set(tags)].slice(0, 6);
 };
 
 const ensurePatientGuidance = async (patient) => {
@@ -2151,6 +2249,7 @@ const ensurePatientGuidance = async (patient) => {
       ...aiGuidanceMap.value,
       [patient.id]: {
         summary: normalizeValue(result?.summary),
+        crossAnalysis: normalizeAiCrossAnalysis(result?.crossAnalysis),
         healthAdvice: normalizeAiAdviceItems(result?.healthAdvice, 'summary'),
         dietAdvice: normalizeAiAdviceItems(result?.dietAdvice, 'obesity'),
         exerciseAdvice: normalizeAiAdviceItems(result?.exerciseAdvice, 'body'),
@@ -2171,8 +2270,10 @@ const reportViewModel = computed(() => {
 
   const stressTable = getPatientSection(patient, 'stress-table') || { columns: [], rows: [] };
   const stressStats = buildStressStats(patient);
+  const stressOverview = buildStressOverview(patient);
   const fallbackDietAdvice = buildAdviceItems(patient, 'diet');
   const aiGuidance = aiGuidanceMap.value[patient.id] || null;
+  const crossAnalysis = aiGuidance?.crossAnalysis?.length ? aiGuidance.crossAnalysis : buildCrossAnalysis(patient);
   const healthAdvice = aiGuidance?.healthAdvice?.length ? aiGuidance.healthAdvice : buildAdviceItems(patient, 'health');
   const dietAdvice = aiGuidance?.dietAdvice?.length ? aiGuidance.dietAdvice : fallbackDietAdvice;
   const exerciseAdvice = aiGuidance?.exerciseAdvice?.length ? aiGuidance.exerciseAdvice : buildExerciseAdvice(patient);
@@ -2186,10 +2287,13 @@ const reportViewModel = computed(() => {
     sleepInsights: buildSleepInsights(patient),
     stressTable,
     stressStats,
+    stressOverview,
     stressMarkers: buildStressMarkers(stressStats),
     bodyPairs: buildBodyPairs(patient),
     bodyBars: buildBodyBars(patient),
     obesityCards: buildObesityCards(patient),
+    manualMetricsPairs: buildManualMetricsPairs(patient),
+    crossAnalysis,
     exerciseAdvice,
     exerciseAdvicePreview,
     healthAdvice,
@@ -2295,15 +2399,7 @@ const exportReportForH5 = async () => {
         ${styleText}
         <style>
           @page { size: 297mm 167.0625mm; margin: 0; }
-          html, body { 
-            background: #dfe8f4 !important; 
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          * {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
+          html, body { background: #dfe8f4 !important; }
           body {
             margin: 0;
             padding: 0;
@@ -2344,7 +2440,7 @@ const exportReportForH5 = async () => {
             width: 100%;
             height: 100%;
             box-sizing: border-box;
-            padding: 14px 16px;
+            padding: 10px 12px;
             overflow: hidden;
           }
           .print-page-scale {
@@ -2355,13 +2451,13 @@ const exportReportForH5 = async () => {
           .print-page-surface {
             min-height: calc(167.0625mm - 28px);
             box-sizing: border-box;
-            padding: 14px;
+            padding: 10px;
             border-radius: 18px;
             background: linear-gradient(180deg, #fefefe 0%, #f7fbff 100%);
             box-shadow: inset 0 0 0 1px #dce7f6;
           }
           .print-page-item + .print-page-item {
-            margin-top: 10px;
+            margin-top: 8px;
           }
           .print-page.has-document-footer .print-page-surface {
             display: flex;
@@ -2413,11 +2509,11 @@ const exportReportForH5 = async () => {
             margin-bottom: 0;
           }
           .print-page .reference-report {
-            gap: 10px;
+            gap: 8px;
           }
           .print-page .reference-header {
-            gap: 10px;
-            padding: 12px 14px;
+            gap: 8px;
+            padding: 10px 12px;
           }
           .print-page .reference-title-text h2 {
             font-size: 28px;
@@ -2452,19 +2548,15 @@ const exportReportForH5 = async () => {
             font-size: 11px;
           }
           .print-page .reference-row {
-            grid-template-columns: minmax(0, 1.08fr) minmax(260px, 0.92fr);
+            grid-template-columns: minmax(0, 1.14fr) minmax(226px, 0.92fr);
             gap: 8px;
-            align-items: start;
           }
           .print-page .reference-row-bottom {
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 10px;
-          }
-          .print-page .reference-row-single {
-            grid-template-columns: 1fr;
+            gap: 8px;
           }
           .print-page .reference-section-body {
-            padding: 9px 10px 10px;
+            padding: 8px 8px 9px;
           }
           .print-page .reference-section-title {
             min-height: 28px;
@@ -2516,7 +2608,9 @@ const exportReportForH5 = async () => {
           .print-page .guidance-summary,
           .print-page .guidance-status,
           .print-page .exercise-advice-box,
-          .print-page .reference-balance-box {
+          .print-page .reference-balance-box,
+          .print-page .stress-overview-box,
+          .print-page .autonomic-age-panel {
             margin-bottom: 7px;
             padding: 7px 8px;
           }
@@ -2525,62 +2619,9 @@ const exportReportForH5 = async () => {
           .print-page .stress-energy-card {
             gap: 8px;
           }
-          .print-page .autonomic-age-panel {
-            grid-template-columns: 1fr;
-            justify-items: center;
-          }
-          .print-page .autonomic-age-summary {
-            align-items: center;
-            text-align: center;
-          }
-          .print-page .stress-overview-main {
-            grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-            justify-items: center;
-          }
           .print-page .autonomic-pie-svg {
-            width: 230px;
-            height: 182px;
-          }
-          .print-page .stress-type-svg {
-            width: 330px !important;
-            height: auto !important;
-            max-width: 100% !important;
-          }
-          .print-page .stress-energy-svg {
-            width: 250px !important;
-            height: auto !important;
-            max-width: 100% !important;
-          }
-          .print-page .print-chart-image.autonomic-pie-svg {
-            width: 230px !important;
-            height: auto !important;
-            max-width: 100% !important;
-          }
-          .print-page .print-chart-image.stress-type-svg {
-            width: 330px !important;
-            height: auto !important;
-            max-width: 100% !important;
-          }
-          .print-page .print-chart-image.stress-energy-svg {
-            width: 250px !important;
-            height: auto !important;
-            max-width: 100% !important;
-          }
-          .print-page .stress-overview-box {
-            padding: 4px 2px 0 !important;
-            border: none !important;
-            background: transparent !important;
-          }
-          .print-page .stress-overview-detail-title {
-            font-size: 16px !important;
-          }
-          .print-page .stress-overview-detail-heading {
-            font-size: 11px !important;
-          }
-          .print-page .stress-overview-detail-block p,
-          .print-page .stress-overview-desc {
-            font-size: 10px !important;
-            line-height: 1.6 !important;
+            width: 160px;
+            height: 126px;
           }
           .print-page .autonomic-balance-donut,
           .print-page .stress-energy-donut {
@@ -2602,9 +2643,6 @@ const exportReportForH5 = async () => {
           .print-page .stress-energy-metric,
           .print-page .stress-type-card {
             padding: 7px 8px;
-          }
-          .print-page .stress-energy-card {
-            justify-content: center;
           }
           .print-page .reference-tag {
             min-height: 24px;
@@ -2653,7 +2691,7 @@ const exportReportForH5 = async () => {
           <div id="print-pages" class="print-pages"></div>
         </div>
         <script>
-          (async function() {
+          (function() {
             const sourceRoot = document.querySelector('#print-source .report-paper');
             const pagesHost = document.getElementById('print-pages');
 
@@ -2662,33 +2700,6 @@ const exportReportForH5 = async () => {
               return;
             }
 
-            const resolveSvgSize = (svg) => {
-              const viewBox = (svg.getAttribute('viewBox') || '').split(/\\s+/).map(Number);
-              const rect = svg.getBoundingClientRect();
-              const width = Math.round(rect.width || Number(svg.getAttribute('width')) || viewBox[2] || 200);
-              const height = Math.round(rect.height || Number(svg.getAttribute('height')) || viewBox[3] || 200);
-              return { width, height };
-            };
-
-            const normalizePrintableSvg = (svg) => {
-              const { width, height } = resolveSvgSize(svg);
-              svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-              svg.setAttribute('width', String(width));
-              svg.setAttribute('height', String(height));
-              svg.style.overflow = 'visible';
-              svg.style.display = 'block';
-              svg.style.maxWidth = '100%';
-            };
-
-            const preparePrintableCharts = (root) => {
-              const charts = Array.from(root.querySelectorAll('[data-print-chart]'));
-              for (const chart of charts) {
-                normalizePrintableSvg(chart);
-              }
-            };
-
-            preparePrintableCharts(sourceRoot);
-
             const header = sourceRoot.querySelector('.reference-header');
             const report = sourceRoot.querySelector('.reference-report');
             const footer = sourceRoot.querySelector('.paper-footer');
@@ -2696,6 +2707,7 @@ const exportReportForH5 = async () => {
               ? Array.from(report.children).filter((node) => node.classList && node.classList.contains('reference-row'))
               : [];
             const items = [header, ...rowNodes, footer].filter(Boolean).map((node) => node.cloneNode(true));
+            const MIN_PAGE_SCALE = 0.84;
 
             const createPage = () => {
               const page = document.createElement('section');
@@ -2729,6 +2741,10 @@ const exportReportForH5 = async () => {
               pageObj.page.style.setProperty('--page-scale', scaleValue.toFixed(4));
             };
 
+            const wouldFitWithScale = (pageObj) => {
+              return pageObj.scale.scrollHeight <= (pageObj.frame.clientHeight / MIN_PAGE_SCALE) + 2;
+            };
+
             let currentPage = createPage();
 
             items.forEach((item) => {
@@ -2739,6 +2755,9 @@ const exportReportForH5 = async () => {
 
               const exceedsPage = currentPage.scale.scrollHeight > currentPage.frame.clientHeight + 2;
               if (exceedsPage && currentPage.content.children.length > 1) {
+                if (wouldFitWithScale(currentPage)) {
+                  return;
+                }
                 currentPage.content.removeChild(holder);
                 finalizePage(currentPage);
                 currentPage = createPage();
@@ -3865,11 +3884,7 @@ const exportReport = async () => {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(320px, 1fr);
   gap: 14px;
-  align-items: start;
-}
-
-.reference-row-single {
-  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
 }
 
 .reference-row-bottom {
@@ -4156,8 +4171,8 @@ const exportReport = async () => {
 
 .autonomic-age-panel {
   display: grid;
-  grid-template-columns: minmax(300px, 0.95fr) minmax(0, 1.05fr);
-  gap: 18px;
+  grid-template-columns: minmax(160px, 0.95fr) minmax(0, 1.05fr);
+  gap: 14px;
   padding: 14px;
   border-radius: 18px;
   border: 1px solid #dfe8f6;
@@ -4173,8 +4188,8 @@ const exportReport = async () => {
 }
 
 .autonomic-pie-svg {
-  width: 300px;
-  height: 236px;
+  width: 230px;
+  height: 180px;
   overflow: visible;
 }
 
@@ -4291,179 +4306,114 @@ const exportReport = async () => {
 
 .stress-overview-box {
   margin-top: 14px;
-  padding: 12px 4px 6px;
-  border-radius: 0;
-  border: none;
-  background: transparent;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid #dfe8f6;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
 }
 
 .stress-overview-title {
   font-size: 16px;
   font-weight: 800;
-  color: #222;
+  color: #205daf;
 }
 
 .stress-overview-main {
   margin-top: 12px;
   display: grid;
-  grid-template-columns: minmax(340px, 1.15fr) minmax(280px, 0.85fr);
-  gap: 28px;
-  align-items: center;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  gap: 12px;
+  align-items: stretch;
 }
 
 .stress-type-card {
-  padding: 2px 0 0;
-  border-radius: 0;
-  background: transparent;
-  border: none;
+  padding: 14px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f4f9ff 0%, #ffffff 100%);
+  border: 1px solid #dde8f7;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
 }
 
-.stress-type-svg {
-  width: 100%;
-  max-width: 560px;
-  height: auto;
-  display: block;
-  overflow: visible;
+.stress-type-value {
+  margin-top: 8px;
+  font-size: 28px;
+  line-height: 1.1;
+  font-weight: 800;
+  color: #2a3448;
 }
 
-.stress-type-ring-text {
-  fill: #2d3138;
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.3px;
-}
-
-.stress-type-center-label {
-  fill: #ffffff;
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 1px;
-}
-
-.stress-type-callout-text {
-  fill: #2b241f;
-  font-size: 13px;
-  font-weight: 700;
+.stress-type-desc {
+  margin-top: 10px;
+  font-size: 12px;
+  line-height: 1.8;
+  color: #5b7598;
 }
 
 .stress-energy-card {
-  padding: 0;
-  border-radius: 0;
-  border: none;
-  background: transparent;
-  display: flex;
-  flex-direction: column;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid #dde8f7;
+  background: linear-gradient(180deg, #fbfdff 0%, #f4f9ff 100%);
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr);
+  gap: 12px;
   align-items: center;
-  justify-content: center;
 }
 
-.stress-energy-svg {
-  width: 100%;
-  max-width: 430px;
-  height: auto;
+.stress-energy-donut {
+  width: 132px;
+  height: 132px;
+  box-shadow: 0 10px 22px rgba(76, 111, 188, 0.14);
+}
+
+.stress-energy-value {
+  margin-top: 4px;
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 800;
+  color: #263248;
+}
+
+.stress-energy-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.stress-energy-metric {
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #e2eaf8;
+}
+
+.stress-energy-metric span {
   display: block;
-  overflow: visible;
-}
-
-.stress-energy-percent {
-  fill: #222;
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.stress-energy-ring-text {
-  fill: #ffffff;
   font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.2px;
+  color: #7a90ac;
 }
 
-.stress-energy-center-label {
-  fill: #ffffff;
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 1px;
-}
-
-.stress-energy-score {
-  fill: #ffffff;
-  font-size: 16px;
-  font-weight: 800;
-}
-
-.stress-energy-footer {
-  margin-top: 2px;
-  text-align: center;
-}
-
-.stress-energy-summary {
-  font-size: 18px;
-  line-height: 1.4;
-  color: #1f1f1f;
-  font-weight: 800;
-}
-
-.stress-energy-range {
-  margin-top: 6px;
-  font-size: 14px;
-  line-height: 1.6;
-  color: #5f6c7f;
-}
-
-.stress-overview-detail {
-  margin-top: 14px;
-  padding: 2px 2px 0;
-  color: #1f1f1f;
-}
-
-.stress-overview-detail-title {
-  font-size: 22px;
-  line-height: 1.2;
-  font-weight: 800;
-  color: #1f1f1f;
-}
-
-.stress-overview-detail-block {
-  margin-top: 16px;
-}
-
-.stress-overview-detail-heading {
+.stress-energy-metric strong {
+  display: block;
+  margin-top: 3px;
   font-size: 15px;
-  line-height: 1.4;
-  font-weight: 800;
-  color: #232323;
-}
-
-.stress-overview-detail-block p {
-  margin: 6px 0 0;
-  font-size: 13px;
-  line-height: 1.8;
-  color: #303030;
-}
-
-.stress-overview-desc {
-  margin-top: 14px;
-  font-size: 12px;
-  line-height: 1.75;
-  color: #4a4a4a;
+  color: #235fae;
 }
 
 .stress-overview-notes {
-  margin-top: 16px;
+  margin-top: 12px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
 }
 
 .stress-overview-note {
-  padding: 12px 12px;
+  padding: 10px 11px;
   border-radius: 14px;
   border: 1px solid #e2e9f7;
-  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
-  box-shadow: 0 10px 24px rgba(38, 83, 151, 0.08);
+  background: #fff;
 }
 
 .stress-overview-note-label {
@@ -4485,6 +4435,7 @@ const exportReport = async () => {
   line-height: 1.7;
   color: #617896;
 }
+
 .reference-balance-box {
   margin-top: 12px;
   padding: 12px;
@@ -4794,16 +4745,6 @@ const exportReport = async () => {
     font-size: 24px;
   }
 
-  .stress-overview-main {
-    gap: 10px;
-  }
-
-  .stress-type-svg,
-  .stress-energy-svg {
-    max-width: 300px;
-  }
-
-
   .autonomic-age-panel,
   .stress-overview-main,
   .stress-energy-card,
@@ -4834,6 +4775,7 @@ const exportReport = async () => {
   .autonomic-balance-donut {
     margin: 0 auto;
   }
+
   .metric-chip-row,
   .summary-card-grid,
   .mini-kv-grid,

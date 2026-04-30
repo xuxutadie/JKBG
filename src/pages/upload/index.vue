@@ -64,8 +64,43 @@
 
       <!-- 右侧：解析结果预览区 -->
       <div class="right-panel boxall">
-        <div class="panel-title">AI 解析数据核验区</div>
+        <div class="panel-title">AI 解析数据核验与手动录入区</div>
         
+        <!-- 手动录入区 -->
+        <div class="data-section anim-slide-up" style="margin-top: 20px; margin-bottom: 20px;">
+          <h4 class="section-title"><span class="indicator"></span>手动生化指标录入</h4>
+          <div class="profile-grid">
+            <div class="data-card">
+              <span class="label">血糖</span>
+              <div class="value-wrapper">
+                <input class="value-input" v-model="manualMetrics.bloodGlucose" placeholder="如: 5.5" />
+                <small class="unit">mmol/L</small>
+              </div>
+            </div>
+            <div class="data-card">
+              <span class="label">血压</span>
+              <div class="value-wrapper">
+                <input class="value-input" v-model="manualMetrics.bloodPressure" placeholder="如: 120/80" />
+                <small class="unit">mmHg</small>
+              </div>
+            </div>
+            <div class="data-card">
+              <span class="label">血脂</span>
+              <div class="value-wrapper">
+                <input class="value-input" v-model="manualMetrics.bloodLipids" placeholder="如: 4.5" />
+                <small class="unit">mmol/L</small>
+              </div>
+            </div>
+            <div class="data-card">
+              <span class="label">尿酸</span>
+              <div class="value-wrapper">
+                <input class="value-input" v-model="manualMetrics.uricAcid" placeholder="如: 300" />
+                <small class="unit">μmol/L</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="empty-state" v-if="parsedReports.length === 0">
           <div class="empty-content">
             <img src="/static/images/icon1.png" style="width: 60px; opacity: 0.2; filter: brightness(0) invert(1);" />
@@ -317,11 +352,11 @@
             </div>
           </div>
           </div>
-
-          <div class="action-btn-group" style="margin-top: 40px;">
-            <button class="secondary-btn" @click="resetData">重新上传</button>
-            <button class="primary-btn save-btn" @click="saveToDatabase">确认无误，存入档案</button>
-          </div>
+        </div>
+        
+        <div class="action-btn-group" style="margin-top: 40px; margin-bottom: 20px;">
+          <button class="secondary-btn" @click="resetData">重新上传/清空</button>
+          <button class="primary-btn save-btn" @click="saveToDatabase">确认无误，存入档案</button>
         </div>
       </div>
     </div>
@@ -340,6 +375,13 @@ const isParsing = ref(false);
 const parsedData = ref(null);
 const parsedReports = ref([]);
 const fileInput = ref(null);
+
+const manualMetrics = ref({
+  bloodGlucose: '', // 血糖
+  bloodPressure: '', // 血压
+  bloodLipids: '', // 血脂
+  uricAcid: '' // 尿酸
+});
 
 const totalProgress = computed(() => {
   if (files.value.length === 0) return 0;
@@ -855,6 +897,12 @@ const resetData = () => {
   parsedData.value = null;
   parsedReports.value = [];
   isParsing.value = false;
+  manualMetrics.value = {
+    bloodGlucose: '',
+    bloodPressure: '',
+    bloodLipids: '',
+    uricAcid: ''
+  };
 };
 
 const hasMeaningfulValue = (value) => {
@@ -1046,7 +1094,10 @@ const saveToDatabase = () => {
     date: getDate(),
     score: getScore(),
     sourceLabels: Array.isArray(mergedReport.sourceTypes) ? mergedReport.sourceTypes : [],
-    reportData: mergedReport
+    reportData: {
+      ...mergedReport,
+      manualMetrics: manualMetrics.value
+    }
   })
     .then(() => {
       uni.hideLoading();
