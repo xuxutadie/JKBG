@@ -273,7 +273,7 @@
 
               <div class="reference-row" v-if="reportViewModel.manualMetricsPairs.length">
                 <div class="reference-section reference-section-main" style="flex: 1;">
-                  <div class="reference-section-title tone-red">生化指标 (手动录入)</div>
+                  <div class="reference-section-title tone-red">生化指标</div>
                   <div class="reference-section-body">
                     <table class="reference-pairs-table">
                       <tbody>
@@ -996,7 +996,7 @@ const buildReportGroups = (sections, metricSummary, profileSummary) => {
     key: 'manual',
     index: '1.5',
     title: '生化指标',
-    subtitle: '手动录入数据',
+    subtitle: '核心指标数据',
     tone: 'red',
     layout: 'compact',
     keys: ['manual-metrics']
