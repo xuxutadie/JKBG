@@ -154,7 +154,7 @@
                 </div>
               </div>
 
-              <div class="reference-row">
+              <div class="reference-row reference-row-single">
                 <div class="reference-section reference-section-main">
                   <div class="reference-section-title tone-blue">2 自律神经检测结果</div>
                   <div class="reference-section-body">
@@ -173,27 +173,19 @@
                     <div class="reference-empty-block" v-else>暂无可展示的自律神经检测数据</div>
                   </div>
                 </div>
+              </div>
 
-                <div class="reference-section reference-section-side">
+              <div class="reference-row reference-row-single">
+                <div class="reference-section reference-section-side reference-section-stress-overview">
                   <div class="reference-section-title tone-green">自律神经年龄与总体评估</div>
                   <div class="reference-section-body">
                     <div class="autonomic-age-panel" v-if="reportViewModel.stressOverview.hasAge || reportViewModel.stressOverview.hasBalance">
                       <div class="autonomic-age-chart">
-                        <svg class="autonomic-pie-svg" viewBox="0 0 280 220" aria-hidden="true">
-                          <defs>
-                            <pattern :id="reportViewModel.stressOverview.symPatternId" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
-                              <rect width="8" height="8" fill="#ff2f2f" />
-                              <line x1="0" y1="0" x2="0" y2="8" stroke="#ffd5d5" stroke-width="2" />
-                            </pattern>
-                            <pattern :id="reportViewModel.stressOverview.vagPatternId" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
-                              <rect width="8" height="8" fill="#1f43ff" />
-                              <line x1="0" y1="0" x2="0" y2="8" stroke="#9fb3ff" stroke-width="2" />
-                            </pattern>
-                          </defs>
+                        <svg class="autonomic-pie-svg" viewBox="0 0 280 220" aria-hidden="true" data-print-chart="stress-age">
                           <g class="autonomic-pie-scale">
                             <text v-for="tick in reportViewModel.stressOverview.ageTicks" :key="`age-tick-${tick.label}`" class="autonomic-pie-tick" :x="tick.x" :y="tick.y">{{ tick.label }}</text>
-                            <circle cx="132" cy="98" r="70" :fill="`url(#${reportViewModel.stressOverview.vagPatternId})`" />
-                            <path v-if="reportViewModel.stressOverview.sympatheticArcPath" :d="reportViewModel.stressOverview.sympatheticArcPath" :fill="`url(#${reportViewModel.stressOverview.symPatternId})`" />
+                            <circle cx="132" cy="98" r="70" fill="#1f43ff" stroke="none" />
+                            <path v-if="reportViewModel.stressOverview.sympatheticArcPath" :d="reportViewModel.stressOverview.sympatheticArcPath" fill="#ff2f2f" stroke="none" />
                             <circle cx="132" cy="98" r="70" fill="none" stroke="#dbe6fb" stroke-width="1.5" />
                           </g>
                         </svg>
@@ -220,31 +212,130 @@
                       <div class="stress-overview-title">总体评估</div>
                       <div class="stress-overview-main">
                         <div class="stress-type-card">
-                          <div class="stress-type-label">评估类型</div>
-                          <div class="stress-type-value">{{ reportViewModel.stressOverview.overviewType }}</div>
-                          <div class="stress-type-desc">{{ reportViewModel.stressOverview.overviewDescription }}</div>
+                          <svg class="stress-type-svg" viewBox="0 0 400 250" aria-hidden="true" data-print-chart="stress-type">
+                            <defs>
+                              <filter id="stressTypeShadow" x="-30%" y="-30%" width="160%" height="160%">
+                                <feDropShadow dx="0" dy="8" stdDeviation="7" flood-color="#000000" flood-opacity="0.22" />
+                              </filter>
+                            </defs>
+                            <g transform="translate(18 12)">
+                              <circle cx="108" cy="108" r="103" fill="#ececec" stroke="#0f0f0f" stroke-width="2.4" />
+                              <circle cx="108" cy="108" r="96" fill="#f2f0ee" stroke="#ffffff" stroke-width="2.2" />
+                              <g :transform="`rotate(${reportViewModel.stressOverview.typeWheelRotation} 108 108)`">
+                                <path
+                                  v-for="(segment, index) in reportViewModel.stressOverview.typeChartSegments"
+                                  :key="`type-segment-${index}`"
+                                  :d="segment.path"
+                                  :fill="segment.fill"
+                                  :filter="segment.isActive ? 'url(#stressTypeShadow)' : ''"
+                                  :stroke="segment.isActive ? '#43372f' : '#f4efe8'"
+                                  :stroke-width="segment.isActive ? 2.2 : 1.4"
+                                />
+                                <text
+                                  v-for="(segment, index) in reportViewModel.stressOverview.typeChartSegments"
+                                  :key="`type-segment-label-${index}`"
+                                  :x="segment.labelX"
+                                  :y="segment.labelY"
+                                  :transform="segment.labelRotate"
+                                  class="stress-type-ring-text"
+                                  text-anchor="middle"
+                                  dominant-baseline="middle"
+                                >
+                                  {{ segment.label }}
+                                </text>
+                              </g>
+                              <circle cx="108" cy="108" r="70" fill="#7e7e7e" opacity="0.26" />
+                              <circle cx="108" cy="108" r="61" fill="#2f2f2f" stroke="#f7f7f7" stroke-width="3.6" />
+                              <circle cx="108" cy="108" r="69" fill="none" stroke="#717171" stroke-width="5.5" opacity="0.96" />
+                              <text x="108" y="99" class="stress-type-center-label" text-anchor="middle">评估</text>
+                              <text x="108" y="127" class="stress-type-center-label" text-anchor="middle">类型</text>
+                              <g transform="translate(205 108)">
+                                <path d="M 0 -22 L 154 -33 L 154 33 L 0 22 L 0 8 L -18 0 L 0 -8 Z" fill="#e5ad7e" stroke="#40362e" stroke-width="2.8" />
+                                <path d="M 154 -34 L 165 -32 L 165 32 L 154 34 Z" fill="#3a3530" />
+                                <text x="77" y="9" class="stress-type-callout-text" text-anchor="middle">
+                                  {{ reportViewModel.stressOverview.typeCallout.text }}
+                                </text>
+                              </g>
+                            </g>
+                          </svg>
                         </div>
-                        <div class="stress-energy-card" v-if="reportViewModel.stressOverview.energyMetrics.length">
-                          <div class="stress-energy-donut" :style="reportViewModel.stressOverview.energyStyle">
-                            <div class="stress-energy-inner">
-                              <div class="stress-energy-label">身心能量</div>
-                              <div class="stress-energy-value">{{ reportViewModel.stressOverview.energyScore }}%</div>
-                            </div>
-                          </div>
-                          <div class="stress-energy-metrics">
-                            <div class="stress-energy-metric" v-for="item in reportViewModel.stressOverview.energyMetrics" :key="item.label">
-                              <span>{{ item.label }}</span>
-                              <strong>{{ item.display }}</strong>
-                            </div>
+                        <div class="stress-energy-card">
+                          <svg class="stress-energy-svg" viewBox="-20 -20 260 260" aria-hidden="true" data-print-chart="stress-energy" preserveAspectRatio="xMidYMid meet">
+                            <defs>
+                              <filter id="stressEnergyShadow" x="-30%" y="-30%" width="160%" height="160%">
+                                <feDropShadow dx="0" dy="10" stdDeviation="8" flood-color="#000000" flood-opacity="0.24" />
+                              </filter>
+                            </defs>
+                            <g transform="translate(15 15)">
+                              <circle cx="100" cy="100" r="98" fill="#ededed" stroke="#121212" stroke-width="2.2" />
+                              <circle cx="100" cy="100" r="92" fill="none" stroke="#ffffff" stroke-width="9" opacity="0.72" />
+                              <path
+                                v-for="segment in reportViewModel.stressOverview.energyChartSegments"
+                                :key="segment.key"
+                                :d="segment.path"
+                                :fill="segment.color"
+                                stroke="#ffffff"
+                                stroke-width="2.8"
+                              />
+                              <circle cx="100" cy="100" r="62" fill="#3b3b3b" filter="url(#stressEnergyShadow)" />
+                              <circle cx="100" cy="100" r="45" fill="#2f2f2f" />
+                              <circle cx="100" cy="100" r="60" fill="none" stroke="#f4f4f4" stroke-width="1.8" opacity="0.95" />
+                              <text
+                                v-for="segment in reportViewModel.stressOverview.energyChartSegments"
+                                :key="`${segment.key}-percent`"
+                                :x="segment.percentX"
+                                :y="segment.percentY"
+                                class="stress-energy-percent"
+                                :text-anchor="segment.textAnchor"
+                              >
+                                {{ segment.display }}
+                              </text>
+                              <text
+                                v-for="segment in reportViewModel.stressOverview.energyChartSegments"
+                                :key="`${segment.key}-ring`"
+                                :x="segment.ringX"
+                                :y="segment.ringY"
+                                class="stress-energy-ring-text"
+                                text-anchor="middle"
+                                :transform="segment.ringRotate"
+                              >
+                                {{ segment.label }}
+                              </text>
+                              <text x="100" y="96" class="stress-energy-center-label" text-anchor="middle">身心</text>
+                              <text x="100" y="126" class="stress-energy-center-label" text-anchor="middle">能量</text>
+                            </g>
+                          </svg>
+                          <div class="stress-energy-footer">
+                            <div class="stress-energy-range">50-100分 正常范围（椭圆形较佳）</div>
                           </div>
                         </div>
+                      </div>
+
+                      <div class="stress-overview-detail">
+                        <div class="stress-overview-detail-title">{{ reportViewModel.stressOverview.detailTitle }}</div>
+                        <div class="stress-overview-detail-block">
+                          <div class="stress-overview-detail-heading">健康状况</div>
+                          <p v-for="(line, index) in reportViewModel.stressOverview.healthStatusLines" :key="`health-status-${index}`">
+                            {{ line }}
+                          </p>
+                        </div>
+                        <div class="stress-overview-detail-block">
+                          <div class="stress-overview-detail-heading">健康建议</div>
+                          <p v-for="(line, index) in reportViewModel.stressOverview.recommendationLines" :key="`health-recommendation-${index}`">
+                            {{ line }}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div class="stress-overview-desc" v-if="reportViewModel.stressOverview.overviewDescription">
+                        {{ reportViewModel.stressOverview.overviewDescription }}
                       </div>
 
                       <div class="stress-overview-notes" v-if="reportViewModel.stressOverview.notes.length">
                         <div class="stress-overview-note" v-for="(item, index) in reportViewModel.stressOverview.notes" :key="`stress-note-${index}`">
                           <div class="stress-overview-note-label">{{ item.label }}</div>
                           <div class="stress-overview-note-value">{{ item.value }}</div>
-                          <div class="stress-overview-note-text">{{ item.note }}</div>
+                          <div class="stress-overview-note-text" v-if="item.note">{{ item.note }}</div>
                         </div>
                       </div>
                     </div>
@@ -1641,6 +1732,30 @@ const describePieSlice = (centerX, centerY, radius, startAngle, endAngle) => {
   ].join(' ');
 };
 
+const describeDonutSlice = (centerX, centerY, outerRadius, innerRadius, startAngle, endAngle) => {
+  const angleSpan = Math.max(0, Math.min(359.999, endAngle - startAngle));
+  if (angleSpan <= 0.01) return '';
+
+  const outerStart = polarToCartesian(centerX, centerY, outerRadius, endAngle);
+  const outerEnd = polarToCartesian(centerX, centerY, outerRadius, startAngle);
+  const innerStart = polarToCartesian(centerX, centerY, innerRadius, startAngle);
+  const innerEnd = polarToCartesian(centerX, centerY, innerRadius, endAngle);
+  const largeArcFlag = angleSpan > 180 ? 1 : 0;
+
+  return [
+    `M ${outerStart.x} ${outerStart.y}`,
+    `A ${outerRadius} ${outerRadius} 0 ${largeArcFlag} 0 ${outerEnd.x} ${outerEnd.y}`,
+    `L ${innerStart.x} ${innerStart.y}`,
+    `A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 1 ${innerEnd.x} ${innerEnd.y}`,
+    'Z'
+  ].join(' ');
+};
+
+const clampPercent = (value, fallback = 80) => {
+  if (typeof value !== 'number' || Number.isNaN(value)) return fallback;
+  return Math.max(50, Math.min(100, Math.round(value)));
+};
+
 const buildStressOverview = (patient) => {
   const signals = getStressSignals(patient);
   const ageSignal = findStressSignal(signals, ['自律神经年龄', 'ANS Age']);
@@ -1666,9 +1781,6 @@ const buildStressOverview = (patient) => {
   const parasympathetic = vagValue !== null ? Math.max(vagValue, 0.1) : 50;
   const balanceTotal = sympathetic + parasympathetic;
   const sympatheticPercent = Math.round((sympathetic / balanceTotal) * 100);
-  const chartIdSuffix = String(patient?.id || 'report').replace(/[^a-zA-Z0-9_-]/g, '');
-  const symPatternId = `autonomic-sym-${chartIdSuffix}`;
-  const vagPatternId = `autonomic-vag-${chartIdSuffix}`;
   const pieStartAngle = 230;
   const pieEndAngle = pieStartAngle + (sympatheticPercent / 100) * 360;
   const sympatheticArcPath = describePieSlice(132, 98, 70, pieStartAngle, pieEndAngle);
@@ -1702,14 +1814,19 @@ const buildStressOverview = (patient) => {
     return balanceSignal?.note || ansSignal?.note || '';
   })();
 
-  const energyMetrics = [
-    { label: '睡眠活性', value: parseNumber(sleepSignal?.value), display: formatAgeDisplay(sleepSignal?.value).replace('岁', '分') },
-    { label: '情绪稳定', value: parseNumber(emotionSignal?.value), display: formatAgeDisplay(emotionSignal?.value).replace('岁', '分') },
-    { label: '活力储备', value: parseNumber(vitalitySignal?.value), display: formatAgeDisplay(vitalitySignal?.value).replace('岁', '分') },
-    { label: '抗压能力', value: parseNumber(antiStressSignal?.value), display: formatAgeDisplay(antiStressSignal?.value).replace('岁', '分') }
-  ].filter(item => item.value !== null);
+  const emotionPercent = clampPercent(parseNumber(emotionSignal?.value), 95);
+  const antiStressPercent = clampPercent(parseNumber(antiStressSignal?.value), 80);
+  const vitalityPercent = clampPercent(parseNumber(vitalitySignal?.value), 90);
+  const sleepPercent = clampPercent(parseNumber(sleepSignal?.value), 70);
 
-  const energyScore = clampScore(weightedAverage(energyMetrics.map(item => ({ value: item.value, weight: 1 })))) || 0;
+  const energyMetrics = [
+    { label: '睡眠指数', value: sleepPercent, display: `${sleepPercent}%` },
+    { label: '情绪指数', value: emotionPercent, display: `${emotionPercent}%` },
+    { label: '活力指数', value: vitalityPercent, display: `${vitalityPercent}%` },
+    { label: '抗压力指数', value: antiStressPercent, display: `${antiStressPercent}%` }
+  ];
+
+  const energyScore = clampScore(weightedAverage(energyMetrics.map(item => ({ value: item.value, weight: 1 })))) || 84;
 
   const overviewType = (() => {
     if (balanceValue !== null) {
@@ -1729,12 +1846,168 @@ const buildStressOverview = (patient) => {
     return '当前交感与副交感功能总体可读，建议结合睡眠、压力、血糖血压和日常活动习惯做持续管理。';
   })();
 
+  const typeSegmentDefs = [
+    { label: '迟缓平和', color: '#a9cdb3' },
+    { label: '精神抖擞', color: '#cdb8cf' },
+    { label: '萎靡不振', color: '#b7c7d8' },
+    { label: '焦躁不安', color: '#93c3dc' },
+    { label: '力拔山河', color: '#b7d36d' },
+    { label: '身强体壮', color: '#e7865e' },
+    { label: '兴致索然', color: '#e5ad7e' },
+    { label: '积劳成疾', color: '#a7cec1' },
+    { label: '焦虑不安', color: '#d5c7dd' },
+    { label: '身心减耗', color: '#d9c6ba' },
+    { label: '力不从心', color: '#c6c99d' },
+    { label: '精疲力竭', color: '#d8cf86' }
+  ];
+
+  const activeTypeIndexMap = {
+    '副交感偏高型': 0,
+    '调节稳健型': 5,
+    '平衡调节型': 1,
+    '交感偏亢型': 3,
+    '恢复不足型': 6
+  };
+  const activeTypeIndex = activeTypeIndexMap[overviewType] ?? 4;
+  const typeChartStartAngle = -105;
+  const typeChartStep = 30;
+  const typeChartGap = 2.2;
+  const typeWheelRotation = 90 - activeTypeIndex * typeChartStep;
+  const typeChartSegments = typeSegmentDefs.map((segment, index) => {
+    const startAngle = typeChartStartAngle + index * typeChartStep + typeChartGap / 2;
+    const endAngle = typeChartStartAngle + (index + 1) * typeChartStep - typeChartGap / 2;
+    const midAngle = (startAngle + endAngle) / 2;
+    const labelPoint = polarToCartesian(108, 108, 77, midAngle);
+    const isActive = index === activeTypeIndex;
+
+    return {
+      ...segment,
+      startAngle,
+      endAngle,
+      midAngle,
+      isActive,
+      path: describeDonutSlice(108, 108, isActive ? 100 : 94, 54, startAngle, endAngle),
+      labelX: labelPoint.x,
+      labelY: labelPoint.y,
+      labelRotate: `rotate(${midAngle + 90} ${labelPoint.x} ${labelPoint.y})`,
+      fill: isActive ? segment.color : `${segment.color}dd`
+    };
+  });
+
+  const activeTypeSegment = typeChartSegments[activeTypeIndex] || typeChartSegments[4];
+  const typeCallout = {
+    text: activeTypeSegment.label
+  };
+
+  const energyChartSegments = [
+    {
+      key: 'emotion',
+      label: '情绪指数',
+      display: `${emotionPercent}%`,
+      value: emotionPercent,
+      color: '#98d26f',
+      path: describeDonutSlice(100, 100, 88, 49, -45, 45),
+      percentX: 100,
+      percentY: 8,
+      ringX: 100,
+      ringY: 44,
+      ringRotate: '',
+      textAnchor: 'middle'
+    },
+    {
+      key: 'anti-stress',
+      label: '抗压力指数',
+      display: `${antiStressPercent}%`,
+      value: antiStressPercent,
+      color: '#66b3df',
+      path: describeDonutSlice(100, 100, 88, 49, 45, 135),
+      percentX: 208,
+      percentY: 108,
+      ringX: 151,
+      ringY: 100,
+      ringRotate: 'rotate(90 151 100)',
+      textAnchor: 'middle'
+    },
+    {
+      key: 'vitality',
+      label: '活力指数',
+      display: `${vitalityPercent}%`,
+      value: vitalityPercent,
+      color: '#eab94f',
+      path: describeDonutSlice(100, 100, 88, 49, 135, 225),
+      percentX: 100,
+      percentY: 216,
+      ringX: 100,
+      ringY: 156,
+      ringRotate: '',
+      textAnchor: 'middle'
+    },
+    {
+      key: 'sleep',
+      label: '睡眠指数',
+      display: `${sleepPercent}%`,
+      value: sleepPercent,
+      color: '#5f69d5',
+      path: describeDonutSlice(100, 100, 88, 49, 225, 315),
+      percentX: -8,
+      percentY: 108,
+      ringX: 49,
+      ringY: 100,
+      ringRotate: 'rotate(-90 49 100)',
+      textAnchor: 'middle'
+    }
+  ];
+
   const notes = [
     ageSignal ? { label: '自律神经年龄', value: formatAgeDisplay(ageSignal.value), note: ageCaption } : null,
     ansSignal ? { label: '总体功能', value: normalizeValue(ansSignal.value), note: ansSignal.note || '反映整体神经调节能力' } : null,
     sdnnSignal ? { label: 'SDNN', value: normalizeValue(sdnnSignal.value), note: sdnnSignal.note || '反映心率变异与恢复弹性' } : null,
     balanceSignal ? { label: '偏向值', value: normalizeValue(balanceSignal.value), note: balanceSignal.note || '用于判断交感与副交感偏向' } : null
   ].filter(Boolean).slice(0, 4);
+
+  const detailTitle = `${typeCallout.text}型`;
+
+  const healthStatusLines = [
+    sdnnValue !== null ? `SDNN为 ${sdnnValue.toFixed(2)}，${sdnnValue >= 100 ? '提示心率变异性储备较强。' : sdnnValue >= 50 ? '提示自主神经恢复能力基本可读。' : '提示当前恢复储备偏弱，需要重点关注休息与减压。'}` : '',
+    autonomicAge !== null ? `自律神经年龄评估为 ${formatAgeDisplay(ageSignal?.value)}，${ageCaption}。` : '',
+    overviewDescription
+  ].filter(Boolean);
+
+  const recommendationLines = (() => {
+    if (overviewType === '交感偏亢型') {
+      return [
+        '饮食方面：减少咖啡因、酒精和高糖刺激性摄入，晚餐尽量清淡，避免夜间继续推高交感兴奋。',
+        '运动方面：优先做中低强度有氧、拉伸和呼吸训练，先把恢复质量稳定下来，再逐步增加训练刺激。',
+        '生活方面：固定入睡时间，减少熬夜和持续高压工作，重点观察睡眠、血压与晨起疲劳是否同步改善。'
+      ];
+    }
+    if (overviewType === '副交感偏高型') {
+      return [
+        '饮食方面：保持规律三餐和足量蛋白，避免进食过少导致白天能量不足。',
+        '运动方面：增加步行、有氧和基础力量训练，避免活动量长期偏低造成精力下降。',
+        '生活方面：维持稳定作息和白天日照暴露，帮助精神唤醒与昼夜节律保持平衡。'
+      ];
+    }
+    if (overviewType === '恢复不足型') {
+      return [
+        '饮食方面：优先保证规律进食、补水和优质蛋白，不建议用节食方式继续给身体增加压力。',
+        '运动方面：先以恢复型训练和轻中强度活动为主，避免连续高强度冲刺。',
+        '生活方面：连续 2-4 周优先修复睡眠与疲劳，减少熬夜、久坐和精神透支。'
+      ];
+    }
+    if (overviewType === '调节稳健型') {
+      return [
+        '饮食方面：继续维持清淡均衡饮食结构，减少不必要的高油高糖波动。',
+        '运动方面：在保证恢复的前提下加入规律有氧和抗阻训练，进一步提升代谢与体能。',
+        '生活方面：保持现有节律，同时持续跟踪睡眠、压力和体成分变化，巩固当前状态。'
+      ];
+    }
+    return [
+      '饮食方面：维持规律三餐和清淡饮食，减少高油高糖与夜宵对恢复节律的干扰。',
+      '运动方面：保持稳定活动量，采用有氧结合轻力量训练的方式增强整体恢复能力。',
+      '生活方面：保证充足睡眠、适度减压和固定作息，让交感与副交感功能维持在更平衡的区间。'
+    ];
+  })();
 
   return {
     hasAge: !!ageSignal,
@@ -1748,12 +2021,17 @@ const buildStressOverview = (patient) => {
     parasympatheticValue: vagSignal?.value ? normalizeValue(vagSignal.value) : '--',
     sympatheticArcPath,
     ageTicks,
-    symPatternId,
-    vagPatternId,
     overviewType,
     overviewDescription,
     energyScore,
     energyMetrics,
+    energyChartSegments,
+    typeWheelRotation,
+    typeChartSegments,
+    typeCallout,
+    detailTitle,
+    healthStatusLines,
+    recommendationLines,
     energyStyle: {
       background: buildEnergyGradient(energyMetrics.length)
     },
@@ -2399,7 +2677,15 @@ const exportReportForH5 = async () => {
         ${styleText}
         <style>
           @page { size: 297mm 167.0625mm; margin: 0; }
-          html, body { background: #dfe8f4 !important; }
+          html, body { 
+            background: #dfe8f4 !important; 
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
           body {
             margin: 0;
             padding: 0;
@@ -2548,12 +2834,16 @@ const exportReportForH5 = async () => {
             font-size: 11px;
           }
           .print-page .reference-row {
-            grid-template-columns: minmax(0, 1.14fr) minmax(226px, 0.92fr);
+            grid-template-columns: minmax(0, 1.08fr) minmax(260px, 0.92fr);
             gap: 8px;
+            align-items: start;
           }
           .print-page .reference-row-bottom {
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 8px;
+          }
+          .print-page .reference-row-single {
+            grid-template-columns: 1fr;
           }
           .print-page .reference-section-body {
             padding: 8px 8px 9px;
@@ -2619,9 +2909,62 @@ const exportReportForH5 = async () => {
           .print-page .stress-energy-card {
             gap: 8px;
           }
+          .print-page .autonomic-age-panel {
+            grid-template-columns: 1fr;
+            justify-items: center;
+          }
+          .print-page .autonomic-age-summary {
+            align-items: center;
+            text-align: center;
+          }
+          .print-page .stress-overview-main {
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+            justify-items: center;
+          }
           .print-page .autonomic-pie-svg {
-            width: 160px;
-            height: 126px;
+            width: 230px;
+            height: 182px;
+          }
+          .print-page .stress-type-svg {
+            width: 330px !important;
+            height: auto !important;
+            max-width: 100% !important;
+          }
+          .print-page .stress-energy-svg {
+            width: 250px !important;
+            height: auto !important;
+            max-width: 100% !important;
+          }
+          .print-page .print-chart-image.autonomic-pie-svg {
+            width: 230px !important;
+            height: auto !important;
+            max-width: 100% !important;
+          }
+          .print-page .print-chart-image.stress-type-svg {
+            width: 330px !important;
+            height: auto !important;
+            max-width: 100% !important;
+          }
+          .print-page .print-chart-image.stress-energy-svg {
+            width: 250px !important;
+            height: auto !important;
+            max-width: 100% !important;
+          }
+          .print-page .stress-overview-box {
+            padding: 4px 2px 0 !important;
+            border: none !important;
+            background: transparent !important;
+          }
+          .print-page .stress-overview-detail-title {
+            font-size: 16px !important;
+          }
+          .print-page .stress-overview-detail-heading {
+            font-size: 11px !important;
+          }
+          .print-page .stress-overview-detail-block p,
+          .print-page .stress-overview-desc {
+            font-size: 10px !important;
+            line-height: 1.6 !important;
           }
           .print-page .autonomic-balance-donut,
           .print-page .stress-energy-donut {
@@ -2643,6 +2986,9 @@ const exportReportForH5 = async () => {
           .print-page .stress-energy-metric,
           .print-page .stress-type-card {
             padding: 7px 8px;
+          }
+          .print-page .stress-energy-card {
+            justify-content: center;
           }
           .print-page .reference-tag {
             min-height: 24px;
@@ -2691,7 +3037,7 @@ const exportReportForH5 = async () => {
           <div id="print-pages" class="print-pages"></div>
         </div>
         <script>
-          (function() {
+          (async function() {
             const sourceRoot = document.querySelector('#print-source .report-paper');
             const pagesHost = document.getElementById('print-pages');
 
@@ -2699,6 +3045,33 @@ const exportReportForH5 = async () => {
               window.__printReady = true;
               return;
             }
+
+            const resolveSvgSize = (svg) => {
+              const viewBox = (svg.getAttribute('viewBox') || '').split(/\\s+/).map(Number);
+              const rect = svg.getBoundingClientRect();
+              const width = Math.round(rect.width || Number(svg.getAttribute('width')) || viewBox[2] || 200);
+              const height = Math.round(rect.height || Number(svg.getAttribute('height')) || viewBox[3] || 200);
+              return { width, height };
+            };
+
+            const normalizePrintableSvg = (svg) => {
+              const { width, height } = resolveSvgSize(svg);
+              svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+              svg.setAttribute('width', String(width));
+              svg.setAttribute('height', String(height));
+              svg.style.overflow = 'visible';
+              svg.style.display = 'block';
+              svg.style.maxWidth = '100%';
+            };
+
+            const preparePrintableCharts = (root) => {
+              const charts = Array.from(root.querySelectorAll('[data-print-chart]'));
+              for (const chart of charts) {
+                normalizePrintableSvg(chart);
+              }
+            };
+
+            preparePrintableCharts(sourceRoot);
 
             const header = sourceRoot.querySelector('.reference-header');
             const report = sourceRoot.querySelector('.reference-report');
@@ -3884,7 +4257,11 @@ const exportReport = async () => {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(320px, 1fr);
   gap: 14px;
-  align-items: stretch;
+  align-items: start;
+}
+
+.reference-row-single {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .reference-row-bottom {
@@ -4171,8 +4548,8 @@ const exportReport = async () => {
 
 .autonomic-age-panel {
   display: grid;
-  grid-template-columns: minmax(160px, 0.95fr) minmax(0, 1.05fr);
-  gap: 14px;
+  grid-template-columns: minmax(300px, 0.95fr) minmax(0, 1.05fr);
+  gap: 18px;
   padding: 14px;
   border-radius: 18px;
   border: 1px solid #dfe8f6;
@@ -4188,8 +4565,8 @@ const exportReport = async () => {
 }
 
 .autonomic-pie-svg {
-  width: 230px;
-  height: 180px;
+  width: 300px;
+  height: 236px;
   overflow: visible;
 }
 
@@ -4306,114 +4683,179 @@ const exportReport = async () => {
 
 .stress-overview-box {
   margin-top: 14px;
-  padding: 14px;
-  border-radius: 18px;
-  border: 1px solid #dfe8f6;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  padding: 12px 4px 6px;
+  border-radius: 0;
+  border: none;
+  background: transparent;
 }
 
 .stress-overview-title {
   font-size: 16px;
   font-weight: 800;
-  color: #205daf;
+  color: #222;
 }
 
 .stress-overview-main {
   margin-top: 12px;
   display: grid;
-  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
-  gap: 12px;
-  align-items: stretch;
-}
-
-.stress-type-card {
-  padding: 14px;
-  border-radius: 16px;
-  background: linear-gradient(180deg, #f4f9ff 0%, #ffffff 100%);
-  border: 1px solid #dde8f7;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.stress-type-value {
-  margin-top: 8px;
-  font-size: 28px;
-  line-height: 1.1;
-  font-weight: 800;
-  color: #2a3448;
-}
-
-.stress-type-desc {
-  margin-top: 10px;
-  font-size: 12px;
-  line-height: 1.8;
-  color: #5b7598;
-}
-
-.stress-energy-card {
-  padding: 12px;
-  border-radius: 16px;
-  border: 1px solid #dde8f7;
-  background: linear-gradient(180deg, #fbfdff 0%, #f4f9ff 100%);
-  display: grid;
-  grid-template-columns: 132px minmax(0, 1fr);
-  gap: 12px;
+  grid-template-columns: minmax(340px, 1.15fr) minmax(280px, 0.85fr);
+  gap: 28px;
   align-items: center;
 }
 
-.stress-energy-donut {
-  width: 132px;
-  height: 132px;
-  box-shadow: 0 10px 22px rgba(76, 111, 188, 0.14);
+.stress-type-card {
+  padding: 2px 0 0;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.stress-energy-value {
-  margin-top: 4px;
-  font-size: 24px;
-  line-height: 1;
+.stress-type-svg {
+  width: 100%;
+  max-width: 560px;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.stress-type-ring-text {
+  fill: #2d3138;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.stress-type-center-label {
+  fill: #ffffff;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.stress-type-callout-text {
+  fill: #2b241f;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.stress-energy-card {
+  padding: 0;
+  border-radius: 0;
+  border: none;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.stress-energy-svg {
+  width: 100%;
+  max-width: 430px;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.stress-energy-percent {
+  fill: #222;
+  font-size: 12px;
   font-weight: 800;
-  color: #263248;
 }
 
-.stress-energy-metrics {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.stress-energy-metric {
-  padding: 8px 10px;
-  border-radius: 12px;
-  background: #fff;
-  border: 1px solid #e2eaf8;
-}
-
-.stress-energy-metric span {
-  display: block;
+.stress-energy-ring-text {
+  fill: #ffffff;
   font-size: 11px;
-  color: #7a90ac;
+  font-weight: 600;
+  letter-spacing: 0.2px;
 }
 
-.stress-energy-metric strong {
-  display: block;
-  margin-top: 3px;
+.stress-energy-center-label {
+  fill: #ffffff;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.stress-energy-score {
+  fill: #ffffff;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.stress-energy-footer {
+  margin-top: 2px;
+  text-align: center;
+}
+
+.stress-energy-summary {
+  font-size: 18px;
+  line-height: 1.4;
+  color: #1f1f1f;
+  font-weight: 800;
+}
+
+.stress-energy-range {
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #5f6c7f;
+}
+
+.stress-overview-detail {
+  margin-top: 14px;
+  padding: 2px 2px 0;
+  color: #1f1f1f;
+}
+
+.stress-overview-detail-title {
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 800;
+  color: #1f1f1f;
+}
+
+.stress-overview-detail-block {
+  margin-top: 16px;
+}
+
+.stress-overview-detail-heading {
   font-size: 15px;
-  color: #235fae;
+  line-height: 1.4;
+  font-weight: 800;
+  color: #232323;
+}
+
+.stress-overview-detail-block p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.8;
+  color: #303030;
+}
+
+.stress-overview-desc {
+  margin-top: 14px;
+  font-size: 12px;
+  line-height: 1.75;
+  color: #4a4a4a;
 }
 
 .stress-overview-notes {
-  margin-top: 12px;
+  margin-top: 16px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
 }
 
 .stress-overview-note {
-  padding: 10px 11px;
+  padding: 12px 12px;
   border-radius: 14px;
   border: 1px solid #e2e9f7;
-  background: #fff;
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+  box-shadow: 0 10px 24px rgba(38, 83, 151, 0.08);
 }
 
 .stress-overview-note-label {
@@ -4744,6 +5186,16 @@ const exportReport = async () => {
   .reference-stat-value {
     font-size: 24px;
   }
+
+  .stress-overview-main {
+    gap: 10px;
+  }
+
+  .stress-type-svg,
+  .stress-energy-svg {
+    max-width: 300px;
+  }
+
 
   .autonomic-age-panel,
   .stress-overview-main,
