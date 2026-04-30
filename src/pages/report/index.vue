@@ -175,8 +175,68 @@
                 </div>
 
                 <div class="reference-section reference-section-side">
-                  <div class="reference-section-title tone-green">核心指标</div>
+                  <div class="reference-section-title tone-green">自律神经年龄与总体评估</div>
                   <div class="reference-section-body">
+                    <div class="autonomic-age-panel" v-if="reportViewModel.stressOverview.hasAge || reportViewModel.stressOverview.hasBalance">
+                      <div class="autonomic-age-chart">
+                        <div class="autonomic-balance-donut" :style="reportViewModel.stressOverview.balanceStyle">
+                          <div class="autonomic-balance-inner">
+                            <div class="autonomic-balance-inner-label">平衡状态</div>
+                            <div class="autonomic-balance-inner-value">{{ reportViewModel.stressOverview.balanceText }}</div>
+                          </div>
+                        </div>
+                        <div class="autonomic-legend">
+                          <span class="autonomic-legend-item tone-red">
+                            <i></i>
+                            交感 {{ reportViewModel.stressOverview.sympatheticValue }}
+                          </span>
+                          <span class="autonomic-legend-item tone-blue">
+                            <i></i>
+                            副交感 {{ reportViewModel.stressOverview.parasympatheticValue }}
+                          </span>
+                        </div>
+                      </div>
+                      <div class="autonomic-age-summary">
+                        <div class="autonomic-age-kicker">自律神经年龄</div>
+                        <div class="autonomic-age-value">{{ reportViewModel.stressOverview.ageDisplay }}</div>
+                        <div class="autonomic-age-caption">{{ reportViewModel.stressOverview.ageCaption }}</div>
+                        <div class="autonomic-age-note" v-if="reportViewModel.stressOverview.ageNote">{{ reportViewModel.stressOverview.ageNote }}</div>
+                      </div>
+                    </div>
+
+                    <div class="stress-overview-box" v-if="reportViewModel.stressOverview.hasOverview">
+                      <div class="stress-overview-title">总体评估</div>
+                      <div class="stress-overview-main">
+                        <div class="stress-type-card">
+                          <div class="stress-type-label">评估类型</div>
+                          <div class="stress-type-value">{{ reportViewModel.stressOverview.overviewType }}</div>
+                          <div class="stress-type-desc">{{ reportViewModel.stressOverview.overviewDescription }}</div>
+                        </div>
+                        <div class="stress-energy-card" v-if="reportViewModel.stressOverview.energyMetrics.length">
+                          <div class="stress-energy-donut" :style="reportViewModel.stressOverview.energyStyle">
+                            <div class="stress-energy-inner">
+                              <div class="stress-energy-label">身心能量</div>
+                              <div class="stress-energy-value">{{ reportViewModel.stressOverview.energyScore }}%</div>
+                            </div>
+                          </div>
+                          <div class="stress-energy-metrics">
+                            <div class="stress-energy-metric" v-for="item in reportViewModel.stressOverview.energyMetrics" :key="item.label">
+                              <span>{{ item.label }}</span>
+                              <strong>{{ item.display }}</strong>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="stress-overview-notes" v-if="reportViewModel.stressOverview.notes.length">
+                        <div class="stress-overview-note" v-for="(item, index) in reportViewModel.stressOverview.notes" :key="`stress-note-${index}`">
+                          <div class="stress-overview-note-label">{{ item.label }}</div>
+                          <div class="stress-overview-note-value">{{ item.value }}</div>
+                          <div class="stress-overview-note-text">{{ item.note }}</div>
+                        </div>
+                      </div>
+                    </div>
+
                     <div class="reference-stat-grid" v-if="reportViewModel.stressStats.length">
                       <div class="reference-stat-card" v-for="(item, index) in reportViewModel.stressStats" :key="`stress-stat-${index}`">
                         <div class="reference-stat-top">
@@ -191,16 +251,7 @@
                         <div class="reference-stat-note" v-if="item.note">{{ item.note }}</div>
                       </div>
                     </div>
-                    <div class="reference-balance-box" v-if="reportViewModel.stressMarkers.length">
-                      <div class="reference-balance-title">自律神经平衡状态</div>
-                      <div class="reference-balance-track">
-                        <span v-for="(marker, index) in reportViewModel.stressMarkers" :key="`marker-${index}`" :class="`tone-${marker.tone}`" :style="{ width: `${marker.width}%` }"></span>
-                      </div>
-                      <div class="reference-balance-labels">
-                        <span v-for="(marker, index) in reportViewModel.stressMarkers" :key="`marker-label-${index}`">{{ marker.label }}</span>
-                      </div>
-                    </div>
-                    <div class="reference-empty-block" v-if="!reportViewModel.stressStats.length && !reportViewModel.stressMarkers.length">当前档案暂无可提取的核心指标摘要</div>
+                    <div class="reference-empty-block" v-if="!reportViewModel.stressStats.length && !reportViewModel.stressOverview.hasAge && !reportViewModel.stressOverview.hasOverview">当前档案暂无可提取的自律神经评估摘要</div>
                   </div>
                 </div>
               </div>
@@ -1501,6 +1552,161 @@ const buildStressStats = (patient) => {
     }));
 };
 
+const getStressSignals = (patient) => {
+  const metricSignals = (getPatientSection(patient, 'stress-metrics')?.items || [])
+    .filter(item => item && hasMeaningfulValue(item.label) && hasMeaningfulValue(item.value))
+    .map(item => ({
+      label: String(item.label || ''),
+      value: joinItemValue(item),
+      note: item.status || ''
+    }));
+
+  const tableSignals = (getPatientSection(patient, 'stress-table')?.rows || [])
+    .filter(row => row && hasMeaningfulValue(row.item || row.metric) && hasMeaningfulValue(row.value))
+    .map(row => ({
+      label: String(row.item || row.metric || ''),
+      value: `${row.value || '--'}${row.unit ? ` ${row.unit}` : ''}`.trim(),
+      note: row.result || row.standard || ''
+    }));
+
+  return [...metricSignals, ...tableSignals];
+};
+
+const findStressSignal = (signals, keywords) => {
+  const list = Array.isArray(keywords) ? keywords : [keywords];
+  return signals.find(item => list.some(keyword => String(item.label || '').includes(keyword))) || null;
+};
+
+const formatAgeDisplay = (value) => {
+  const normalized = normalizeValue(value);
+  if (!normalized) return '--';
+  if (/[岁上下以]/.test(normalized)) return normalized;
+  const numeric = parseNumber(normalized);
+  return numeric === null ? normalized : `${numeric}岁`;
+};
+
+const buildEnergyGradient = (count) => {
+  const palette = ['#6a74ff', '#53b7ff', '#f4c44f', '#74d36b'];
+  const safeCount = Math.max(1, Math.min(4, count));
+  const step = 100 / safeCount;
+  const segments = [];
+  for (let index = 0; index < safeCount; index += 1) {
+    const start = (index * step).toFixed(2);
+    const end = ((index + 1) * step).toFixed(2);
+    segments.push(`${palette[index]} ${start}% ${end}%`);
+  }
+  return `conic-gradient(${segments.join(', ')})`;
+};
+
+const buildStressOverview = (patient) => {
+  const signals = getStressSignals(patient);
+  const ageSignal = findStressSignal(signals, ['自律神经年龄', 'ANS Age']);
+  const balanceSignal = findStressSignal(signals, ['偏向', 'Balance']);
+  const ansSignal = findStressSignal(signals, ['总体功能', '(ANS)']);
+  const symSignal = findStressSignal(signals, ['交感神经功能', '(SYM)']);
+  const vagSignal = findStressSignal(signals, ['副交感神经功能', '(VAG)']);
+  const sdnnSignal = findStressSignal(signals, ['SDNN', 'NN间距标准偏差']);
+  const sleepSignal = findStressSignal(signals, ['睡眠指数']);
+  const emotionSignal = findStressSignal(signals, ['情绪指数']);
+  const vitalitySignal = findStressSignal(signals, ['活力指数']);
+  const antiStressSignal = findStressSignal(signals, ['抗压力指数']);
+
+  const actualAge = parseNumber(patient?.age);
+  const autonomicAge = parseNumber(ageSignal?.value);
+  const balanceValue = parseNumber(balanceSignal?.value);
+  const ansValue = parseNumber(ansSignal?.value);
+  const symValue = parseNumber(symSignal?.value);
+  const vagValue = parseNumber(vagSignal?.value);
+  const sdnnValue = parseNumber(sdnnSignal?.value);
+
+  const sympathetic = symValue !== null ? Math.max(symValue, 0.1) : 50;
+  const parasympathetic = vagValue !== null ? Math.max(vagValue, 0.1) : 50;
+  const balanceTotal = sympathetic + parasympathetic;
+  const sympatheticPercent = Math.round((sympathetic / balanceTotal) * 100);
+  const balanceStyle = {
+    background: `conic-gradient(#ff5d5d 0 ${sympatheticPercent}%, #2e63ff ${sympatheticPercent}% 100%)`
+  };
+
+  const ageCaption = (() => {
+    if (autonomicAge !== null && actualAge !== null) {
+      if (autonomicAge <= actualAge - 5) return '自律神经年龄年轻化';
+      if (autonomicAge >= actualAge + 5) return '自律神经年龄偏高';
+      return '自律神经年龄接近同龄水平';
+    }
+    if (autonomicAge !== null) {
+      if (autonomicAge <= 30) return '神经调节状态较年轻';
+      if (autonomicAge <= 45) return '神经调节状态基本稳定';
+      return '神经调节恢复需重点关注';
+    }
+    return '当前档案已纳入自律神经年龄分析';
+  })();
+
+  const ageNote = (() => {
+    if (autonomicAge !== null && actualAge !== null) {
+      const gap = autonomicAge - actualAge;
+      if (gap <= -5) return `较实际年龄年轻 ${Math.abs(gap)} 岁，说明恢复能力和神经调节状态相对占优。`;
+      if (gap >= 5) return `较实际年龄偏高 ${gap} 岁，通常提示压力负荷、睡眠恢复或生活节律需要同步调整。`;
+      return '与实际年龄基本接近，后续重点看睡眠、压力与活动习惯能否继续维持。';
+    }
+    return balanceSignal?.note || ansSignal?.note || '';
+  })();
+
+  const energyMetrics = [
+    { label: '睡眠活性', value: parseNumber(sleepSignal?.value), display: formatAgeDisplay(sleepSignal?.value).replace('岁', '分') },
+    { label: '情绪稳定', value: parseNumber(emotionSignal?.value), display: formatAgeDisplay(emotionSignal?.value).replace('岁', '分') },
+    { label: '活力储备', value: parseNumber(vitalitySignal?.value), display: formatAgeDisplay(vitalitySignal?.value).replace('岁', '分') },
+    { label: '抗压能力', value: parseNumber(antiStressSignal?.value), display: formatAgeDisplay(antiStressSignal?.value).replace('岁', '分') }
+  ].filter(item => item.value !== null);
+
+  const energyScore = clampScore(weightedAverage(energyMetrics.map(item => ({ value: item.value, weight: 1 })))) || 0;
+
+  const overviewType = (() => {
+    if (balanceValue !== null) {
+      if (balanceValue >= 1.2) return '交感偏亢型';
+      if (balanceValue <= 0.8) return '副交感偏高型';
+    }
+    if (sdnnValue !== null && sdnnValue < 30) return '恢复不足型';
+    if (ansValue !== null && ansValue >= 8) return '调节稳健型';
+    return '平衡调节型';
+  })();
+
+  const overviewDescription = (() => {
+    if (overviewType === '交感偏亢型') return '当前更容易受紧张、熬夜和持续工作负荷影响，身体处于相对兴奋状态，建议优先关注减压、睡眠和血压波动。';
+    if (overviewType === '副交感偏高型') return '当前整体偏恢复导向，但也要警惕活动量不足或白天精力偏低，建议保持规律运动和稳定节律。';
+    if (overviewType === '恢复不足型') return '当前恢复储备偏弱，常见于睡眠不足、连续疲劳或压力恢复不佳状态，运动和饮食都需要以稳态修复为先。';
+    if (overviewType === '调节稳健型') return '当前自律神经整体调节基础较好，适合在保持恢复质量的前提下继续提升运动与代谢管理效果。';
+    return '当前交感与副交感功能总体可读，建议结合睡眠、压力、血糖血压和日常活动习惯做持续管理。';
+  })();
+
+  const notes = [
+    ageSignal ? { label: '自律神经年龄', value: formatAgeDisplay(ageSignal.value), note: ageCaption } : null,
+    ansSignal ? { label: '总体功能', value: normalizeValue(ansSignal.value), note: ansSignal.note || '反映整体神经调节能力' } : null,
+    sdnnSignal ? { label: 'SDNN', value: normalizeValue(sdnnSignal.value), note: sdnnSignal.note || '反映心率变异与恢复弹性' } : null,
+    balanceSignal ? { label: '偏向值', value: normalizeValue(balanceSignal.value), note: balanceSignal.note || '用于判断交感与副交感偏向' } : null
+  ].filter(Boolean).slice(0, 4);
+
+  return {
+    hasAge: !!ageSignal,
+    hasBalance: !!balanceSignal || !!symSignal || !!vagSignal,
+    hasOverview: !!(energyMetrics.length || notes.length || ageSignal || ansSignal || balanceSignal),
+    ageDisplay: formatAgeDisplay(ageSignal?.value),
+    ageCaption,
+    ageNote,
+    balanceText: balanceSignal?.value ? normalizeValue(balanceSignal.value) : (symValue !== null && vagValue !== null ? (symValue > vagValue ? '交感偏高' : vagValue > symValue ? '副交感偏高' : '基本平衡') : '待分析'),
+    sympatheticValue: symSignal?.value ? normalizeValue(symSignal.value) : '--',
+    parasympatheticValue: vagSignal?.value ? normalizeValue(vagSignal.value) : '--',
+    balanceStyle,
+    overviewType,
+    overviewDescription,
+    energyScore,
+    energyMetrics,
+    energyStyle: {
+      background: buildEnergyGradient(energyMetrics.length)
+    },
+    notes
+  };
+};
+
 const buildStressMarkers = (stressStats) => {
   if (!stressStats.length) return [];
   const width = Number((100 / stressStats.length).toFixed(2));
@@ -2010,6 +2216,7 @@ const reportViewModel = computed(() => {
 
   const stressTable = getPatientSection(patient, 'stress-table') || { columns: [], rows: [] };
   const stressStats = buildStressStats(patient);
+  const stressOverview = buildStressOverview(patient);
   const fallbackDietAdvice = buildAdviceItems(patient, 'diet');
   const aiGuidance = aiGuidanceMap.value[patient.id] || null;
   const crossAnalysis = aiGuidance?.crossAnalysis?.length ? aiGuidance.crossAnalysis : buildCrossAnalysis(patient);
@@ -2026,6 +2233,7 @@ const reportViewModel = computed(() => {
     sleepInsights: buildSleepInsights(patient),
     stressTable,
     stressStats,
+    stressOverview,
     stressMarkers: buildStressMarkers(stressStats),
     bodyPairs: buildBodyPairs(patient),
     bodyBars: buildBodyBars(patient),
@@ -3867,6 +4075,260 @@ const exportReport = async () => {
   font-size: 12px;
 }
 
+.autonomic-age-panel {
+  display: grid;
+  grid-template-columns: minmax(160px, 0.95fr) minmax(0, 1.05fr);
+  gap: 14px;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid #dfe8f6;
+  background: linear-gradient(135deg, #f7fbff 0%, #ffffff 100%);
+}
+
+.autonomic-age-chart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.autonomic-balance-donut,
+.stress-energy-donut {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.autonomic-balance-donut {
+  width: 166px;
+  height: 166px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.9), 0 10px 24px rgba(59, 109, 180, 0.12);
+}
+
+.autonomic-balance-inner,
+.stress-energy-inner {
+  width: calc(100% - 26px);
+  height: calc(100% - 26px);
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: inset 0 0 0 1px #e4ecf8;
+}
+
+.autonomic-balance-inner-label,
+.stress-energy-label,
+.stress-type-label,
+.autonomic-age-kicker {
+  font-size: 12px;
+  color: #7891b1;
+  letter-spacing: 0.5px;
+}
+
+.autonomic-balance-inner-value {
+  margin-top: 6px;
+  font-size: 22px;
+  color: #235cae;
+  font-weight: 800;
+}
+
+.autonomic-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.autonomic-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #5f789a;
+}
+
+.autonomic-legend-item i {
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.autonomic-legend-item.tone-red i {
+  background: #ff5d5d;
+}
+
+.autonomic-legend-item.tone-blue i {
+  background: #2e63ff;
+}
+
+.autonomic-age-summary {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.autonomic-age-value {
+  margin-top: 6px;
+  font-size: 42px;
+  line-height: 1;
+  font-weight: 800;
+  color: #1c1f2a;
+}
+
+.autonomic-age-caption {
+  margin-top: 10px;
+  font-size: 18px;
+  line-height: 1.4;
+  color: #235fb5;
+  font-weight: 700;
+}
+
+.autonomic-age-note {
+  margin-top: 10px;
+  font-size: 12px;
+  line-height: 1.8;
+  color: #5d7698;
+}
+
+.stress-overview-box {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid #dfe8f6;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+}
+
+.stress-overview-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #205daf;
+}
+
+.stress-overview-main {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  gap: 12px;
+  align-items: stretch;
+}
+
+.stress-type-card {
+  padding: 14px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f4f9ff 0%, #ffffff 100%);
+  border: 1px solid #dde8f7;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.stress-type-value {
+  margin-top: 8px;
+  font-size: 28px;
+  line-height: 1.1;
+  font-weight: 800;
+  color: #2a3448;
+}
+
+.stress-type-desc {
+  margin-top: 10px;
+  font-size: 12px;
+  line-height: 1.8;
+  color: #5b7598;
+}
+
+.stress-energy-card {
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid #dde8f7;
+  background: linear-gradient(180deg, #fbfdff 0%, #f4f9ff 100%);
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.stress-energy-donut {
+  width: 132px;
+  height: 132px;
+  box-shadow: 0 10px 22px rgba(76, 111, 188, 0.14);
+}
+
+.stress-energy-value {
+  margin-top: 4px;
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 800;
+  color: #263248;
+}
+
+.stress-energy-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.stress-energy-metric {
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #e2eaf8;
+}
+
+.stress-energy-metric span {
+  display: block;
+  font-size: 11px;
+  color: #7a90ac;
+}
+
+.stress-energy-metric strong {
+  display: block;
+  margin-top: 3px;
+  font-size: 15px;
+  color: #235fae;
+}
+
+.stress-overview-notes {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.stress-overview-note {
+  padding: 10px 11px;
+  border-radius: 14px;
+  border: 1px solid #e2e9f7;
+  background: #fff;
+}
+
+.stress-overview-note-label {
+  font-size: 11px;
+  color: #7c90aa;
+}
+
+.stress-overview-note-value {
+  margin-top: 5px;
+  font-size: 18px;
+  line-height: 1.2;
+  font-weight: 800;
+  color: #235daf;
+}
+
+.stress-overview-note-text {
+  margin-top: 5px;
+  font-size: 11px;
+  line-height: 1.7;
+  color: #617896;
+}
+
 .reference-balance-box {
   margin-top: 12px;
   padding: 12px;
@@ -4174,6 +4636,32 @@ const exportReport = async () => {
 
   .reference-stat-value {
     font-size: 24px;
+  }
+
+  .autonomic-age-panel,
+  .stress-overview-main,
+  .stress-energy-card,
+  .stress-overview-notes {
+    grid-template-columns: 1fr;
+  }
+
+  .autonomic-age-chart,
+  .autonomic-age-summary {
+    align-items: center;
+    text-align: center;
+  }
+
+  .autonomic-age-value {
+    font-size: 34px;
+  }
+
+  .stress-type-value {
+    font-size: 24px;
+  }
+
+  .stress-energy-donut,
+  .autonomic-balance-donut {
+    margin: 0 auto;
   }
 
   .metric-chip-row,
