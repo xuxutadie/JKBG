@@ -271,6 +271,24 @@
                 </div>
               </div>
 
+              <div class="reference-row" v-if="reportViewModel.manualMetricsPairs.length">
+                <div class="reference-section reference-section-main" style="flex: 1;">
+                  <div class="reference-section-title tone-red">生化指标 (手动录入)</div>
+                  <div class="reference-section-body">
+                    <table class="reference-pairs-table">
+                      <tbody>
+                        <tr v-for="(row, index) in reportViewModel.manualMetricsPairs" :key="`manual-${index}`">
+                          <th>{{ row.left.label }}</th>
+                          <td>{{ row.left.value }}</td>
+                          <th>{{ row.right ? row.right.label : '--' }}</th>
+                          <td>{{ row.right ? row.right.value : '--' }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
               <div class="reference-row reference-row-bottom">
                 <div class="reference-section reference-section-half">
                   <div class="reference-section-title tone-green">健康建议</div>
@@ -596,6 +614,13 @@ const buildHighlightMetrics = (reportData) => {
     pushMetric(item.metric, item.value, item.unit, '睡眠监测');
   });
 
+  if (reportData?.manualMetrics) {
+    if (reportData.manualMetrics.bloodGlucose) pushMetric('血糖', reportData.manualMetrics.bloodGlucose, 'mmol/L', '生化指标');
+    if (reportData.manualMetrics.bloodPressure) pushMetric('血压', reportData.manualMetrics.bloodPressure, 'mmHg', '生化指标');
+    if (reportData.manualMetrics.bloodLipids) pushMetric('血脂', reportData.manualMetrics.bloodLipids, 'mmol/L', '生化指标');
+    if (reportData.manualMetrics.uricAcid) pushMetric('尿酸', reportData.manualMetrics.uricAcid, 'μmol/L', '生化指标');
+  }
+
   return Array.from(mapped.values()).slice(0, 12);
 };
 
@@ -654,6 +679,23 @@ const buildSections = (reportData) => {
   pushSection(buildDynamicTableSection('sleep-statistics', reportData?.sleepStatistics, '睡眠数据统计'));
   pushSection(buildDynamicTableSection('daily-statistics', reportData?.dailyStatistics, '每日统计'));
   pushSection(buildTextSection('sleep-summary', '睡眠总结', reportData?.sleepSummaryText));
+
+  if (reportData?.manualMetrics) {
+    const manualItems = [];
+    if (reportData.manualMetrics.bloodGlucose) manualItems.push({ label: '血糖', value: reportData.manualMetrics.bloodGlucose, unit: 'mmol/L' });
+    if (reportData.manualMetrics.bloodPressure) manualItems.push({ label: '血压', value: reportData.manualMetrics.bloodPressure, unit: 'mmHg' });
+    if (reportData.manualMetrics.bloodLipids) manualItems.push({ label: '血脂', value: reportData.manualMetrics.bloodLipids, unit: 'mmol/L' });
+    if (reportData.manualMetrics.uricAcid) manualItems.push({ label: '尿酸', value: reportData.manualMetrics.uricAcid, unit: 'μmol/L' });
+    
+    if (manualItems.length > 0) {
+      pushSection({
+        key: 'manual-metrics',
+        title: '手动生化指标',
+        type: 'profile',
+        items: manualItems
+      });
+    }
+  }
 
   return sections;
 };
@@ -951,6 +993,16 @@ const buildReportGroups = (sections, metricSummary, profileSummary) => {
   }
 
   pushSectionGroup({
+    key: 'manual',
+    index: '1.5',
+    title: '生化指标',
+    subtitle: '手动录入数据',
+    tone: 'red',
+    layout: 'compact',
+    keys: ['manual-metrics']
+  });
+
+  pushSectionGroup({
     key: 'stress',
     index: '2',
     title: '自律神经检测结果',
@@ -1195,7 +1247,8 @@ const buildGuidancePayload = (patient) => {
       table: pickMeaningfulRows(getPatientSection(patient, 'inbody-table')?.rows),
       muscleFat: pickMeaningfulRows(getPatientSection(patient, 'muscle-fat')?.rows),
       obesity: pickMeaningfulRows(getPatientSection(patient, 'obesity-analysis')?.rows)
-    }
+    },
+    manualMetrics: pickMeaningfulItems(getPatientSection(patient, 'manual-metrics')?.items)
   };
 };
 
@@ -1298,6 +1351,17 @@ const buildBodyPairs = (patient) => {
     }));
 
   return toPairRows([...profileItems, ...tableItems].filter(item => hasMeaningfulValue(item.label) && hasMeaningfulValue(item.value)).slice(0, 10));
+};
+
+const buildManualMetricsPairs = (patient) => {
+  const profileItems = (getPatientSection(patient, 'manual-metrics')?.items || [])
+    .filter(Boolean)
+    .map(item => ({
+      label: item.label,
+      value: joinItemValue(item)
+    }));
+
+  return toPairRows(profileItems);
 };
 
 const parseNumber = (value) => {
@@ -1645,6 +1709,7 @@ const reportViewModel = computed(() => {
     bodyPairs: buildBodyPairs(patient),
     bodyBars: buildBodyBars(patient),
     obesityCards: buildObesityCards(patient),
+    manualMetricsPairs: buildManualMetricsPairs(patient),
     exerciseAdvice,
     exerciseAdvicePreview,
     healthAdvice,
