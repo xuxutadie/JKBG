@@ -223,9 +223,10 @@
                       <div class="stress-overview-charts">
                         <div class="stress-type-wheel-card" v-if="reportViewModel.stressOverview.typeWheel">
                           <svg class="stress-type-wheel-svg" viewBox="0 0 580 430" aria-hidden="true">
-                            <g v-for="sector in reportViewModel.stressOverview.typeWheel.sectors" :key="`wheel-${sector.label}`">
+                            <g v-for="(sector, index) in reportViewModel.stressOverview.typeWheel.sectors" :key="`wheel-${sector.label}`">
                               <path :d="sector.path" :fill="sector.fill" stroke="#111111" :stroke-width="sector.strokeWidth" />
                               <text
+                                v-if="index !== 0"
                                 class="stress-type-wheel-text"
                                 :x="sector.textX"
                                 :y="sector.textY"
@@ -240,7 +241,7 @@
                             <circle cx="220" cy="215" r="100" fill="#2d2d2f" stroke="#f8f8f8" stroke-width="8" />
                             <circle cx="220" cy="215" r="88" fill="none" stroke="rgba(255,255,255,0.16)" stroke-width="2" />
                             <path d="M304 195 L336 215 L304 235 Z" fill="#2a2a2a" />
-                            <path d="M322 176 L556 143 L556 287 L322 254 L290 215 Z" fill="#e8ac78" stroke="#474747" stroke-width="5" />
+                            <path d="M322 176 L556 143 L556 287 L322 254 L290 215 Z" :fill="reportViewModel.stressOverview.typeWheel.sectors[0].fill" stroke="#474747" stroke-width="5" />
                             <text class="stress-type-wheel-center-text" x="220" y="195">评估</text>
                             <text class="stress-type-wheel-center-text" x="220" y="242">类型</text>
                             <text class="stress-type-wheel-selected-text" x="438" y="228" text-anchor="middle" dominant-baseline="middle">
@@ -4573,8 +4574,9 @@ const exportReport = async () => {
 
 .stress-type-wheel-text {
   fill: #1e1f21;
-  font-size: 14px;
-  letter-spacing: 1px;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 2px;
 }
 
 .stress-type-wheel-center-text {
