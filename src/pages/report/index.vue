@@ -322,11 +322,11 @@
                 </div>
               </div>
 
-              <div class="reference-row" v-if="reportViewModel.manualMetricsPairs.length">
-                <div class="reference-section reference-section-main" style="flex: 1;">
+              <div class="reference-row" v-if="reportViewModel.manualMetricsPairs.length || reportViewModel.weeklyFitnessPlan.length">
+                <div class="reference-section reference-section-main">
                   <div class="reference-section-title tone-red">生化指标</div>
                   <div class="reference-section-body">
-                    <table class="reference-pairs-table">
+                    <table class="reference-pairs-table" v-if="reportViewModel.manualMetricsPairs.length">
                       <tbody>
                         <tr v-for="(row, index) in reportViewModel.manualMetricsPairs" :key="`manual-${index}`">
                           <th>{{ row.left.label }}</th>
@@ -336,6 +336,8 @@
                         </tr>
                       </tbody>
                     </table>
+                    <div class="reference-empty-block" v-else>暂无可展示的生化指标数据</div>
+                    
                     <div class="insight-list" v-if="reportViewModel.crossAnalysis.length" style="margin-top: 18px;">
                       <div class="insight-item" v-for="(item, index) in reportViewModel.crossAnalysis" :key="`cross-analysis-${index}`">
                         <div class="insight-icon" :class="`tone-${item.tone}`" aria-hidden="true">
@@ -346,6 +348,24 @@
                         <div class="insight-content">
                           <h5>{{ item.title }}</h5>
                           <p>{{ item.text }}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="reference-section reference-section-side">
+                  <div class="reference-section-title tone-purple">一周健身计划表</div>
+                  <div class="reference-section-body">
+                    <div class="fitness-plan-list">
+                      <div class="fitness-plan-item" v-for="(plan, index) in reportViewModel.weeklyFitnessPlan" :key="`fitness-plan-${index}`">
+                        <div class="fitness-plan-day">{{ plan.day }}</div>
+                        <div class="fitness-plan-content">
+                          <div class="fitness-plan-header">
+                            <span class="fitness-plan-type">{{ plan.type }}</span>
+                            <span class="fitness-plan-goal">{{ plan.goal }}</span>
+                          </div>
+                          <div class="fitness-plan-desc">{{ plan.desc }}</div>
                         </div>
                       </div>
                     </div>
@@ -2467,6 +2487,26 @@ const ensurePatientGuidance = async (patient) => {
   }
 };
 
+const buildWeeklyFitnessPlan = (patient) => {
+  const bmiStr = getPatientMetric(patient, 'inbody', 'bmi') || '22';
+  const bmi = parseFloat(bmiStr);
+  
+  let mainGoal = '保持健康';
+  if (bmi >= 28) mainGoal = '减脂燃脂';
+  else if (bmi >= 24) mainGoal = '控制体重';
+  else if (bmi < 18.5) mainGoal = '增肌强身';
+
+  return [
+    { day: '周一', type: '有氧训练', desc: '快步走或慢跑 30-40 分钟，保持心率在燃脂区间', goal: mainGoal },
+    { day: '周二', type: '力量强化', desc: '自重训练（深蹲、俯卧撑、平板支撑） 30 分钟', goal: '肌肉唤醒' },
+    { day: '周三', type: '主动恢复', desc: '全身拉伸或基础瑜伽 20 分钟，放松关节与肌肉', goal: '缓解疲劳' },
+    { day: '周四', type: '有氧训练', desc: '骑自行车、游泳或健身操 40 分钟，提升心肺', goal: mainGoal },
+    { day: '周五', type: '核心训练', desc: '腹部核心肌群与下肢力量组合训练 30 分钟', goal: '增强稳定' },
+    { day: '周六', type: '户外活动', desc: '进行喜欢的户外运动（如羽毛球、爬山） 1小时', goal: '综合运动' },
+    { day: '周日', type: '完全休息', desc: '保证充足睡眠，让身心充分恢复，准备下周', goal: '休养生息' }
+  ];
+};
+
 const reportViewModel = computed(() => {
   const patient = activePatient.value;
   if (!patient) return null;
@@ -2497,6 +2537,7 @@ const reportViewModel = computed(() => {
     obesityCards: buildObesityCards(patient),
     manualMetricsPairs: buildManualMetricsPairs(patient),
     crossAnalysis,
+    weeklyFitnessPlan: buildWeeklyFitnessPlan(patient),
     exerciseAdvice,
     exerciseAdvicePreview,
     healthAdvice,
@@ -2783,6 +2824,7 @@ const exportReportForH5 = async () => {
           .print-page .insight-item,
           .print-page .recommend-item,
           .print-page .exercise-advice-item,
+          .print-page .fitness-plan-item,
           .print-page .metric-bar-item,
           .print-page .obesity-item,
           .print-page .reference-stat-card {
@@ -2793,9 +2835,11 @@ const exportReportForH5 = async () => {
           .print-page .obesity-list,
           .print-page .metric-bar-list,
           .print-page .exercise-advice-list,
+          .print-page .fitness-plan-list,
           .print-page .reference-stat-grid {
             gap: 7px;
           }
+          .print-page .fitness-plan-type,
           .print-page .insight-content h5,
           .print-page .recommend-content h5,
           .print-page .exercise-advice-content h5 {
@@ -2805,6 +2849,8 @@ const exportReportForH5 = async () => {
           .print-page .insight-content p,
           .print-page .recommend-content p,
           .print-page .exercise-advice-content p,
+          .print-page .fitness-plan-desc,
+          .print-page .fitness-plan-goal,
           .print-page .metric-bar-note,
           .print-page .obesity-note,
           .print-page .reference-stat-note,
@@ -2813,6 +2859,12 @@ const exportReportForH5 = async () => {
           .print-page .reference-score-sub {
             font-size: 10px;
             line-height: 1.5;
+          }
+          .print-page .fitness-plan-day {
+            flex: 0 0 32px;
+            width: 32px;
+            height: 32px;
+            font-size: 11px;
           }
           .print-page .guidance-summary,
           .print-page .guidance-status,
@@ -4242,7 +4294,79 @@ const exportReport = async () => {
   margin-bottom: 8px;
 }
 
-.exercise-advice-list {
+.fitness-plan-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+}
+
+.fitness-plan-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid #ebf1fa;
+  background: #f9fbff;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.fitness-plan-day {
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #a66cf5 0%, #804dd8 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(128, 77, 216, 0.15);
+}
+
+.fitness-plan-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+
+.fitness-plan-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.fitness-plan-type {
+  font-size: 14px;
+  font-weight: 700;
+  color: #2b3956;
+}
+
+.fitness-plan-goal {
+  font-size: 11px;
+  color: #7b40d6;
+  background: #f1eaff;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.fitness-plan-desc {
+  font-size: 12px;
+  color: #617896;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
   display: flex;
   flex-direction: column;
   gap: 6px;
