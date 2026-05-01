@@ -2725,7 +2725,7 @@ const exportReportForH5 = async () => {
             font-size: 12px;
           }
           .print-page .reference-patient-panel {
-            grid-template-columns: minmax(0, 1fr) 112px;
+            grid-template-columns: minmax(0, 1fr) 170px;
             gap: 10px;
           }
           .print-page .reference-patient-grid {
@@ -4044,7 +4044,7 @@ const exportReport = async () => {
 
 .reference-patient-panel {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 150px;
+  grid-template-columns: minmax(0, 1fr) 225px;
   gap: 14px;
   align-items: stretch;
 }
