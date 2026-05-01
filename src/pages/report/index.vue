@@ -193,7 +193,7 @@
                             </pattern>
                           </defs>
                           <g class="autonomic-pie-scale">
-                            <text v-for="tick in reportViewModel.stressOverview.ageTicks" :key="`age-tick-${tick.label}`" class="autonomic-pie-tick" :x="tick.x" :y="tick.y">{{ tick.label }}</text>
+                            <g v-html="reportViewModel.stressOverview.ageTicksHtml"></g>
                             <circle cx="132" cy="98" r="70" :fill="`url(#${reportViewModel.stressOverview.vagPatternId})`" />
                             <path v-if="reportViewModel.stressOverview.sympatheticArcPath" :d="reportViewModel.stressOverview.sympatheticArcPath" :fill="`url(#${reportViewModel.stressOverview.symPatternId})`" />
                             <circle cx="132" cy="98" r="70" fill="none" stroke="#dbe6fb" stroke-width="1.5" />
@@ -221,61 +221,10 @@
                     <div class="stress-overview-box" v-if="reportViewModel.stressOverview.hasOverview">
                       <div class="stress-overview-title">总体评估</div>
                       <div class="stress-overview-charts">
-                        <div class="stress-type-wheel-card" v-if="reportViewModel.stressOverview.typeWheel">
-                          <svg class="stress-type-wheel-svg" viewBox="0 0 580 430" aria-hidden="true">
-                            <g v-for="(sector, index) in reportViewModel.stressOverview.typeWheel.sectors" :key="`wheel-${sector.label}`">
-                              <path :d="sector.path" :fill="sector.fill" stroke="#111111" :stroke-width="sector.strokeWidth" />
-                              <text
-                                v-if="index !== 0"
-                                class="stress-type-wheel-text"
-                                :x="sector.textX"
-                                :y="sector.textY"
-                                text-anchor="middle"
-                                dominant-baseline="middle"
-                                :transform="`rotate(${sector.textRotate}, ${sector.textX}, ${sector.textY})`"
-                              >
-                                <tspan>{{ sector.label }}</tspan>
-                              </text>
-                            </g>
-                            <circle cx="220" cy="215" r="183" fill="none" stroke="#111111" stroke-width="4" />
-                            <circle cx="220" cy="215" r="100" fill="#2d2d2f" stroke="#f8f8f8" stroke-width="8" />
-                            <circle cx="220" cy="215" r="88" fill="none" stroke="rgba(255,255,255,0.16)" stroke-width="2" />
-                            <path d="M304 195 L336 215 L304 235 Z" fill="#2a2a2a" />
-                            <path d="M322 176 L556 143 L556 287 L322 254 L290 215 Z" :fill="reportViewModel.stressOverview.typeWheel.sectors[0].fill" stroke="#474747" stroke-width="5" />
-                            <text class="stress-type-wheel-center-text" x="220" y="195"><tspan>评估</tspan></text>
-                            <text class="stress-type-wheel-center-text" x="220" y="242"><tspan>类型</tspan></text>
-                            <text class="stress-type-wheel-selected-text" x="438" y="228" text-anchor="middle" dominant-baseline="middle">
-                              <tspan>{{ reportViewModel.stressOverview.typeWheel.selectedLabel }}</tspan>
-                            </text>
-                          </svg>
+                        <div class="stress-type-wheel-card" v-if="reportViewModel.stressOverview.typeWheel" v-html="reportViewModel.stressOverview.typeWheel.svgHtml">
                         </div>
                         <div class="stress-energy-chart-card" v-if="reportViewModel.stressOverview.energyChart.metrics.length">
-                          <svg class="stress-energy-chart-svg" viewBox="0 0 360 392" aria-hidden="true">
-                            <g v-for="sector in reportViewModel.stressOverview.energyChart.backgroundSectors" :key="`energy-bg-${sector.key}`">
-                              <path :d="sector.path" :fill="sector.fill" stroke="#f7f7f7" stroke-width="2" />
-                            </g>
-                            <g v-for="sector in reportViewModel.stressOverview.energyChart.metrics" :key="`energy-${sector.key}`">
-                              <path :d="sector.path" :fill="sector.color" />
-                              <text
-                                class="stress-energy-chart-value"
-                                :x="sector.labelX"
-                                :y="sector.labelY"
-                                text-anchor="middle"
-                                dominant-baseline="middle"
-                              >
-                                <tspan>{{ sector.score }}</tspan>
-                                <tspan class="stress-energy-chart-percent">%</tspan>
-                              </text>
-                            </g>
-                            <circle cx="180" cy="180" r="74" fill="#2d2d2f" />
-                            <circle cx="180" cy="180" r="61" fill="none" stroke="#f8f8f8" stroke-width="4" />
-                            <text class="stress-energy-chart-side-text" x="180" y="110" text-anchor="middle" dominant-baseline="middle"><tspan>情绪指数</tspan></text>
-                            <text class="stress-energy-chart-side-text" x="250" y="180" text-anchor="middle" dominant-baseline="middle" transform="rotate(90, 250, 180)"><tspan>抗压力指数</tspan></text>
-                            <text class="stress-energy-chart-side-text" x="180" y="250" text-anchor="middle" dominant-baseline="middle"><tspan>活力指数</tspan></text>
-                            <text class="stress-energy-chart-side-text" x="110" y="180" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90, 110, 180)"><tspan>睡眠指数</tspan></text>
-                            <text class="stress-energy-chart-center" x="180" y="164" text-anchor="middle"><tspan>身心</tspan></text>
-                            <text class="stress-energy-chart-center" x="180" y="204" text-anchor="middle"><tspan>能量</tspan></text>
-                          </svg>
+                          <div v-html="reportViewModel.stressOverview.energyChart.svgHtml" style="width: 100%; display: flex; justify-content: center;"></div>
                           <div class="stress-energy-footnote">50-100分 正常范围（偏圆形较佳）</div>
                         </div>
                       </div>
@@ -1829,6 +1778,8 @@ const buildStressOverview = (patient) => {
     y: 39 + index * 20
   }));
 
+  const ageTicksHtml = ageTicks.map(tick => `<text class="autonomic-pie-tick" x="${tick.x}" y="${tick.y}"><tspan>${tick.label}</tspan></text>`).join('');
+
   const ageCaption = (() => {
     if (autonomicAge !== null && actualAge !== null) {
       if (autonomicAge <= actualAge - 5) return '自律神经年龄年轻化';
@@ -1916,6 +1867,78 @@ const buildStressOverview = (patient) => {
     { label: '抗压力指数', value: formatMetricPercent(antiStressSignal?.value), note: '用于观察压力承受与恢复能力' }
   ].filter(Boolean).slice(0, 4);
 
+  const typeWheel = buildTypeWheel(overviewWheelLabel);
+  typeWheel.svgHtml = `
+    <svg class="stress-type-wheel-svg" viewBox="0 0 580 430" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+      ${typeWheel.sectors.map((sector, index) => `
+        <g key="wheel-${sector.label}">
+          <path d="${sector.path}" fill="${sector.fill}" stroke="#111111" stroke-width="${sector.strokeWidth}" />
+          ${index !== 0 ? `
+            <text
+              class="stress-type-wheel-text"
+              x="${sector.textX}"
+              y="${sector.textY}"
+              text-anchor="middle"
+              dominant-baseline="middle"
+              transform="rotate(${sector.textRotate}, ${sector.textX}, ${sector.textY})"
+            >
+              ${sector.label}
+            </text>
+          ` : ''}
+        </g>
+      `).join('')}
+      <circle cx="220" cy="215" r="183" fill="none" stroke="#111111" stroke-width="4" />
+      <circle cx="220" cy="215" r="100" fill="#2d2d2f" stroke="#f8f8f8" stroke-width="8" />
+      <circle cx="220" cy="215" r="88" fill="none" stroke="rgba(255,255,255,0.16)" stroke-width="2" />
+      <path d="M304 195 L336 215 L304 235 Z" fill="#2a2a2a" />
+      <path d="M322 176 L556 143 L556 287 L322 254 L290 215 Z" fill="${typeWheel.sectors[0].fill}" stroke="#474747" stroke-width="5" />
+      <text class="stress-type-wheel-center-text" x="220" y="195">评估</text>
+      <text class="stress-type-wheel-center-text" x="220" y="242">类型</text>
+      <text class="stress-type-wheel-selected-text" x="438" y="228" text-anchor="middle" dominant-baseline="middle">
+        ${typeWheel.selectedLabel}
+      </text>
+    </svg>
+  `;
+
+  const energyChart = buildEnergyChart({
+    sleep: sleepScore,
+    emotion: emotionScore,
+    vitality: vitalityScore,
+    antiStress: antiStressScore
+  });
+  energyChart.svgHtml = `
+    <svg class="stress-energy-chart-svg" viewBox="0 0 360 392" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+      ${energyChart.backgroundSectors.map(sector => `
+        <g key="energy-bg-${sector.key}">
+          <path d="${sector.path}" fill="${sector.fill}" stroke="#f7f7f7" stroke-width="2" />
+        </g>
+      `).join('')}
+      ${energyChart.metrics.map(sector => `
+        <g key="energy-${sector.key}">
+          <path d="${sector.path}" fill="${sector.color}" />
+          <text
+            class="stress-energy-chart-value"
+            x="${sector.labelX}"
+            y="${sector.labelY}"
+            text-anchor="middle"
+            dominant-baseline="middle"
+          >
+            <tspan>${sector.score}</tspan>
+            <tspan class="stress-energy-chart-percent" font-size="0.6em" dy="-0.2em">%</tspan>
+          </text>
+        </g>
+      `).join('')}
+      <circle cx="180" cy="180" r="74" fill="#2d2d2f" />
+      <circle cx="180" cy="180" r="61" fill="none" stroke="#f8f8f8" stroke-width="4" />
+      <text class="stress-energy-chart-side-text" x="180" y="110" text-anchor="middle" dominant-baseline="middle">情绪指数</text>
+      <text class="stress-energy-chart-side-text" x="250" y="180" text-anchor="middle" dominant-baseline="middle" transform="rotate(90, 250, 180)">抗压力指数</text>
+      <text class="stress-energy-chart-side-text" x="180" y="250" text-anchor="middle" dominant-baseline="middle">活力指数</text>
+      <text class="stress-energy-chart-side-text" x="110" y="180" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90, 110, 180)">睡眠指数</text>
+      <text class="stress-energy-chart-center" x="180" y="164" text-anchor="middle">身心</text>
+      <text class="stress-energy-chart-center" x="180" y="204" text-anchor="middle">能量</text>
+    </svg>
+  `;
+
   return {
     hasAge: !!ageSignal,
     hasBalance: !!balanceSignal || !!symSignal || !!vagSignal,
@@ -1927,7 +1950,7 @@ const buildStressOverview = (patient) => {
     sympatheticValue: symSignal?.value ? normalizeValue(symSignal.value) : '--',
     parasympatheticValue: vagSignal?.value ? normalizeValue(vagSignal.value) : '--',
     sympatheticArcPath,
-    ageTicks,
+    ageTicksHtml,
     symPatternId,
     vagPatternId,
     overviewType,
@@ -1935,13 +1958,8 @@ const buildStressOverview = (patient) => {
     overviewDescription,
     energyScore,
     energyMetrics,
-    typeWheel: buildTypeWheel(overviewWheelLabel),
-    energyChart: buildEnergyChart({
-      sleep: sleepScore,
-      emotion: emotionScore,
-      vitality: vitalityScore,
-      antiStress: antiStressScore
-    }),
+    typeWheel,
+    energyChart,
     notes
   };
 };
@@ -2830,28 +2848,16 @@ const exportReportForH5 = async () => {
           .print-page .stress-energy-chart-card {
             padding: 7px 8px;
           }
-          .print-page .stress-type-wheel-text {
-            font-size: 11px;
-          }
-          .print-page .stress-type-wheel-center-text {
-            font-size: 25px;
-          }
-          .print-page .stress-type-wheel-selected-text {
-            font-size: 28px;
-          }
-          .print-page .stress-energy-chart-value {
-            font-size: 22px;
-          }
-          .print-page .stress-energy-chart-percent {
-            font-size: 12px;
-          }
-          .print-page .stress-energy-chart-center {
-            font-size: 25px;
-          }
-          .print-page .stress-energy-chart-side-text,
           .print-page .stress-energy-footnote {
             font-size: 10px;
           }
+          .stress-type-wheel-text { fill: #1e1f21; font-size: 22px; font-weight: 500; letter-spacing: 2px; }
+          .stress-type-wheel-center-text { fill: #f7f7f7; font-size: 34px; font-weight: 700; letter-spacing: 2px; }
+          .stress-type-wheel-selected-text { fill: #1f1f20; font-size: 38px; font-weight: 500; letter-spacing: 2px; }
+          .stress-energy-chart-side-text { fill: #f7f7f7; font-size: 14px; letter-spacing: 0.5px; }
+          .stress-energy-chart-center { fill: #f7f7f7; font-size: 32px; font-weight: 700; letter-spacing: 2px; }
+          .stress-energy-chart-value { fill: #111111; font-size: 28px; font-weight: 700; }
+          .stress-energy-chart-percent { font-size: 16px; font-weight: 500; }
           .print-page .reference-row-stress-overview-page .reference-stat-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
           }
@@ -4421,7 +4427,7 @@ const exportReport = async () => {
   overflow: visible;
 }
 
-.autonomic-pie-tick {
+:deep(.autonomic-pie-tick) {
   fill: #485f80;
   font-size: 13px;
   font-weight: 500;
@@ -4566,27 +4572,27 @@ const exportReport = async () => {
   overflow: hidden;
 }
 
-.stress-type-wheel-svg {
+:deep(.stress-type-wheel-svg) {
   display: block;
   width: 100%;
   height: auto;
 }
 
-.stress-type-wheel-text {
+:deep(.stress-type-wheel-text) {
   fill: #1e1f21;
   font-size: 22px;
   font-weight: 500;
   letter-spacing: 2px;
 }
 
-.stress-type-wheel-center-text {
+:deep(.stress-type-wheel-center-text) {
   fill: #f7f7f7;
   font-size: 34px;
   font-weight: 700;
   letter-spacing: 2px;
 }
 
-.stress-type-wheel-selected-text {
+:deep(.stress-type-wheel-selected-text) {
   fill: #1f1f20;
   font-size: 38px;
   font-weight: 500;
@@ -4600,33 +4606,33 @@ const exportReport = async () => {
   justify-content: flex-start;
 }
 
-.stress-energy-chart-svg {
+:deep(.stress-energy-chart-svg) {
   display: block;
   width: min(100%, 430px);
   height: auto;
   overflow: visible;
 }
 
-.stress-energy-chart-side-text {
+:deep(.stress-energy-chart-side-text) {
   fill: #f7f7f7;
   font-size: 14px;
   letter-spacing: 0.5px;
 }
 
-.stress-energy-chart-center {
+:deep(.stress-energy-chart-center) {
   fill: #f7f7f7;
   font-size: 32px;
   font-weight: 700;
   letter-spacing: 2px;
 }
 
-.stress-energy-chart-value {
+:deep(.stress-energy-chart-value) {
   fill: #111111;
   font-size: 28px;
   font-weight: 700;
 }
 
-.stress-energy-chart-percent {
+:deep(.stress-energy-chart-percent) {
   font-size: 16px;
   font-weight: 500;
 }
