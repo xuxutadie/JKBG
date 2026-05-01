@@ -4145,10 +4145,15 @@ const exportReport = async () => {
   background: #ffffff;
   box-shadow: 0 8px 20px rgba(28, 77, 151, 0.08);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .reference-section-body {
   padding: 12px 12px 14px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .reference-section-title {
@@ -4182,6 +4187,8 @@ const exportReport = async () => {
 .reference-pairs-table,
 .reference-data-table {
   width: 100%;
+  height: 100%;
+  flex: 1;
   border-collapse: collapse;
 }
 
