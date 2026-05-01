@@ -1888,14 +1888,14 @@ const buildStressOverview = (patient) => {
         </g>
       `).join('')}
       <circle cx="220" cy="215" r="183" fill="none" stroke="#111111" stroke-width="4" />
-      <path d="M324 176 L556 143 L556 287 L324 254 Z" fill="${typeWheel.sectors[0].fill}" stroke="#474747" stroke-width="5" stroke-linejoin="round" />
+      <path d="M324 187 L484 155 L484 275 L324 243 Z" fill="${typeWheel.sectors[0].fill}" stroke="#474747" stroke-width="5" stroke-linejoin="round" />
       <circle cx="220" cy="215" r="100" fill="#2d2d2f" stroke="#f8f8f8" stroke-width="8" />
       <polygon points="316,197 344,215 316,233" fill="#2d2d2f" />
       <polyline points="318,197 344,215 318,233" fill="none" stroke="#f8f8f8" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" />
       <circle cx="220" cy="215" r="88" fill="none" stroke="rgba(255,255,255,0.16)" stroke-width="2" />
       <text class="stress-type-wheel-center-text" x="220" y="190" text-anchor="middle" dominant-baseline="middle">评估</text>
       <text class="stress-type-wheel-center-text" x="220" y="240" text-anchor="middle" dominant-baseline="middle">类型</text>
-      <text class="stress-type-wheel-selected-text" x="440" y="215" text-anchor="middle" dominant-baseline="middle">
+      <text class="stress-type-wheel-selected-text" x="404" y="215" text-anchor="middle" dominant-baseline="middle">
         ${typeWheel.selectedLabel}
       </text>
     </svg>
@@ -2854,7 +2854,7 @@ const exportReportForH5 = async () => {
           }
           .stress-type-wheel-text { fill: #1e1f21; font-size: 15px; font-weight: 500; letter-spacing: 1px; }
           .stress-type-wheel-center-text { fill: #f7f7f7; font-size: 34px; font-weight: 700; letter-spacing: 2px; }
-          .stress-type-wheel-selected-text { fill: #1f1f20; font-size: 38px; font-weight: 500; letter-spacing: 2px; }
+          .stress-type-wheel-selected-text { fill: #1f1f20; font-size: 30px; font-weight: 500; letter-spacing: 2px; }
           .stress-energy-chart-side-text { fill: #f7f7f7; font-size: 14px; letter-spacing: 0.5px; }
           .stress-energy-chart-center { fill: #f7f7f7; font-size: 32px; font-weight: 700; letter-spacing: 2px; }
           .stress-energy-chart-value { fill: #111111; font-size: 28px; font-weight: 700; }
@@ -4595,7 +4595,7 @@ const exportReport = async () => {
 
 :deep(.stress-type-wheel-selected-text) {
   fill: #1f1f20;
-  font-size: 38px;
+  font-size: 30px;
   font-weight: 500;
   letter-spacing: 2px;
 }
