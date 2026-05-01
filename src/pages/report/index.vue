@@ -2822,29 +2822,27 @@ const exportReportForH5 = async () => {
           }
           .print-page .autonomic-age-panel,
           .print-page .stress-overview-charts {
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 1.15fr);
+            grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.45fr) minmax(0, 1.3fr);
             gap: 10px;
+            align-items: stretch;
           }
           .print-page .autonomic-pie-svg {
             width: 100%;
             max-width: 320px;
             height: auto;
             aspect-ratio: 280/220;
-            transform: scale(1.1);
             transform-origin: center center;
           }
           .print-page .stress-type-wheel-svg {
             width: 100%;
             height: auto;
-            max-height: 250px;
-            transform: scale(0.95);
+            max-height: 280px;
             transform-origin: center center;
           }
           .print-page .stress-energy-chart-svg {
             width: 100%;
             height: auto;
-            max-height: 250px;
-            transform: scale(0.95);
+            max-height: 280px;
             transform-origin: center center;
           }
           .print-page .autonomic-age-value {
@@ -2862,6 +2860,7 @@ const exportReportForH5 = async () => {
             display: flex;
             flex-direction: column;
             justify-content: center;
+            height: 100%;
           }
           .print-page .stress-energy-footnote {
             font-size: 10px;
