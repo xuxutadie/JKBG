@@ -153,7 +153,7 @@ const bodyState = computed(() => {
 <style scoped>
 .mobile-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f4f7fb 0%, #e0e8ff 100%);
+  background: linear-gradient(135deg, #eff6ff 0%, #c7d2fe 100%);
   padding: 44px 20px 80px;
   box-sizing: border-box;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -199,12 +199,18 @@ const bodyState = computed(() => {
 }
 
 .health-overview-card {
-  background: #ffffff;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.9);
+  border-left: 1px solid rgba(255, 255, 255, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 24px;
   padding: 24px;
   display: flex;
   align-items: center;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 10px 40px rgba(31, 38, 135, 0.06), 0 2px 10px rgba(0, 0, 0, 0.04), inset 0 2px 4px rgba(255, 255, 255, 0.6);
   margin-bottom: 32px;
 }
 
@@ -231,7 +237,7 @@ const bodyState = computed(() => {
 }
 
 .progress-ring__circle.bg {
-  stroke: #f0f4ff;
+  stroke: rgba(255, 255, 255, 0.5);
 }
 
 .progress-ring__circle.progress {
@@ -310,18 +316,25 @@ const bodyState = computed(() => {
 }
 
 .task-item {
-  background: #ffffff;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.9);
+  border-left: 1px solid rgba(255, 255, 255, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 20px;
   padding: 16px;
   display: flex;
   align-items: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 8px 24px rgba(31, 38, 135, 0.05), 0 2px 8px rgba(0, 0, 0, 0.03), inset 0 2px 4px rgba(255, 255, 255, 0.6);
   transition: all 0.2s ease;
 }
 
 .task-item:active {
   transform: scale(0.98);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.5) 100%);
+  box-shadow: 0 4px 12px rgba(31, 38, 135, 0.04), inset 0 2px 4px rgba(255, 255, 255, 0.6);
 }
 
 .task-icon {

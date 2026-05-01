@@ -140,7 +140,7 @@ const goBack = () => {
 <style scoped>
 .mobile-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f4f7fb 0%, #e0e8ff 100%);
+  background: linear-gradient(135deg, #eff6ff 0%, #c7d2fe 100%);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   padding-bottom: calc(40px + env(safe-area-inset-bottom));
 }
@@ -252,10 +252,16 @@ const goBack = () => {
 }
 
 .sleep-card {
-  background: #ffffff;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.9);
+  border-left: 1px solid rgba(255, 255, 255, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 24px;
   padding: 24px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 10px 40px rgba(31, 38, 135, 0.06), 0 2px 10px rgba(0, 0, 0, 0.04), inset 0 2px 4px rgba(255, 255, 255, 0.6);
   margin-bottom: 20px;
 }
 
@@ -401,10 +407,16 @@ const goBack = () => {
 }
 
 .advice-card {
-  background: #ffffff;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.9);
+  border-left: 1px solid rgba(255, 255, 255, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 20px;
   padding: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 8px 24px rgba(31, 38, 135, 0.05), inset 0 2px 4px rgba(255, 255, 255, 0.6);
 }
 
 .advice-header {

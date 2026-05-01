@@ -70,7 +70,7 @@ const goBack = () => {
 <style scoped>
 .mobile-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f4f7fb 0%, #e0e8ff 100%);
+  background: linear-gradient(135deg, #eff6ff 0%, #c7d2fe 100%);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   padding-bottom: 100px;
 }
@@ -124,15 +124,20 @@ const goBack = () => {
 }
 
 .plan-card {
-  background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.9);
+  border-left: 1px solid rgba(255, 255, 255, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 20px;
   padding: 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 8px 30px rgba(98, 114, 255, 0.08);
+  box-shadow: 0 10px 40px rgba(31, 38, 135, 0.06), 0 2px 10px rgba(0, 0, 0, 0.04), inset 0 2px 4px rgba(255, 255, 255, 0.6);
   margin-bottom: 24px;
-  border: 1px solid #eef2f6;
 }
 
 .plan-info {

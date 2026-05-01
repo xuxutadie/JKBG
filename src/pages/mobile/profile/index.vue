@@ -75,7 +75,7 @@ const handleLogout = () => {
 <style scoped>
 .mobile-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f4f7fb 0%, #e0e8ff 100%);
+  background: linear-gradient(135deg, #eff6ff 0%, #c7d2fe 100%);
   padding-bottom: 80px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
@@ -108,11 +108,16 @@ const handleLogout = () => {
 .profile-card {
   margin: 0 20px 24px;
   padding: 24px 20px;
-  background: #ffffff;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
+  backdrop-filter: blur(20px);
   border-radius: 20px;
   display: flex;
   align-items: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  border-top: 1px solid rgba(255, 255, 255, 0.9);
+  border-left: 1px solid rgba(255, 255, 255, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 10px 40px rgba(31, 38, 135, 0.06), 0 2px 10px rgba(0, 0, 0, 0.04), inset 0 2px 4px rgba(255, 255, 255, 0.6);
   transition: all 0.2s ease;
 }
 
@@ -155,10 +160,15 @@ const handleLogout = () => {
 
 .menu-list {
   margin: 0 20px;
-  background: #ffffff;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
+  backdrop-filter: blur(20px);
   border-radius: 20px;
   padding: 8px 0;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  border-top: 1px solid rgba(255, 255, 255, 0.9);
+  border-left: 1px solid rgba(255, 255, 255, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 10px 40px rgba(31, 38, 135, 0.06), 0 2px 10px rgba(0, 0, 0, 0.04), inset 0 2px 4px rgba(255, 255, 255, 0.6);
 }
 
 .menu-item {
@@ -168,14 +178,14 @@ const handleLogout = () => {
 }
 
 .menu-item:active {
-  background-color: #f8fafc;
+  background-color: rgba(255, 255, 255, 0.3);
 }
 
 .menu-icon-box {
   width: 32px;
   height: 32px;
   border-radius: 10px;
-  background-color: #f1f5f9;
+  background-color: rgba(255, 255, 255, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -200,7 +210,8 @@ const handleLogout = () => {
 }
 
 .logout-btn {
-  background: #ffffff;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
+  backdrop-filter: blur(20px);
   color: #f43f5e;
   font-size: 16px;
   font-weight: 600;
@@ -209,14 +220,18 @@ const handleLogout = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  border-top: 1px solid rgba(255, 255, 255, 0.9);
+  border-left: 1px solid rgba(255, 255, 255, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 10px 40px rgba(31, 38, 135, 0.06), 0 2px 10px rgba(0, 0, 0, 0.04), inset 0 2px 4px rgba(255, 255, 255, 0.6);
   border: none;
   transition: all 0.2s ease;
 }
 .logout-btn:active {
   transform: scale(0.98);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  background: #fff1f2;
+  background: rgba(255, 241, 242, 0.8);
 }
 .logout-btn::after {
   border: none;

@@ -154,13 +154,18 @@ const handleLogin = async () => {
 .logo-box {
   width: 80px;
   height: 80px;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-radius: 50%;
+  border-top: 1px solid rgba(255, 255, 255, 0.8);
+  border-left: 1px solid rgba(255, 255, 255, 0.6);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 32px rgba(122, 136, 255, 0.3);
+  box-shadow: 0 10px 30px rgba(122, 136, 255, 0.4), inset 0 2px 6px rgba(255, 255, 255, 0.5);
   margin-bottom: 20px;
 }
 
@@ -192,15 +197,20 @@ const handleLogin = async () => {
 .input-group {
   width: 100%;
   height: 54px;
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(12px);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-radius: 27px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-top: 1px solid rgba(255, 255, 255, 0.6);
+  border-left: 1px solid rgba(255, 255, 255, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   padding: 0 24px;
   margin-bottom: 20px;
   box-sizing: border-box;
+  box-shadow: 0 8px 24px rgba(31, 38, 135, 0.05), inset 0 2px 4px rgba(255, 255, 255, 0.2);
 }
 
 .input-icon {
