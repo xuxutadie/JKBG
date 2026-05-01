@@ -2851,7 +2851,7 @@ const exportReportForH5 = async () => {
           .print-page .stress-energy-footnote {
             font-size: 10px;
           }
-          .stress-type-wheel-text { fill: #1e1f21; font-size: 22px; font-weight: 500; letter-spacing: 2px; }
+          .stress-type-wheel-text { fill: #1e1f21; font-size: 15px; font-weight: 500; letter-spacing: 1px; }
           .stress-type-wheel-center-text { fill: #f7f7f7; font-size: 34px; font-weight: 700; letter-spacing: 2px; }
           .stress-type-wheel-selected-text { fill: #1f1f20; font-size: 38px; font-weight: 500; letter-spacing: 2px; }
           .stress-energy-chart-side-text { fill: #f7f7f7; font-size: 14px; letter-spacing: 0.5px; }
@@ -4580,9 +4580,9 @@ const exportReport = async () => {
 
 :deep(.stress-type-wheel-text) {
   fill: #1e1f21;
-  font-size: 22px;
+  font-size: 15px;
   font-weight: 500;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
 }
 
 :deep(.stress-type-wheel-center-text) {
