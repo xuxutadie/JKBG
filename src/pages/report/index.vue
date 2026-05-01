@@ -154,8 +154,8 @@
                 </div>
               </div>
 
-              <div class="reference-row">
-                <div class="reference-section reference-section-main">
+              <div class="reference-row reference-row-single">
+                <div class="reference-section reference-section-full">
                   <div class="reference-section-title tone-blue">2 自律神经检测结果</div>
                   <div class="reference-section-body">
                     <table class="reference-data-table" v-if="reportViewModel.stressTable.rows.length">
@@ -173,8 +173,10 @@
                     <div class="reference-empty-block" v-else>暂无可展示的自律神经检测数据</div>
                   </div>
                 </div>
+              </div>
 
-                <div class="reference-section reference-section-side">
+              <div class="reference-row reference-row-single reference-row-page-break reference-row-stress-overview-page" data-print-page-break-before="true">
+                <div class="reference-section reference-section-full">
                   <div class="reference-section-title tone-green">自律神经年龄与总体评估</div>
                   <div class="reference-section-body">
                     <div class="autonomic-age-panel" v-if="reportViewModel.stressOverview.hasAge || reportViewModel.stressOverview.hasBalance">
@@ -218,25 +220,62 @@
 
                     <div class="stress-overview-box" v-if="reportViewModel.stressOverview.hasOverview">
                       <div class="stress-overview-title">总体评估</div>
-                      <div class="stress-overview-main">
-                        <div class="stress-type-card">
-                          <div class="stress-type-label">评估类型</div>
-                          <div class="stress-type-value">{{ reportViewModel.stressOverview.overviewType }}</div>
-                          <div class="stress-type-desc">{{ reportViewModel.stressOverview.overviewDescription }}</div>
+                      <div class="stress-overview-charts">
+                        <div class="stress-type-wheel-card" v-if="reportViewModel.stressOverview.typeWheel">
+                          <svg class="stress-type-wheel-svg" viewBox="0 0 580 430" aria-hidden="true">
+                            <g v-for="sector in reportViewModel.stressOverview.typeWheel.sectors" :key="`wheel-${sector.label}`">
+                              <path :d="sector.path" :fill="sector.fill" stroke="#111111" :stroke-width="sector.strokeWidth" />
+                              <text
+                                class="stress-type-wheel-text"
+                                :x="sector.textX"
+                                :y="sector.textY"
+                                text-anchor="middle"
+                                dominant-baseline="middle"
+                                :transform="`rotate(${sector.textRotate} ${sector.textX} ${sector.textY})`"
+                              >
+                                {{ sector.label }}
+                              </text>
+                            </g>
+                            <circle cx="220" cy="215" r="183" fill="none" stroke="#111111" stroke-width="4" />
+                            <circle cx="220" cy="215" r="100" fill="#2d2d2f" stroke="#f8f8f8" stroke-width="8" />
+                            <circle cx="220" cy="215" r="88" fill="none" stroke="rgba(255,255,255,0.16)" stroke-width="2" />
+                            <path d="M304 195 L336 215 L304 235 Z" fill="#2a2a2a" />
+                            <path d="M322 176 L556 143 L556 287 L322 254 L290 215 Z" fill="#e8ac78" stroke="#474747" stroke-width="5" />
+                            <text class="stress-type-wheel-center-text" x="220" y="195">评估</text>
+                            <text class="stress-type-wheel-center-text" x="220" y="242">类型</text>
+                            <text class="stress-type-wheel-selected-text" x="438" y="228" text-anchor="middle" dominant-baseline="middle">
+                              {{ reportViewModel.stressOverview.typeWheel.selectedLabel }}
+                            </text>
+                          </svg>
                         </div>
-                        <div class="stress-energy-card" v-if="reportViewModel.stressOverview.energyMetrics.length">
-                          <div class="stress-energy-donut" :style="reportViewModel.stressOverview.energyStyle">
-                            <div class="stress-energy-inner">
-                              <div class="stress-energy-label">身心能量</div>
-                              <div class="stress-energy-value">{{ reportViewModel.stressOverview.energyScore }}%</div>
-                            </div>
-                          </div>
-                          <div class="stress-energy-metrics">
-                            <div class="stress-energy-metric" v-for="item in reportViewModel.stressOverview.energyMetrics" :key="item.label">
-                              <span>{{ item.label }}</span>
-                              <strong>{{ item.display }}</strong>
-                            </div>
-                          </div>
+                        <div class="stress-energy-chart-card" v-if="reportViewModel.stressOverview.energyChart.metrics.length">
+                          <svg class="stress-energy-chart-svg" viewBox="0 0 360 392" aria-hidden="true">
+                            <g v-for="sector in reportViewModel.stressOverview.energyChart.backgroundSectors" :key="`energy-bg-${sector.key}`">
+                              <path :d="sector.path" :fill="sector.fill" stroke="#f7f7f7" stroke-width="2" />
+                            </g>
+                            <g v-for="sector in reportViewModel.stressOverview.energyChart.metrics" :key="`energy-${sector.key}`">
+                              <path :d="sector.path" :fill="sector.color" />
+                              <text
+                                class="stress-energy-chart-value"
+                                :x="sector.labelX"
+                                :y="sector.labelY"
+                                text-anchor="middle"
+                                dominant-baseline="middle"
+                              >
+                                <tspan>{{ sector.score }}</tspan>
+                                <tspan class="stress-energy-chart-percent">%</tspan>
+                              </text>
+                            </g>
+                            <circle cx="180" cy="180" r="74" fill="#2d2d2f" />
+                            <circle cx="180" cy="180" r="61" fill="none" stroke="#f8f8f8" stroke-width="4" />
+                            <text class="stress-energy-chart-side-text" x="180" y="110" text-anchor="middle" dominant-baseline="middle">情绪指数</text>
+                            <text class="stress-energy-chart-side-text" x="250" y="180" text-anchor="middle" dominant-baseline="middle" transform="rotate(90 250 180)">抗压力指数</text>
+                            <text class="stress-energy-chart-side-text" x="180" y="250" text-anchor="middle" dominant-baseline="middle">活力指数</text>
+                            <text class="stress-energy-chart-side-text" x="110" y="180" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90 110 180)">睡眠指数</text>
+                            <text class="stress-energy-chart-center" x="180" y="164" text-anchor="middle">身心</text>
+                            <text class="stress-energy-chart-center" x="180" y="204" text-anchor="middle">能量</text>
+                          </svg>
+                          <div class="stress-energy-footnote">50-100分 正常范围（偏圆形较佳）</div>
                         </div>
                       </div>
 
@@ -1597,17 +1636,15 @@ const formatAgeDisplay = (value) => {
   return numeric === null ? normalized : `${numeric}岁`;
 };
 
-const buildEnergyGradient = (count) => {
-  const palette = ['#6a74ff', '#53b7ff', '#f4c44f', '#74d36b'];
-  const safeCount = Math.max(1, Math.min(4, count));
-  const step = 100 / safeCount;
-  const segments = [];
-  for (let index = 0; index < safeCount; index += 1) {
-    const start = (index * step).toFixed(2);
-    const end = ((index + 1) * step).toFixed(2);
-    segments.push(`${palette[index]} ${start}% ${end}%`);
-  }
-  return `conic-gradient(${segments.join(', ')})`;
+const clampMetricScore = (value, fallback = 75) => {
+  const numeric = value === null || value === undefined ? null : Number(value);
+  if (numeric === null || Number.isNaN(numeric)) return fallback;
+  return Math.max(50, Math.min(100, Math.round(numeric)));
+};
+
+const formatMetricPercent = (value) => {
+  const numeric = parseNumber(value);
+  return numeric === null ? '--' : `${clampMetricScore(numeric)}%`;
 };
 
 const polarToCartesian = (centerX, centerY, radius, angleDeg) => {
@@ -1639,6 +1676,117 @@ const describePieSlice = (centerX, centerY, radius, startAngle, endAngle) => {
     `A ${radius} ${radius} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`,
     'Z'
   ].join(' ');
+};
+
+const describeRingSlice = (centerX, centerY, innerRadius, outerRadius, startAngle, endAngle) => {
+  let normalizedStart = startAngle;
+  let normalizedEnd = endAngle;
+  while (normalizedEnd <= normalizedStart) normalizedEnd += 360;
+  const angleSpan = Math.max(0, Math.min(359.999, normalizedEnd - normalizedStart));
+  if (angleSpan <= 0.01) return '';
+
+  const outerStart = polarToCartesian(centerX, centerY, outerRadius, normalizedStart);
+  const outerEnd = polarToCartesian(centerX, centerY, outerRadius, normalizedEnd);
+  const innerEnd = polarToCartesian(centerX, centerY, innerRadius, normalizedEnd);
+  const innerStart = polarToCartesian(centerX, centerY, innerRadius, normalizedStart);
+  const largeArcFlag = angleSpan > 180 ? 1 : 0;
+
+  return [
+    `M ${outerStart.x} ${outerStart.y}`,
+    `A ${outerRadius} ${outerRadius} 0 ${largeArcFlag} 1 ${outerEnd.x} ${outerEnd.y}`,
+    `L ${innerEnd.x} ${innerEnd.y}`,
+    `A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${innerStart.x} ${innerStart.y}`,
+    'Z'
+  ].join(' ');
+};
+
+const rotateArrayToIndex = (items, targetIndex) => {
+  if (!items.length) return [];
+  const safeIndex = ((targetIndex % items.length) + items.length) % items.length;
+  return items.slice(safeIndex).concat(items.slice(0, safeIndex));
+};
+
+const buildTypeWheel = (selectedLabel) => {
+  const labels = [
+    '兴致索然',
+    '积劳成疾',
+    '倦怠不安',
+    '焦心操劳',
+    '力不从心',
+    '疲乏无力',
+    '神经衰弱',
+    '恐慌不安',
+    '心神不宁',
+    '郁郁寡欢',
+    '身强体壮',
+    '萎靡不振',
+    '抑郁担心',
+    '心平气和'
+  ];
+  const palette = ['#e8ad78', '#a8d2c6', '#c9c0df', '#d9c7b9', '#cbd4a9', '#d9bd70', '#cdd2e7', '#c6deec', '#d8c7c9', '#b7d5ad', '#d5c0d8', '#bfc4d1', '#aad0e4', '#bedb69'];
+  const resolvedLabel = labels.includes(selectedLabel) ? selectedLabel : '心平气和';
+  const selectedIndex = labels.indexOf(resolvedLabel);
+  const ordered = rotateArrayToIndex(labels.map((label, index) => ({
+    label,
+    fill: palette[index % palette.length]
+  })), selectedIndex);
+  const count = ordered.length;
+  const sectorAngle = 360 / count;
+  const centerX = 220;
+  const centerY = 215;
+  const innerRadius = 104;
+  const baseOuterRadius = 182;
+  const selectedOuterRadius = 234;
+
+  return {
+    selectedLabel: resolvedLabel,
+    sectors: ordered.map((item, index) => {
+      const startAngle = 90 - sectorAngle / 2 + index * sectorAngle;
+      const endAngle = startAngle + sectorAngle;
+      const midAngle = startAngle + sectorAngle / 2;
+      const outerRadius = index === 0 ? selectedOuterRadius : baseOuterRadius;
+      const textPoint = polarToCartesian(centerX, centerY, index === 0 ? 191 : 145, midAngle);
+
+      return {
+        label: item.label,
+        fill: item.fill,
+        strokeWidth: index === 0 ? 2.5 : 1.8,
+        path: describeRingSlice(centerX, centerY, innerRadius, outerRadius, startAngle, endAngle),
+        textX: textPoint.x,
+        textY: textPoint.y,
+        textRotate: midAngle > 180 ? midAngle + 180 : midAngle
+      };
+    })
+  };
+};
+
+const buildEnergyChart = (metrics) => {
+  const centerX = 180;
+  const centerY = 180;
+  const innerRadius = 76;
+  const trackOuterRadius = 165;
+  const metricConfigs = [
+    { key: 'emotion', label: '情绪指数', score: metrics.emotion, color: '#97d06f', startAngle: 315, endAngle: 405, labelX: 180, labelY: 32 },
+    { key: 'antiStress', label: '抗压力指数', score: metrics.antiStress, color: '#63b6e4', startAngle: 45, endAngle: 135, labelX: 328, labelY: 180 },
+    { key: 'vitality', label: '活力指数', score: metrics.vitality, color: '#efbe54', startAngle: 135, endAngle: 225, labelX: 180, labelY: 327 },
+    { key: 'sleep', label: '睡眠指数', score: metrics.sleep, color: '#5b69da', startAngle: 225, endAngle: 315, labelX: 35, labelY: 180 }
+  ];
+
+  return {
+    backgroundSectors: metricConfigs.map(item => ({
+      key: item.key,
+      fill: '#e0e0e0',
+      path: describeRingSlice(centerX, centerY, innerRadius, trackOuterRadius, item.startAngle, item.endAngle)
+    })),
+    metrics: metricConfigs.map(item => {
+      const outerRadius = 118 + ((clampMetricScore(item.score) - 50) / 50) * 44;
+      return {
+        ...item,
+        score: clampMetricScore(item.score),
+        path: describeRingSlice(centerX, centerY, innerRadius, outerRadius, item.startAngle + 2, item.endAngle - 2)
+      };
+    })
+  };
 };
 
 const buildStressOverview = (patient) => {
@@ -1702,14 +1850,31 @@ const buildStressOverview = (patient) => {
     return balanceSignal?.note || ansSignal?.note || '';
   })();
 
-  const energyMetrics = [
-    { label: '睡眠活性', value: parseNumber(sleepSignal?.value), display: formatAgeDisplay(sleepSignal?.value).replace('岁', '分') },
-    { label: '情绪稳定', value: parseNumber(emotionSignal?.value), display: formatAgeDisplay(emotionSignal?.value).replace('岁', '分') },
-    { label: '活力储备', value: parseNumber(vitalitySignal?.value), display: formatAgeDisplay(vitalitySignal?.value).replace('岁', '分') },
-    { label: '抗压能力', value: parseNumber(antiStressSignal?.value), display: formatAgeDisplay(antiStressSignal?.value).replace('岁', '分') }
-  ].filter(item => item.value !== null);
+  const sleepScore = clampMetricScore(
+    parseNumber(sleepSignal?.value) ?? (sdnnValue !== null ? 58 + sdnnValue * 0.8 : null),
+    70
+  );
+  const emotionScore = clampMetricScore(
+    parseNumber(emotionSignal?.value) ?? (balanceValue !== null ? 96 - Math.abs(balanceValue - 1) * 18 : null),
+    95
+  );
+  const vitalityScore = clampMetricScore(
+    parseNumber(vitalitySignal?.value) ?? (ansValue !== null ? 66 + ansValue * 4 : null),
+    90
+  );
+  const antiStressScore = clampMetricScore(
+    parseNumber(antiStressSignal?.value) ?? (symValue !== null && vagValue !== null ? 82 - Math.abs(symValue - vagValue) * 4 : null),
+    80
+  );
 
-  const energyScore = clampScore(weightedAverage(energyMetrics.map(item => ({ value: item.value, weight: 1 })))) || 0;
+  const energyMetrics = [
+    { key: 'sleep', label: '睡眠指数', value: sleepScore, display: `${sleepScore}%` },
+    { key: 'emotion', label: '情绪指数', value: emotionScore, display: `${emotionScore}%` },
+    { key: 'vitality', label: '活力指数', value: vitalityScore, display: `${vitalityScore}%` },
+    { key: 'antiStress', label: '抗压力指数', value: antiStressScore, display: `${antiStressScore}%` }
+  ];
+
+  const energyScore = clampMetricScore(weightedAverage(energyMetrics.map(item => ({ value: item.value, weight: 1 }))), 84);
 
   const overviewType = (() => {
     if (balanceValue !== null) {
@@ -1719,6 +1884,16 @@ const buildStressOverview = (patient) => {
     if (sdnnValue !== null && sdnnValue < 30) return '恢复不足型';
     if (ansValue !== null && ansValue >= 8) return '调节稳健型';
     return '平衡调节型';
+  })();
+
+  const overviewWheelLabel = (() => {
+    if (overviewType === '交感偏亢型') return '焦心操劳';
+    if (overviewType === '副交感偏高型') return '倦怠不安';
+    if (overviewType === '恢复不足型') return '萎靡不振';
+    if (overviewType === '调节稳健型') return '心平气和';
+    if (energyScore <= 65) return '疲乏无力';
+    if (energyScore >= 90) return '身强体壮';
+    return '神经衰弱';
   })();
 
   const overviewDescription = (() => {
@@ -1733,7 +1908,9 @@ const buildStressOverview = (patient) => {
     ageSignal ? { label: '自律神经年龄', value: formatAgeDisplay(ageSignal.value), note: ageCaption } : null,
     ansSignal ? { label: '总体功能', value: normalizeValue(ansSignal.value), note: ansSignal.note || '反映整体神经调节能力' } : null,
     sdnnSignal ? { label: 'SDNN', value: normalizeValue(sdnnSignal.value), note: sdnnSignal.note || '反映心率变异与恢复弹性' } : null,
-    balanceSignal ? { label: '偏向值', value: normalizeValue(balanceSignal.value), note: balanceSignal.note || '用于判断交感与副交感偏向' } : null
+    balanceSignal ? { label: '偏向值', value: normalizeValue(balanceSignal.value), note: balanceSignal.note || '用于判断交感与副交感偏向' } : null,
+    { label: '情绪指数', value: formatMetricPercent(emotionSignal?.value), note: '用于观察情绪稳定性与心理弹性' },
+    { label: '抗压力指数', value: formatMetricPercent(antiStressSignal?.value), note: '用于观察压力承受与恢复能力' }
   ].filter(Boolean).slice(0, 4);
 
   return {
@@ -1751,12 +1928,17 @@ const buildStressOverview = (patient) => {
     symPatternId,
     vagPatternId,
     overviewType,
+    overviewWheelLabel,
     overviewDescription,
     energyScore,
     energyMetrics,
-    energyStyle: {
-      background: buildEnergyGradient(energyMetrics.length)
-    },
+    typeWheel: buildTypeWheel(overviewWheelLabel),
+    energyChart: buildEnergyChart({
+      sleep: sleepScore,
+      emotion: emotionScore,
+      vitality: vitalityScore,
+      antiStress: antiStressScore
+    }),
     notes
   };
 };
@@ -2551,6 +2733,9 @@ const exportReportForH5 = async () => {
             grid-template-columns: minmax(0, 1.14fr) minmax(226px, 0.92fr);
             gap: 8px;
           }
+          .print-page .reference-row.reference-row-single {
+            grid-template-columns: minmax(0, 1fr);
+          }
           .print-page .reference-row-bottom {
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 8px;
@@ -2615,34 +2800,57 @@ const exportReportForH5 = async () => {
             padding: 7px 8px;
           }
           .print-page .autonomic-age-panel,
-          .print-page .stress-overview-main,
-          .print-page .stress-energy-card {
+          .print-page .stress-overview-charts {
             gap: 8px;
           }
           .print-page .autonomic-pie-svg {
             width: 160px;
             height: 126px;
           }
-          .print-page .autonomic-balance-donut,
-          .print-page .stress-energy-donut {
-            width: 96px;
-            height: 96px;
+          .print-page .stress-type-wheel-svg {
+            max-width: 430px;
+          }
+          .print-page .stress-energy-chart-svg {
+            width: min(100%, 270px);
           }
           .print-page .autonomic-age-value {
             font-size: 28px;
           }
-          .print-page .autonomic-age-caption,
-          .print-page .stress-type-value {
+          .print-page .autonomic-age-caption {
             font-size: 18px;
           }
-          .print-page .stress-energy-metrics,
           .print-page .stress-overview-notes {
             gap: 6px;
           }
           .print-page .stress-overview-note,
-          .print-page .stress-energy-metric,
-          .print-page .stress-type-card {
+          .print-page .stress-type-wheel-card,
+          .print-page .stress-energy-chart-card {
             padding: 7px 8px;
+          }
+          .print-page .stress-type-wheel-text {
+            font-size: 11px;
+          }
+          .print-page .stress-type-wheel-center-text {
+            font-size: 25px;
+          }
+          .print-page .stress-type-wheel-selected-text {
+            font-size: 28px;
+          }
+          .print-page .stress-energy-chart-value {
+            font-size: 22px;
+          }
+          .print-page .stress-energy-chart-percent {
+            font-size: 12px;
+          }
+          .print-page .stress-energy-chart-center {
+            font-size: 25px;
+          }
+          .print-page .stress-energy-chart-side-text,
+          .print-page .stress-energy-footnote {
+            font-size: 10px;
+          }
+          .print-page .reference-row-stress-overview-page .reference-stat-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
           }
           .print-page .reference-tag {
             min-height: 24px;
@@ -2704,7 +2912,7 @@ const exportReportForH5 = async () => {
             const report = sourceRoot.querySelector('.reference-report');
             const footer = sourceRoot.querySelector('.paper-footer');
             const rowNodes = report
-              ? Array.from(report.children).filter((node) => node.classList && node.classList.contains('reference-row'))
+              ? Array.from(report.children).filter((node) => node.classList && (node.classList.contains('reference-row') || node.classList.contains('reference-row-bottom')))
               : [];
             const items = [header, ...rowNodes, footer].filter(Boolean).map((node) => node.cloneNode(true));
             const MIN_PAGE_SCALE = 0.84;
@@ -2748,6 +2956,11 @@ const exportReportForH5 = async () => {
             let currentPage = createPage();
 
             items.forEach((item) => {
+              if (item.dataset && item.dataset.printPageBreakBefore === 'true' && currentPage.content.children.length) {
+                finalizePage(currentPage);
+                currentPage = createPage();
+              }
+
               const holder = document.createElement('div');
               holder.className = 'print-page-item';
               holder.appendChild(item);
@@ -3887,8 +4100,20 @@ const exportReport = async () => {
   align-items: stretch;
 }
 
+.reference-row-single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.reference-row-page-break {
+  margin-top: 2px;
+}
+
 .reference-row-bottom {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.reference-section-full {
+  min-width: 0;
 }
 
 .reference-section {
@@ -4318,88 +4543,95 @@ const exportReport = async () => {
   color: #205daf;
 }
 
-.stress-overview-main {
+.stress-overview-charts {
   margin-top: 12px;
   display: grid;
-  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
-  gap: 12px;
-  align-items: stretch;
+  grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
+  gap: 16px;
+  align-items: start;
 }
 
-.stress-type-card {
-  padding: 14px;
-  border-radius: 16px;
-  background: linear-gradient(180deg, #f4f9ff 0%, #ffffff 100%);
+.stress-type-wheel-card,
+.stress-energy-chart-card {
+  padding: 10px 12px 12px;
+  border-radius: 18px;
   border: 1px solid #dde8f7;
+  background: linear-gradient(180deg, #fbfdff 0%, #f5f9ff 100%);
+}
+
+.stress-type-wheel-card {
+  overflow: hidden;
+}
+
+.stress-type-wheel-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.stress-type-wheel-text {
+  fill: #1e1f21;
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+
+.stress-type-wheel-center-text {
+  fill: #f7f7f7;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.stress-type-wheel-selected-text {
+  fill: #1f1f20;
+  font-size: 38px;
+  font-weight: 500;
+  letter-spacing: 2px;
+}
+
+.stress-energy-chart-card {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-}
-
-.stress-type-value {
-  margin-top: 8px;
-  font-size: 28px;
-  line-height: 1.1;
-  font-weight: 800;
-  color: #2a3448;
-}
-
-.stress-type-desc {
-  margin-top: 10px;
-  font-size: 12px;
-  line-height: 1.8;
-  color: #5b7598;
-}
-
-.stress-energy-card {
-  padding: 12px;
-  border-radius: 16px;
-  border: 1px solid #dde8f7;
-  background: linear-gradient(180deg, #fbfdff 0%, #f4f9ff 100%);
-  display: grid;
-  grid-template-columns: 132px minmax(0, 1fr);
-  gap: 12px;
   align-items: center;
+  justify-content: flex-start;
 }
 
-.stress-energy-donut {
-  width: 132px;
-  height: 132px;
-  box-shadow: 0 10px 22px rgba(76, 111, 188, 0.14);
+.stress-energy-chart-svg {
+  display: block;
+  width: min(100%, 430px);
+  height: auto;
+  overflow: visible;
 }
 
-.stress-energy-value {
+.stress-energy-chart-side-text {
+  fill: #f7f7f7;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
+
+.stress-energy-chart-center {
+  fill: #f7f7f7;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.stress-energy-chart-value {
+  fill: #111111;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.stress-energy-chart-percent {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.stress-energy-footnote {
   margin-top: 4px;
-  font-size: 24px;
-  line-height: 1;
-  font-weight: 800;
-  color: #263248;
-}
-
-.stress-energy-metrics {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.stress-energy-metric {
-  padding: 8px 10px;
-  border-radius: 12px;
-  background: #fff;
-  border: 1px solid #e2eaf8;
-}
-
-.stress-energy-metric span {
-  display: block;
-  font-size: 11px;
-  color: #7a90ac;
-}
-
-.stress-energy-metric strong {
-  display: block;
-  margin-top: 3px;
-  font-size: 15px;
-  color: #235fae;
+  font-size: 13px;
+  color: #333333;
+  text-align: center;
 }
 
 .stress-overview-notes {
@@ -4434,6 +4666,11 @@ const exportReport = async () => {
   font-size: 11px;
   line-height: 1.7;
   color: #617896;
+}
+
+.reference-row-stress-overview-page .reference-stat-grid {
+  margin-top: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .reference-balance-box {
@@ -4746,8 +4983,7 @@ const exportReport = async () => {
   }
 
   .autonomic-age-panel,
-  .stress-overview-main,
-  .stress-energy-card,
+  .stress-overview-charts,
   .stress-overview-notes {
     grid-template-columns: 1fr;
   }
@@ -4762,18 +4998,17 @@ const exportReport = async () => {
     font-size: 34px;
   }
 
-  .stress-type-value {
-    font-size: 24px;
-  }
-
   .autonomic-pie-svg {
     width: 190px;
     height: 148px;
   }
 
-  .stress-energy-donut,
-  .autonomic-balance-donut {
-    margin: 0 auto;
+  .stress-type-wheel-selected-text {
+    font-size: 30px;
+  }
+
+  .stress-energy-chart-svg {
+    width: min(100%, 320px);
   }
 
   .metric-chip-row,
