@@ -5449,12 +5449,15 @@ const exportReport = async () => {
 .form-group input[type="number"],
 .form-group input[type="password"] {
   width: 100%;
+  height: 40px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #fff;
-  padding: 10px 12px;
+  padding: 0 12px;
   border-radius: 4px;
   box-sizing: border-box;
+  font-size: 14px;
+  line-height: 40px;
 }
 .form-group input:focus {
   border-color: #14b6ff;
@@ -5518,15 +5521,21 @@ const exportReport = async () => {
 }
 .add-admin-form input {
   width: 100%;
+  height: 40px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #fff;
-  padding: 10px 12px;
+  padding: 0 12px;
   border-radius: 4px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   box-sizing: border-box;
+  font-size: 14px;
+  line-height: 40px;
 }
 .add-admin-form .primary-btn {
   width: 100%;
+  height: 40px;
+  font-size: 15px;
+  margin-top: 4px;
 }
 </style>
