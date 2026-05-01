@@ -2716,6 +2716,9 @@ const exportReportForH5 = async () => {
           }
           .print-page .reference-header {
             gap: 8px;
+            grid-template-columns: minmax(0, 1.14fr) minmax(226px, 0.92fr);
+          }
+          .print-page .reference-title-box {
             padding: 10px 12px;
           }
           .print-page .reference-title-text h2 {
@@ -2727,9 +2730,10 @@ const exportReportForH5 = async () => {
           .print-page .reference-patient-panel {
             grid-template-columns: minmax(0, 1fr) 112px;
             gap: 10px;
+            padding: 10px 12px;
           }
           .print-page .reference-patient-grid {
-            padding: 10px 12px;
+            padding: 0 10px 0 0;
           }
           .print-page .reference-patient-item {
             grid-template-columns: 64px minmax(0, 1fr);
@@ -3997,16 +4001,10 @@ const exportReport = async () => {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.95fr);
-  gap: 16px;
-  padding: 20px 22px;
-  margin-bottom: 16px;
-  border-radius: 22px;
-  border: 1px solid #dbe7fb;
-  background:
-    radial-gradient(circle at top right, rgba(74, 169, 255, 0.14), transparent 28%),
-    radial-gradient(circle at left top, rgba(111, 205, 255, 0.18), transparent 22%),
-    linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 1fr);
+  gap: 14px;
+  margin-bottom: 14px;
+  align-items: center;
 }
 
 .reference-title-box {
@@ -4014,6 +4012,14 @@ const exportReport = async () => {
   align-items: center;
   gap: 16px;
   min-width: 0;
+  padding: 20px 22px;
+  border-radius: 22px;
+  border: 1px solid #dbe7fb;
+  background:
+    radial-gradient(circle at top right, rgba(74, 169, 255, 0.14), transparent 28%),
+    radial-gradient(circle at left top, rgba(111, 205, 255, 0.18), transparent 22%),
+    linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+  box-shadow: 0 8px 20px rgba(28, 77, 151, 0.08);
 }
 
 .reference-title-icon {
@@ -4047,13 +4053,15 @@ const exportReport = async () => {
   grid-template-columns: minmax(0, 1fr) 134px;
   gap: 14px;
   align-items: stretch;
+  padding: 14px;
+  border-radius: 22px;
+  border: 1px solid #dbe7fb;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(28, 77, 151, 0.08);
 }
 
 .reference-patient-grid {
-  padding: 12px 14px;
-  border-radius: 18px;
-  border: 1px solid #dce9fb;
-  background: rgba(255, 255, 255, 0.88);
+  padding: 0 14px 0 0;
 }
 
 .reference-patient-item {
