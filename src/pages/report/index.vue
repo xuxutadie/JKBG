@@ -4367,6 +4367,8 @@ const exportReport = async () => {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.exercise-advice-list {
   display: flex;
   flex-direction: column;
   gap: 6px;
