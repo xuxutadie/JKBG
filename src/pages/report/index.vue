@@ -25,7 +25,6 @@
         <div class="panel-title" style="display: flex; justify-content: space-between; align-items: center;">
           <span>待生成报告档案列表</span>
           <div style="display: flex; gap: 8px;">
-            <button class="add-btn" @click="openAddPatient">新增</button>
             <button class="add-btn" @click="showAdminModal = true">管理员</button>
           </div>
         </div>
@@ -65,7 +64,6 @@
               </div>
             </div>
             <div class="card-actions">
-              <button class="edit-btn" @click.stop="openEditPatient(patient)">编辑</button>
               <button class="delete-btn" @click.stop="deletePatient(patient)">删除</button>
             </div>
           </div>
@@ -474,42 +472,6 @@
       </div>
     </div>
 
-    <!-- Add/Edit Patient Modal -->
-    <div class="custom-modal" v-if="showPatientModal">
-      <div class="modal-mask" @click="showPatientModal = false"></div>
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>{{ editingPatientId ? '编辑档案' : '新增档案' }}</h3>
-          <button class="close-btn" @click="showPatientModal = false">×</button>
-        </div>
-        <div class="modal-body form-body">
-          <div class="form-group">
-            <label>姓名</label>
-            <input type="text" v-model="patientForm.name" placeholder="请输入姓名" />
-          </div>
-          <div class="form-group">
-            <label>性别</label>
-            <div class="radio-group">
-              <label><input type="radio" value="男" v-model="patientForm.gender" /> 男</label>
-              <label><input type="radio" value="女" v-model="patientForm.gender" /> 女</label>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>年龄</label>
-            <input type="number" v-model="patientForm.age" placeholder="请输入年龄" />
-          </div>
-          <div class="form-group">
-            <label>手机号</label>
-            <input type="text" v-model="patientForm.phone" placeholder="请输入手机号" />
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="cancel-btn" @click="showPatientModal = false">取消</button>
-          <button class="primary-btn" @click="savePatient">保存</button>
-        </div>
-      </div>
-    </div>
-
   </view>
 </template>
 
@@ -517,7 +479,7 @@
 import { computed, nextTick, ref, watch } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
 import { generateHealthGuidance } from '@/utils/aiService';
-import { deletePatientRecord, listPatients as fetchPatients, createPatientRecord, updatePatientRecord } from '@/utils/patientApi';
+import { deletePatientRecord, listPatients as fetchPatients } from '@/utils/patientApi';
 
 const goToDashboard = () => {
   uni.showToast({ title: '看板已在独立窗口运行', icon: 'none' });
@@ -553,12 +515,9 @@ const reportPaperRef = ref(null);
 
 // Modal states
 const showAdminModal = ref(false);
-const showPatientModal = ref(false);
-const editingPatientId = ref(null);
 const adminList = ref([]);
 const newAdminUsername = ref('');
 const newAdminPassword = ref('');
-const patientForm = ref({ name: '', gender: '男', age: '', phone: '' });
 
 // Initialize admin list
 const initAdminList = () => {
@@ -588,43 +547,6 @@ const addAdmin = () => {
 const deleteAdmin = (index) => {
   adminList.value.splice(index, 1);
   uni.setStorageSync('admin_accounts', adminList.value);
-};
-
-const openAddPatient = () => {
-  editingPatientId.value = null;
-  patientForm.value = { name: '', gender: '男', age: '', phone: '' };
-  showPatientModal.value = true;
-};
-
-const openEditPatient = (patient) => {
-  editingPatientId.value = patient.id;
-  patientForm.value = { 
-    name: patient.name || '', 
-    gender: patient.gender || '男', 
-    age: patient.age || '', 
-    phone: patient.phone || '' 
-  };
-  showPatientModal.value = true;
-};
-
-const savePatient = async () => {
-  if (!patientForm.value.name) return uni.showToast({ title: '请输入姓名', icon: 'none' });
-  
-  uni.showLoading({ title: '保存中...' });
-  try {
-    if (editingPatientId.value) {
-      await updatePatientRecord(editingPatientId.value, patientForm.value);
-    } else {
-      await createPatientRecord(patientForm.value);
-    }
-    showPatientModal.value = false;
-    await loadPatients();
-    uni.hideLoading();
-    uni.showToast({ title: '保存成功', icon: 'success' });
-  } catch (error) {
-    uni.hideLoading();
-    uni.showToast({ title: '保存失败', icon: 'none' });
-  }
 };
 
 const tabs = [
@@ -5435,63 +5357,6 @@ const exportReport = async () => {
   color: #fff;
   max-height: 60vh;
   overflow-y: auto;
-}
-.form-group {
-  margin-bottom: 16px;
-}
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 14px;
-}
-.form-group input[type="text"],
-.form-group input[type="number"],
-.form-group input[type="password"] {
-  width: 100%;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #fff;
-  padding: 0 12px;
-  border-radius: 4px;
-  box-sizing: border-box;
-  font-size: 14px;
-  line-height: 40px;
-}
-.form-group input:focus {
-  border-color: #14b6ff;
-  outline: none;
-}
-.radio-group {
-  display: flex;
-  gap: 16px;
-}
-.radio-group label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-}
-.modal-footer {
-  padding: 16px 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
-.cancel-btn {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: rgba(255, 255, 255, 0.8);
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-.cancel-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
 }
 .primary-btn {
   background: #14b6ff;
