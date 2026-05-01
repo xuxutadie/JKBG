@@ -154,7 +154,7 @@
                 </div>
               </div>
 
-              <div class="reference-row reference-row-single">
+              <div class="reference-row reference-row-single reference-row-stress-table">
                 <div class="reference-section reference-section-full">
                   <div class="reference-section-title tone-blue">2 自律神经检测结果</div>
                   <div class="reference-section-body">
@@ -2658,17 +2658,20 @@ const exportReportForH5 = async () => {
             border-radius: 18px;
             background: linear-gradient(180deg, #fefefe 0%, #f7fbff 100%);
             box-shadow: inset 0 0 0 1px #dce7f6;
+            display: flex;
+            flex-direction: column;
           }
           .print-page-item + .print-page-item {
             margin-top: 8px;
           }
-          .print-page.has-document-footer .print-page-surface {
+          .print-page-content {
+            flex: 1 1 auto;
+            min-height: 0;
             display: flex;
             flex-direction: column;
           }
-          .print-page.has-document-footer .print-page-content {
-            flex: 1 1 auto;
-            min-height: 0;
+          .print-page-content > .print-page-item:only-child {
+            margin: auto 0;
           }
           .print-document-footer {
             margin-top: 10px;
