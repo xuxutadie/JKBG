@@ -1710,21 +1710,23 @@ const buildTypeWheel = (selectedLabel) => {
   const labels = [
     '兴致索然',
     '积劳成疾',
-    '倦怠不安',
-    '焦心操劳',
+    '惴惴不安',
+    '身心微恙',
     '力不从心',
-    '疲乏无力',
-    '神经衰弱',
-    '恐慌不安',
-    '心神不宁',
+    '有气无力',
     '郁郁寡欢',
-    '身强体壮',
+    '积弱不振',
+    '气若游丝',
+    '欲振乏力',
+    '心神不宁',
+    '劳形苦心',
     '萎靡不振',
-    '抑郁担心',
-    '心平气和'
+    '焦躁不安',
+    '力拔山河',
+    '身强体壮'
   ];
-  const palette = ['#e8ad78', '#a8d2c6', '#c9c0df', '#d9c7b9', '#cbd4a9', '#d9bd70', '#cdd2e7', '#c6deec', '#d8c7c9', '#b7d5ad', '#d5c0d8', '#bfc4d1', '#aad0e4', '#bedb69'];
-  const resolvedLabel = labels.includes(selectedLabel) ? selectedLabel : '心平气和';
+  const palette = ['#f4a87c', '#a8d1ba', '#c6badb', '#e2d3c9', '#c4d19a', '#e2c56a', '#c2c9df', '#b8d6eb', '#dbcdca', '#a9ce9d', '#d4bedb', '#bcc2d1', '#9bc6df', '#b4d758', '#f27854', '#f1604a'];
+  const resolvedLabel = labels.includes(selectedLabel) ? selectedLabel : '兴致索然';
   const selectedIndex = labels.indexOf(resolvedLabel);
   const ordered = rotateArrayToIndex(labels.map((label, index) => ({
     label,
@@ -1887,13 +1889,13 @@ const buildStressOverview = (patient) => {
   })();
 
   const overviewWheelLabel = (() => {
-    if (overviewType === '交感偏亢型') return '焦心操劳';
-    if (overviewType === '副交感偏高型') return '倦怠不安';
+    if (overviewType === '交感偏亢型') return '焦躁不安';
+    if (overviewType === '副交感偏高型') return '郁郁寡欢';
     if (overviewType === '恢复不足型') return '萎靡不振';
-    if (overviewType === '调节稳健型') return '心平气和';
-    if (energyScore <= 65) return '疲乏无力';
+    if (overviewType === '调节稳健型') return '力拔山河';
+    if (energyScore <= 65) return '有气无力';
     if (energyScore >= 90) return '身强体壮';
-    return '神经衰弱';
+    return '身心微恙';
   })();
 
   const overviewDescription = (() => {
