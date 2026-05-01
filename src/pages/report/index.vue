@@ -2720,6 +2720,7 @@ const exportReportForH5 = async () => {
           }
           .print-page .reference-title-box {
             padding: 10px 12px;
+            height: 100%;
           }
           .print-page .reference-title-text h2 {
             font-size: 28px;
@@ -4004,7 +4005,7 @@ const exportReport = async () => {
   grid-template-columns: minmax(0, 1.2fr) minmax(320px, 1fr);
   gap: 14px;
   margin-bottom: 14px;
-  align-items: center;
+  align-items: stretch;
 }
 
 .reference-title-box {
@@ -4020,6 +4021,7 @@ const exportReport = async () => {
     radial-gradient(circle at left top, rgba(111, 205, 255, 0.18), transparent 22%),
     linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
   box-shadow: 0 8px 20px rgba(28, 77, 151, 0.08);
+  height: 100%;
 }
 
 .reference-title-icon {
