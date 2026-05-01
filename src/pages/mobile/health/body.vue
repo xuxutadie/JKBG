@@ -145,7 +145,7 @@ const goBack = () => {
   min-height: 100vh;
   background-color: #f4f7fb;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  padding-bottom: 40px;
+  padding-bottom: calc(40px + env(safe-area-inset-bottom));
 }
 
 .nav-header {
@@ -158,11 +158,17 @@ const goBack = () => {
 }
 
 .back-btn, .right-btn {
-  width: 24px;
-  height: 24px;
+  width: 44px;
+  height: 44px;
+  margin: 0 -10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.back-btn:active, .right-btn:active {
+  opacity: 0.6;
 }
 
 .icon-back {

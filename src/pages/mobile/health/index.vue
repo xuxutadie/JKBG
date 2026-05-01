@@ -168,6 +168,12 @@ const goTo = (url) => {
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+  transition: all 0.2s ease;
+}
+
+.module-item:active {
+  transform: scale(0.96);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
 .module-icon {
@@ -202,7 +208,7 @@ const goTo = (url) => {
 .empty-state {
   text-align: center;
   padding: 60px 0;
-  color: #94a3b8;
+  color: #64748b;
   font-size: 15px;
 }
 </style>

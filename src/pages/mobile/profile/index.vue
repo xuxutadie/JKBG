@@ -114,6 +114,12 @@ const handleLogout = () => {
   display: flex;
   align-items: center;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+}
+
+.profile-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
 .avatar {
@@ -139,13 +145,13 @@ const handleLogout = () => {
 
 .user-bio {
   font-size: 13px;
-  color: #7b8a9e;
+  color: #64748b;
 }
 
 .arrow-icon {
   width: 20px;
   height: 20px;
-  color: #cbd5e1;
+  color: #94a3b8;
 }
 
 .menu-list {
@@ -206,6 +212,12 @@ const handleLogout = () => {
   justify-content: center;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
   border: none;
+  transition: all 0.2s ease;
+}
+.logout-btn:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  background: #fff1f2;
 }
 .logout-btn::after {
   border: none;

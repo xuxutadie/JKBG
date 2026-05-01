@@ -85,11 +85,17 @@ const goBack = () => {
 }
 
 .back-btn, .right-btn {
-  width: 24px;
-  height: 24px;
+  width: 44px;
+  height: 44px;
+  margin: 0 -10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.back-btn:active, .right-btn:active {
+  opacity: 0.6;
 }
 
 .icon-back {
@@ -206,7 +212,7 @@ const goBack = () => {
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 16px 20px 32px;
+  padding: 16px 20px calc(32px + env(safe-area-inset-bottom));
   background: linear-gradient(0deg, #ffffff 80%, rgba(255,255,255,0) 100%);
 }
 
@@ -220,9 +226,12 @@ const goBack = () => {
   line-height: 48px;
   border: none;
   box-shadow: 0 8px 20px rgba(98, 114, 255, 0.3);
+  transition: all 0.2s ease;
 }
 
 .start-btn:active {
+  transform: scale(0.96);
   opacity: 0.9;
+  box-shadow: 0 4px 10px rgba(98, 114, 255, 0.2);
 }
 </style>

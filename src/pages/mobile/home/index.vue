@@ -180,7 +180,7 @@ const bodyState = computed(() => {
 
 .greeting-subtitle {
   font-size: 13px;
-  color: #7b8a9e;
+  color: #64748b;
 }
 
 .user-avatar {
@@ -259,7 +259,7 @@ const bodyState = computed(() => {
 
 .score-label {
   font-size: 11px;
-  color: #94a3b8;
+  color: #64748b;
 }
 
 .overview-stats {
@@ -293,7 +293,7 @@ const bodyState = computed(() => {
 
 .stat-name {
   font-size: 12px;
-  color: #94a3b8;
+  color: #64748b;
   margin-bottom: 2px;
 }
 
@@ -316,6 +316,12 @@ const bodyState = computed(() => {
   display: flex;
   align-items: center;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+}
+
+.task-item:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .task-icon {
@@ -356,7 +362,7 @@ const bodyState = computed(() => {
 
 .task-desc {
   font-size: 13px;
-  color: #94a3b8;
+  color: #64748b;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -368,6 +374,11 @@ const bodyState = computed(() => {
   font-size: 13px;
   font-weight: 600;
   margin-left: 10px;
+  transition: all 0.2s ease;
+}
+
+.task-btn:active {
+  opacity: 0.7;
 }
 
 .btn-done {

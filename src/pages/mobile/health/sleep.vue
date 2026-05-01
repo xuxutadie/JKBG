@@ -142,7 +142,7 @@ const goBack = () => {
   min-height: 100vh;
   background-color: #f4f7fb;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  padding-bottom: 40px;
+  padding-bottom: calc(40px + env(safe-area-inset-bottom));
 }
 
 .nav-header {
@@ -155,11 +155,17 @@ const goBack = () => {
 }
 
 .back-btn, .right-btn {
-  width: 24px;
-  height: 24px;
+  width: 44px;
+  height: 44px;
+  margin: 0 -10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.back-btn:active, .right-btn:active {
+  opacity: 0.6;
 }
 
 .icon-back, .icon-history {
@@ -187,9 +193,14 @@ const goBack = () => {
 
 .tab {
   font-size: 16px;
-  color: #94a3b8;
-  padding-bottom: 6px;
+  color: #64748b;
+  padding: 10px 20px;
   position: relative;
+  transition: opacity 0.2s;
+}
+
+.tab:active {
+  opacity: 0.7;
 }
 
 .tab.active {
@@ -213,15 +224,22 @@ const goBack = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 16px;
   margin-bottom: 24px;
 }
 
 .icon-arrow {
-  width: 16px;
-  height: 16px;
-  color: #94a3b8;
+  width: 20px;
+  height: 20px;
+  color: #64748b;
   stroke-width: 2;
+  padding: 10px;
+  margin: -10px;
+  transition: opacity 0.2s;
+}
+
+.icon-arrow:active {
+  opacity: 0.5;
 }
 
 .icon-arrow.right {

@@ -262,15 +262,30 @@ const handleLogin = async () => {
   margin-bottom: 24px;
   box-shadow: 0 8px 20px rgba(98, 114, 255, 0.3);
   border: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.login-btn:active {
+  transform: scale(0.96);
+  box-shadow: 0 4px 10px rgba(98, 114, 255, 0.2);
+  opacity: 0.9;
 }
 .login-btn::after {
   border: none;
+}
+
+.get-code-text:active {
+  opacity: 0.7;
 }
 
 .login-link {
   text-align: center;
   font-size: 14px;
   color: rgba(255, 255, 255, 0.9);
+  padding: 8px;
+  margin-top: 10px;
+}
+.login-link:active {
+  opacity: 0.7;
 }
 
 /* 底部倒影效果 */
