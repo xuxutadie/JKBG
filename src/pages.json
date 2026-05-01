@@ -26,8 +26,75 @@
         "navigationBarTextStyle": "white",
         "navigationStyle": "custom"
       }
+    },
+    {
+      "path": "pages/mobile/login/index",
+      "style": {
+        "navigationBarTitleText": "登录",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/mobile/home/index",
+      "style": {
+        "navigationBarTitleText": "首页",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/mobile/health/index",
+      "style": {
+        "navigationBarTitleText": "健康数据",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/mobile/plan/index",
+      "style": {
+        "navigationBarTitleText": "健康方案",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/mobile/profile/index",
+      "style": {
+        "navigationBarTitleText": "我的",
+        "navigationStyle": "custom"
+      }
     }
   ],
+  "tabBar": {
+    "color": "#94a3b8",
+    "selectedColor": "#4a8cff",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/mobile/home/index",
+        "text": "首页",
+        "iconPath": "static/tabbar/home.svg",
+        "selectedIconPath": "static/tabbar/home-active.svg"
+      },
+      {
+        "pagePath": "pages/mobile/health/index",
+        "text": "健康",
+        "iconPath": "static/tabbar/health.svg",
+        "selectedIconPath": "static/tabbar/health-active.svg"
+      },
+      {
+        "pagePath": "pages/mobile/plan/index",
+        "text": "方案",
+        "iconPath": "static/tabbar/plan.svg",
+        "selectedIconPath": "static/tabbar/plan-active.svg"
+      },
+      {
+        "pagePath": "pages/mobile/profile/index",
+        "text": "我的",
+        "iconPath": "static/tabbar/profile.svg",
+        "selectedIconPath": "static/tabbar/profile-active.svg"
+      }
+    ]
+  },
   "globalStyle": {
     "navigationBarTextStyle": "white",
     "navigationBarTitleText": "心身康养管理",
