@@ -232,9 +232,9 @@
                                 :y="sector.textY"
                                 text-anchor="middle"
                                 dominant-baseline="middle"
-                                :transform="`rotate(${sector.textRotate} ${sector.textX} ${sector.textY})`"
+                                :transform="`rotate(${sector.textRotate}, ${sector.textX}, ${sector.textY})`"
                               >
-                                {{ sector.label }}
+                                <tspan>{{ sector.label }}</tspan>
                               </text>
                             </g>
                             <circle cx="220" cy="215" r="183" fill="none" stroke="#111111" stroke-width="4" />
@@ -242,10 +242,10 @@
                             <circle cx="220" cy="215" r="88" fill="none" stroke="rgba(255,255,255,0.16)" stroke-width="2" />
                             <path d="M304 195 L336 215 L304 235 Z" fill="#2a2a2a" />
                             <path d="M322 176 L556 143 L556 287 L322 254 L290 215 Z" :fill="reportViewModel.stressOverview.typeWheel.sectors[0].fill" stroke="#474747" stroke-width="5" />
-                            <text class="stress-type-wheel-center-text" x="220" y="195">评估</text>
-                            <text class="stress-type-wheel-center-text" x="220" y="242">类型</text>
+                            <text class="stress-type-wheel-center-text" x="220" y="195"><tspan>评估</tspan></text>
+                            <text class="stress-type-wheel-center-text" x="220" y="242"><tspan>类型</tspan></text>
                             <text class="stress-type-wheel-selected-text" x="438" y="228" text-anchor="middle" dominant-baseline="middle">
-                              {{ reportViewModel.stressOverview.typeWheel.selectedLabel }}
+                              <tspan>{{ reportViewModel.stressOverview.typeWheel.selectedLabel }}</tspan>
                             </text>
                           </svg>
                         </div>
@@ -269,12 +269,12 @@
                             </g>
                             <circle cx="180" cy="180" r="74" fill="#2d2d2f" />
                             <circle cx="180" cy="180" r="61" fill="none" stroke="#f8f8f8" stroke-width="4" />
-                            <text class="stress-energy-chart-side-text" x="180" y="110" text-anchor="middle" dominant-baseline="middle">情绪指数</text>
-                            <text class="stress-energy-chart-side-text" x="250" y="180" text-anchor="middle" dominant-baseline="middle" transform="rotate(90 250 180)">抗压力指数</text>
-                            <text class="stress-energy-chart-side-text" x="180" y="250" text-anchor="middle" dominant-baseline="middle">活力指数</text>
-                            <text class="stress-energy-chart-side-text" x="110" y="180" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90 110 180)">睡眠指数</text>
-                            <text class="stress-energy-chart-center" x="180" y="164" text-anchor="middle">身心</text>
-                            <text class="stress-energy-chart-center" x="180" y="204" text-anchor="middle">能量</text>
+                            <text class="stress-energy-chart-side-text" x="180" y="110" text-anchor="middle" dominant-baseline="middle"><tspan>情绪指数</tspan></text>
+                            <text class="stress-energy-chart-side-text" x="250" y="180" text-anchor="middle" dominant-baseline="middle" transform="rotate(90, 250, 180)"><tspan>抗压力指数</tspan></text>
+                            <text class="stress-energy-chart-side-text" x="180" y="250" text-anchor="middle" dominant-baseline="middle"><tspan>活力指数</tspan></text>
+                            <text class="stress-energy-chart-side-text" x="110" y="180" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90, 110, 180)"><tspan>睡眠指数</tspan></text>
+                            <text class="stress-energy-chart-center" x="180" y="164" text-anchor="middle"><tspan>身心</tspan></text>
+                            <text class="stress-energy-chart-center" x="180" y="204" text-anchor="middle"><tspan>能量</tspan></text>
                           </svg>
                           <div class="stress-energy-footnote">50-100分 正常范围（偏圆形较佳）</div>
                         </div>
@@ -1757,7 +1757,7 @@ const buildTypeWheel = (selectedLabel) => {
         path: describeRingSlice(centerX, centerY, innerRadius, outerRadius, startAngle, endAngle),
         textX: textPoint.x,
         textY: textPoint.y,
-        textRotate: midAngle > 180 ? midAngle + 180 : midAngle
+        textRotate: (midAngle > 180 && midAngle < 360) ? midAngle + 90 : midAngle - 90
       };
     })
   };
