@@ -2,7 +2,7 @@
   <view class="mobile-page home-page">
     <view class="home-header">
       <view class="user-greeting">
-        <text class="greeting-title">Hi, 张小明</text>
+        <text class="greeting-title">Hi, {{ currentUser.name || '用户' }}</text>
         <text class="greeting-subtitle">关注身心，来让身心健康每一天</text>
       </view>
       <image class="user-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" mode="aspectFill"></image>
@@ -20,35 +20,35 @@
               </linearGradient>
             </defs>
             <circle class="progress-ring__circle bg" stroke-width="8" cx="50" cy="50" r="40" fill="transparent" />
-            <circle class="progress-ring__circle progress" stroke-width="8" cx="50" cy="50" r="40" fill="transparent" stroke-dasharray="251.2" stroke-dashoffset="55" stroke="url(#scoreGrad)" />
+            <circle class="progress-ring__circle progress" stroke-width="8" cx="50" cy="50" r="40" fill="transparent" stroke-dasharray="251.2" :stroke-dashoffset="scoreDashoffset" stroke="url(#scoreGrad)" />
           </svg>
           <view class="score-text-box">
-            <text class="score-number">78</text>
+            <text class="score-number">{{ getScore }}</text>
             <text class="score-label">健康评分</text>
           </view>
         </view>
       </view>
-      
+
       <view class="overview-stats">
         <view class="stat-item">
           <view class="stat-dot dot-purple"></view>
           <view class="stat-info">
             <text class="stat-name">睡眠质量</text>
-            <text class="stat-value">良好</text>
+            <text class="stat-value">{{ sleepQuality }}</text>
           </view>
         </view>
         <view class="stat-item">
           <view class="stat-dot dot-green"></view>
           <view class="stat-info">
             <text class="stat-name">身心平衡</text>
-            <text class="stat-value">良好</text>
+            <text class="stat-value">{{ bodyBalance }}</text>
           </view>
         </view>
         <view class="stat-item">
           <view class="stat-dot dot-yellow"></view>
           <view class="stat-info">
             <text class="stat-name">身体状态</text>
-            <text class="stat-value">需要改善</text>
+            <text class="stat-value">{{ bodyState }}</text>
           </view>
         </view>
       </view>
@@ -102,6 +102,52 @@
 </template>
 
 <script setup>
+import { ref, onMounted, computed } from 'vue';
+import { onShow } from '@dcloudio/uni-app';
+
+const currentUser = ref({
+  name: '张小明',
+  score: 78,
+  reportData: {}
+});
+
+onShow(() => {
+  const user = uni.getStorageSync('current_user');
+  if (user) {
+    currentUser.value = user;
+  }
+});
+
+const getScore = computed(() => {
+  return currentUser.value.score || 0;
+});
+
+// Calculate dash offset for the progress ring (max 251.2)
+const scoreDashoffset = computed(() => {
+  const score = getScore.value;
+  const max = 251.2;
+  return max - (score / 100) * max;
+});
+
+const sleepQuality = computed(() => {
+  const val = currentUser.value.reportData?.sleepIndex || 80;
+  if (val >= 80) return '良好';
+  if (val >= 60) return '一般';
+  return '需要改善';
+});
+
+const bodyBalance = computed(() => {
+  const val = currentUser.value.reportData?.fatigueIndex || 80;
+  if (val >= 80) return '良好';
+  if (val >= 60) return '一般';
+  return '需要改善';
+});
+
+const bodyState = computed(() => {
+  const val = currentUser.value.reportData?.bmi || 22;
+  if (val >= 18.5 && val <= 24) return '良好';
+  return '需要改善';
+});
 </script>
 
 <style scoped>

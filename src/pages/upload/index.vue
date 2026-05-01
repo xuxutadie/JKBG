@@ -15,9 +15,9 @@
         <div class="nav-btn active">数据采集</div>
         <div class="nav-btn" @click="goToReport">智能报告</div>
       </div>
-      <div class="user-info">
+      <div class="user-info" @click="handleLogout" style="cursor: pointer;">
         <img src="/static/images/icon2.png" style="filter: brightness(0) invert(1); width: 24px;" />
-        <span>管理员</span>
+        <span>退出登录</span>
       </div>
     </div>
 
@@ -403,7 +403,23 @@ const openDashboardScreen = () => {
 const goToDashboard = () => {
   openDashboardScreen();
 };
-const goToReport = () => { uni.navigateTo({ url: '/pages/report/index' }); };
+const goToReport = () => {
+  uni.navigateTo({ url: '/pages/report/index' });
+};
+
+const handleLogout = () => {
+  uni.showModal({
+    title: '提示',
+    content: '确定要退出登录吗？',
+    success: (res) => {
+      if (res.confirm) {
+        uni.removeStorageSync('current_role');
+        uni.removeStorageSync('current_user');
+        uni.reLaunch({ url: '/pages/mobile/login/index' });
+      }
+    }
+  });
+};
 
 const triggerUpload = () => {
   // 统一使用 uni.chooseFile，支持 H5 和其他平台

@@ -86,6 +86,22 @@ export const createPatientRecord = async (payload) => {
   }
 };
 
+export const updatePatientRecord = async (id, payload) => {
+  try {
+    const response = await api.put(`/patients/${id}`, payload);
+    return response?.data || null;
+  } catch (_error) {
+    const current = readLocalPatients();
+    const index = current.findIndex(item => item.id === id);
+    if (index !== -1) {
+      current[index] = { ...current[index], ...payload, updatedAt: new Date().toISOString() };
+      writeLocalPatients(current);
+      return current[index];
+    }
+    return null;
+  }
+};
+
 export const deletePatientRecord = async (id) => {
   try {
     await api.delete(`/patients/${id}`);

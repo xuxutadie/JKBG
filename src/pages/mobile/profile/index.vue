@@ -13,7 +13,7 @@
     <view class="profile-card">
       <image class="avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" mode="aspectFill"></image>
       <view class="user-info">
-        <text class="user-name">张小明</text>
+        <text class="user-name">{{ currentUser.name || '用户' }}</text>
         <text class="user-bio">关注身心健康每一天</text>
       </view>
       <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -42,6 +42,20 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
+import { onShow } from '@dcloudio/uni-app';
+
+const currentUser = ref({
+  name: '张小明'
+});
+
+onShow(() => {
+  const user = uni.getStorageSync('current_user');
+  if (user) {
+    currentUser.value = user;
+  }
+});
+
 const menuItems = [
   { label: '健康数据', iconPath: 'M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z M22 6l-10 7L2 6' },
   { label: '我的报告', iconPath: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H8' },

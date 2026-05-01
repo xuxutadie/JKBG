@@ -32,14 +32,14 @@
         <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
         </svg>
-        <input type="number" placeholder="请输入手机号" placeholder-class="input-placeholder" class="input-control" />
+        <input type="text" v-model="phone" placeholder="请输入手机号/姓名" placeholder-class="input-placeholder" class="input-control" />
       </view>
       
       <view class="input-group">
         <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
         </svg>
-        <input type="text" placeholder="请输入验证码" placeholder-class="input-placeholder" class="input-control" />
+        <input type="password" v-model="password" placeholder="请输入验证码/密码" placeholder-class="input-placeholder" class="input-control" />
         <text class="get-code-text">获取</text>
       </view>
       
@@ -61,10 +61,69 @@
 </template>
 
 <script setup>
-const handleLogin = () => {
-  uni.switchTab({
-    url: '/pages/mobile/home/index'
-  });
+import { ref } from 'vue';
+import { listPatients } from '@/utils/patientApi';
+
+const phone = ref('');
+const password = ref('');
+
+const handleLogin = async () => {
+  if (!phone.value) {
+    return uni.showToast({ title: '请输入账号', icon: 'none' });
+  }
+
+  // 1. Check if it's an admin account
+  let adminAccounts = uni.getStorageSync('admin_accounts');
+  if (!adminAccounts || !Array.isArray(adminAccounts) || adminAccounts.length === 0) {
+    adminAccounts = [{ username: 'admin', password: '123' }];
+    uni.setStorageSync('admin_accounts', adminAccounts);
+  }
+
+  const isAdmin = adminAccounts.find(a => a.username === phone.value && a.password === password.value);
+  if (isAdmin) {
+    uni.showLoading({ title: '管理员登录中...' });
+    uni.setStorageSync('current_role', 'admin');
+    uni.setStorageSync('current_user', { name: isAdmin.username, role: 'admin' });
+    setTimeout(() => {
+      uni.hideLoading();
+      uni.redirectTo({ url: '/pages/index/index' });
+    }, 500);
+    return;
+  }
+
+  // 2. Mobile User Login
+  try {
+    uni.showLoading({ title: '登录中...' });
+    // Fetch patients from the backend
+    const patients = await listPatients();
+    if (patients && patients.length > 0) {
+      // For demo purposes, if the user enters a phone number that matches a patient's name or phone, we log them in.
+      // Otherwise, we just pick the first patient as the logged-in user.
+      let currentUser = patients[0];
+      if (phone.value) {
+        const matched = patients.find(p => p.phone === phone.value || p.name === phone.value);
+        if (matched) currentUser = matched;
+      }
+      uni.setStorageSync('current_role', 'user');
+      uni.setStorageSync('current_user', currentUser);
+    } else {
+      // If no patients exist, we create a mock one or clear it
+      uni.setStorageSync('current_role', 'user');
+      uni.setStorageSync('current_user', {
+        name: '测试用户',
+        score: 100,
+        gender: '男',
+        age: 30
+      });
+    }
+    uni.hideLoading();
+    uni.switchTab({
+      url: '/pages/mobile/home/index'
+    });
+  } catch (error) {
+    uni.hideLoading();
+    uni.showToast({ title: '登录失败', icon: 'none' });
+  }
 };
 </script>
 

@@ -1,6 +1,13 @@
 {
   "pages": [
     {
+      "path": "pages/mobile/login/index",
+      "style": {
+        "navigationBarTitleText": "登录",
+        "navigationStyle": "custom"
+      }
+    },
+    {
       "path": "pages/index/index",
       "style": {
         "navigationBarTitleText": "康养实时大屏",
@@ -24,13 +31,6 @@
         "navigationBarTitleText": "智能报告生成",
         "navigationBarBackgroundColor": "#101d36",
         "navigationBarTextStyle": "white",
-        "navigationStyle": "custom"
-      }
-    },
-    {
-      "path": "pages/mobile/login/index",
-      "style": {
-        "navigationBarTitleText": "登录",
         "navigationStyle": "custom"
       }
     },

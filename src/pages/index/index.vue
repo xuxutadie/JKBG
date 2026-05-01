@@ -11,6 +11,9 @@
         <div class="manage-enter-btn" v-if="!isEmbedMode" @click="goToUpload">
           进入管理后台
         </div>
+        <div class="logout-btn" v-if="!isEmbedMode" @click="handleLogout" title="退出登录">
+          退出
+        </div>
         <div class="fullscreen-btn" v-if="!isEmbedMode" @click="toggleFullScreen" :title="isFullScreen ? '退出全屏' : '全屏播放'">
           <img :src="isFullScreen ? '/static/images/icon6.png' : '/static/images/icon1.png'" style="filter: brightness(0) invert(1); width: 0.2rem; opacity: 0.8;" />
         </div>
@@ -221,6 +224,21 @@ const goToUpload = () => {
   uni.navigateTo({ url: '/pages/upload/index' });
 };
 
+const handleLogout = () => {
+  uni.showModal({
+    title: '提示',
+    content: '确定要退出登录吗？',
+    success: (res) => {
+      if (res.confirm) {
+        uni.removeStorageSync('current_role');
+        uni.removeStorageSync('current_user');
+        uni.reLaunch({ url: '/pages/mobile/login/index' });
+      }
+    }
+  });
+};
+
+// Toggle Fullscreen
 const toggleFullScreen = () => {
   if (typeof document === 'undefined') return;
 
@@ -1034,35 +1052,59 @@ onUnmounted(() => {
 
 .fullscreen-btn {
   position: absolute;
-  right: 0.5rem;
-  top: 0.2rem;
-  cursor: pointer;
-  z-index: 1001;
-  padding: 5px;
-  background: rgba(20, 182, 255, 0.1);
-  border: 1px solid rgba(20, 182, 255, 0.3);
-  border-radius: 4px;
+  top: 0.15rem;
+  right: 0.2rem;
+  width: 0.4rem;
+  height: 0.4rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
   transition: all 0.3s;
+  z-index: 100;
 }
 .fullscreen-btn:hover {
-  background: rgba(20, 182, 255, 0.3);
-  border-color: rgba(20, 182, 255, 0.8);
-  box-shadow: 0 0 15px rgba(20, 182, 255, 0.5);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.logout-btn {
+  position: absolute;
+  top: 0.15rem;
+  right: 0.8rem;
+  height: 0.4rem;
+  padding: 0 0.15rem;
+  background: rgba(255, 0, 0, 0.2);
+  border-radius: 0.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.14rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  z-index: 100;
+  border: 1px solid rgba(255, 0, 0, 0.3);
+}
+.logout-btn:hover {
+  background: rgba(255, 0, 0, 0.4);
 }
 
 .manage-enter-btn {
   position: absolute;
-  right: 1.2rem;
-  top: 0.22rem;
+  right: 1.7rem;
+  top: 0.15rem;
+  height: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   z-index: 1001;
-  padding: 0.05rem 0.15rem;
+  padding: 0 0.15rem;
   background: rgba(20, 182, 255, 0.2);
   border: 1px solid rgba(20, 182, 255, 0.5);
-  border-radius: 20px;
+  border-radius: 0.2rem;
   color: #fff;
   font-size: 0.14rem;
   font-weight: bold;

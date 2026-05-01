@@ -14,15 +14,21 @@
         <div class="nav-btn" @click="goToUpload">数据采集</div>
         <div class="nav-btn active">智能报告</div>
       </div>
-      <div class="user-info">
+      <div class="user-info" @click="handleLogout" style="cursor: pointer;">
         <img src="/static/images/icon2.png" style="filter: brightness(0) invert(1); width: 24px;" />
-        <span>管理员</span>
+        <span>退出登录</span>
       </div>
     </div>
 
     <div class="main-content">
       <div class="left-panel boxall">
-        <div class="panel-title">待生成报告档案列表</div>
+        <div class="panel-title" style="display: flex; justify-content: space-between; align-items: center;">
+          <span>待生成报告档案列表</span>
+          <div style="display: flex; gap: 8px;">
+            <button class="add-btn" @click="openAddPatient">新增</button>
+            <button class="add-btn" @click="showAdminModal = true">管理员</button>
+          </div>
+        </div>
 
         <div class="search-box">
           <input type="text" v-model="searchQuery" placeholder="搜索姓名或编号..." />
@@ -58,7 +64,10 @@
                 <span>{{ getPatientMeta(patient) }}</span>
               </div>
             </div>
-            <button class="delete-btn" @click.stop="deletePatient(patient)">删除</button>
+            <div class="card-actions">
+              <button class="edit-btn" @click.stop="openEditPatient(patient)">编辑</button>
+              <button class="delete-btn" @click.stop="deletePatient(patient)">删除</button>
+            </div>
           </div>
         </div>
       </div>
@@ -439,6 +448,68 @@
         </div>
       </div>
     </div>
+
+    <!-- Admin Management Modal -->
+    <div class="custom-modal" v-if="showAdminModal">
+      <div class="modal-mask" @click="showAdminModal = false"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>管理员设置</h3>
+          <button class="close-btn" @click="showAdminModal = false">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="admin-list">
+            <div class="admin-item" v-for="(admin, index) in adminList" :key="index">
+              <span>{{ admin.username }}</span>
+              <button v-if="admin.username !== 'admin'" class="delete-btn" @click="deleteAdmin(index)">移除</button>
+            </div>
+          </div>
+          <div class="add-admin-form">
+            <h4>任命新管理员</h4>
+            <input type="text" v-model="newAdminUsername" placeholder="账号" />
+            <input type="password" v-model="newAdminPassword" placeholder="密码" />
+            <button class="primary-btn" @click="addAdmin">添加</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add/Edit Patient Modal -->
+    <div class="custom-modal" v-if="showPatientModal">
+      <div class="modal-mask" @click="showPatientModal = false"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>{{ editingPatientId ? '编辑档案' : '新增档案' }}</h3>
+          <button class="close-btn" @click="showPatientModal = false">×</button>
+        </div>
+        <div class="modal-body form-body">
+          <div class="form-group">
+            <label>姓名</label>
+            <input type="text" v-model="patientForm.name" placeholder="请输入姓名" />
+          </div>
+          <div class="form-group">
+            <label>性别</label>
+            <div class="radio-group">
+              <label><input type="radio" value="男" v-model="patientForm.gender" /> 男</label>
+              <label><input type="radio" value="女" v-model="patientForm.gender" /> 女</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>年龄</label>
+            <input type="number" v-model="patientForm.age" placeholder="请输入年龄" />
+          </div>
+          <div class="form-group">
+            <label>手机号</label>
+            <input type="text" v-model="patientForm.phone" placeholder="请输入手机号" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="cancel-btn" @click="showPatientModal = false">取消</button>
+          <button class="primary-btn" @click="savePatient">保存</button>
+        </div>
+      </div>
+    </div>
+
   </view>
 </template>
 
@@ -446,7 +517,7 @@
 import { computed, nextTick, ref, watch } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
 import { generateHealthGuidance } from '@/utils/aiService';
-import { deletePatientRecord, listPatients as fetchPatients } from '@/utils/patientApi';
+import { deletePatientRecord, listPatients as fetchPatients, createPatientRecord, updatePatientRecord } from '@/utils/patientApi';
 
 const goToDashboard = () => {
   uni.showToast({ title: '看板已在独立窗口运行', icon: 'none' });
@@ -454,6 +525,20 @@ const goToDashboard = () => {
 
 const goToUpload = () => {
   uni.navigateTo({ url: '/pages/upload/index' });
+};
+
+const handleLogout = () => {
+  uni.showModal({
+    title: '提示',
+    content: '确定要退出登录吗？',
+    success: (res) => {
+      if (res.confirm) {
+        uni.removeStorageSync('current_role');
+        uni.removeStorageSync('current_user');
+        uni.reLaunch({ url: '/pages/mobile/login/index' });
+      }
+    }
+  });
 };
 
 const searchQuery = ref('');
@@ -465,6 +550,82 @@ const aiGuidanceLoading = ref(false);
 const aiGuidanceError = ref('');
 const exportLoading = ref(false);
 const reportPaperRef = ref(null);
+
+// Modal states
+const showAdminModal = ref(false);
+const showPatientModal = ref(false);
+const editingPatientId = ref(null);
+const adminList = ref([]);
+const newAdminUsername = ref('');
+const newAdminPassword = ref('');
+const patientForm = ref({ name: '', gender: '男', age: '', phone: '' });
+
+// Initialize admin list
+const initAdminList = () => {
+  let list = uni.getStorageSync('admin_accounts');
+  if (!list || !Array.isArray(list) || list.length === 0) {
+    list = [{ username: 'admin', password: '123' }];
+    uni.setStorageSync('admin_accounts', list);
+  }
+  adminList.value = list;
+};
+initAdminList();
+
+const addAdmin = () => {
+  if (!newAdminUsername.value || !newAdminPassword.value) {
+    return uni.showToast({ title: '请输入账号和密码', icon: 'none' });
+  }
+  if (adminList.value.find(a => a.username === newAdminUsername.value)) {
+    return uni.showToast({ title: '该管理员账号已存在', icon: 'none' });
+  }
+  adminList.value.push({ username: newAdminUsername.value, password: newAdminPassword.value });
+  uni.setStorageSync('admin_accounts', adminList.value);
+  newAdminUsername.value = '';
+  newAdminPassword.value = '';
+  uni.showToast({ title: '添加成功', icon: 'success' });
+};
+
+const deleteAdmin = (index) => {
+  adminList.value.splice(index, 1);
+  uni.setStorageSync('admin_accounts', adminList.value);
+};
+
+const openAddPatient = () => {
+  editingPatientId.value = null;
+  patientForm.value = { name: '', gender: '男', age: '', phone: '' };
+  showPatientModal.value = true;
+};
+
+const openEditPatient = (patient) => {
+  editingPatientId.value = patient.id;
+  patientForm.value = { 
+    name: patient.name || '', 
+    gender: patient.gender || '男', 
+    age: patient.age || '', 
+    phone: patient.phone || '' 
+  };
+  showPatientModal.value = true;
+};
+
+const savePatient = async () => {
+  if (!patientForm.value.name) return uni.showToast({ title: '请输入姓名', icon: 'none' });
+  
+  uni.showLoading({ title: '保存中...' });
+  try {
+    if (editingPatientId.value) {
+      await updatePatientRecord(editingPatientId.value, patientForm.value);
+    } else {
+      await createPatientRecord(patientForm.value);
+    }
+    showPatientModal.value = false;
+    await loadPatients();
+    uni.hideLoading();
+    uni.showToast({ title: '保存成功', icon: 'success' });
+  } catch (error) {
+    uni.hideLoading();
+    uni.showToast({ title: '保存失败', icon: 'none' });
+  }
+};
 
 const tabs = [
   { label: '全部', value: 'all' },
@@ -5178,5 +5339,194 @@ const exportReport = async () => {
   .mini-metric-grid {
     grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   }
+}
+
+/* Modals and Buttons CSS */
+.add-btn {
+  background: linear-gradient(135deg, rgba(20, 182, 255, 0.8) 0%, rgba(20, 182, 255, 0.5) 100%);
+  border: 1px solid rgba(20, 182, 255, 0.4);
+  color: #fff;
+  border-radius: 4px;
+  padding: 4px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.add-btn:hover {
+  background: rgba(20, 182, 255, 0.8);
+  box-shadow: 0 0 10px rgba(20, 182, 255, 0.5);
+}
+
+.card-actions {
+  display: flex;
+  gap: 6px;
+}
+.edit-btn {
+  background: rgba(43, 213, 107, 0.2);
+  border: 1px solid rgba(43, 213, 107, 0.4);
+  color: #2bd56b;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.edit-btn:hover {
+  background: rgba(43, 213, 107, 0.4);
+}
+
+.custom-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+.modal-content {
+  position: relative;
+  background: #15223c;
+  border: 1px solid rgba(20, 182, 255, 0.3);
+  border-radius: 8px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #fff;
+}
+.close-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+.close-btn:hover {
+  color: #fff;
+}
+.modal-body {
+  padding: 20px;
+  color: #fff;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.form-group {
+  margin-bottom: 16px;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+}
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="password"] {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+.form-group input:focus {
+  border-color: #14b6ff;
+  outline: none;
+}
+.radio-group {
+  display: flex;
+  gap: 16px;
+}
+.radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.modal-footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+.cancel-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.8);
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+.primary-btn {
+  background: #14b6ff;
+  border: none;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.primary-btn:hover {
+  background: #0ea1e6;
+}
+.admin-list {
+  margin-bottom: 20px;
+}
+.admin-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.add-admin-form h4 {
+  margin: 0 0 12px 0;
+  font-size: 15px;
+}
+.add-admin-form input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+.add-admin-form .primary-btn {
+  width: 100%;
 }
 </style>
