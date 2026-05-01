@@ -2826,8 +2826,8 @@ const exportReportForH5 = async () => {
             gap: 8px;
           }
           .print-page .autonomic-pie-svg {
-            width: 160px;
-            height: 126px;
+            width: 220px;
+            height: 172px;
           }
           .print-page .stress-type-wheel-svg {
             max-width: 430px;
@@ -4419,8 +4419,8 @@ const exportReport = async () => {
 }
 
 .autonomic-pie-svg {
-  width: 230px;
-  height: 180px;
+  width: 270px;
+  height: 212px;
   overflow: visible;
 }
 
@@ -5007,8 +5007,8 @@ const exportReport = async () => {
   }
 
   .autonomic-pie-svg {
-    width: 190px;
-    height: 148px;
+    width: 220px;
+    height: 172px;
   }
 
   .stress-type-wheel-selected-text {
