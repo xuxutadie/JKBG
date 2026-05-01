@@ -1888,13 +1888,14 @@ const buildStressOverview = (patient) => {
         </g>
       `).join('')}
       <circle cx="220" cy="215" r="183" fill="none" stroke="#111111" stroke-width="4" />
+      <path d="M324 176 L556 143 L556 287 L324 254 Z" fill="${typeWheel.sectors[0].fill}" stroke="#474747" stroke-width="5" stroke-linejoin="round" />
       <circle cx="220" cy="215" r="100" fill="#2d2d2f" stroke="#f8f8f8" stroke-width="8" />
+      <polygon points="316,197 344,215 316,233" fill="#2d2d2f" />
+      <polyline points="318,197 344,215 318,233" fill="none" stroke="#f8f8f8" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" />
       <circle cx="220" cy="215" r="88" fill="none" stroke="rgba(255,255,255,0.16)" stroke-width="2" />
-      <path d="M304 195 L336 215 L304 235 Z" fill="#2a2a2a" />
-      <path d="M322 176 L556 143 L556 287 L322 254 L290 215 Z" fill="${typeWheel.sectors[0].fill}" stroke="#474747" stroke-width="5" />
-      <text class="stress-type-wheel-center-text" x="220" y="195">评估</text>
-      <text class="stress-type-wheel-center-text" x="220" y="242">类型</text>
-      <text class="stress-type-wheel-selected-text" x="438" y="228" text-anchor="middle" dominant-baseline="middle">
+      <text class="stress-type-wheel-center-text" x="220" y="190" text-anchor="middle" dominant-baseline="middle">评估</text>
+      <text class="stress-type-wheel-center-text" x="220" y="240" text-anchor="middle" dominant-baseline="middle">类型</text>
+      <text class="stress-type-wheel-selected-text" x="440" y="215" text-anchor="middle" dominant-baseline="middle">
         ${typeWheel.selectedLabel}
       </text>
     </svg>
