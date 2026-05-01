@@ -14,38 +14,52 @@
             </text>
           </view>
         </view>
-        
-        <view class="card-body">
-          <view class="data-item">
-            <text class="label">建档日期</text>
-            <text class="value">{{ formatDate(currentUser.createdAt) }}</text>
-          </view>
-          <view class="data-item">
-            <text class="label">健康评分</text>
-            <text class="value score" :class="getScoreClass(currentUser.score)">{{ currentUser.score !== null ? currentUser.score : '--' }}</text>
-          </view>
-          <view class="data-item">
-            <text class="label">报告状态</text>
-            <text class="value status">{{ currentUser.statusText || '未知' }}</text>
-          </view>
-          <view class="data-item" v-if="currentUser.sourceLabels && currentUser.sourceLabels.length">
-            <text class="label">数据来源</text>
-            <view class="tags-list">
-              <text class="tag" v-for="(tag, idx) in currentUser.sourceLabels" :key="idx">{{ tag }}</text>
-            </view>
-          </view>
-        </view>
-
-        <!-- Temporary raw data view for debugging/designing -->
-        <view class="raw-data-section">
-          <view class="raw-title">原始报告数据 (ReportData)</view>
-          <scroll-view scroll-y class="raw-content">
-            <text class="json-text">{{ JSON.stringify(currentUser.reportData, null, 2) }}</text>
-          </scroll-view>
-        </view>
-
       </view>
-      
+
+      <view class="modules-grid" v-if="currentUser">
+        <view class="module-item" @click="goTo('/pages/mobile/health/sleep')">
+          <view class="module-icon bg-purple">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="icon-svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+          </view>
+          <text class="module-name">睡眠情况</text>
+        </view>
+
+        <view class="module-item" @click="goTo('/pages/mobile/health/autonomic')">
+          <view class="module-icon bg-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="icon-svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12h-4l-3 8-4-16-3 8H3" /></svg>
+          </view>
+          <text class="module-name">自主神经</text>
+        </view>
+
+        <view class="module-item" @click="goTo('/pages/mobile/health/body')">
+          <view class="module-icon bg-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="icon-svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+          </view>
+          <text class="module-name">人体成分</text>
+        </view>
+
+        <view class="module-item" @click="goTo('/pages/mobile/health/exercise')">
+          <view class="module-icon bg-orange">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="icon-svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          </view>
+          <text class="module-name">运动建议</text>
+        </view>
+
+        <view class="module-item" @click="goTo('/pages/mobile/health/advice')">
+          <view class="module-icon bg-teal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="icon-svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+          </view>
+          <text class="module-name">健康建议</text>
+        </view>
+
+        <view class="module-item" @click="goTo('/pages/mobile/health/diet')">
+          <view class="module-icon bg-yellow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="icon-svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+          </view>
+          <text class="module-name">饮食指南</text>
+        </view>
+      </view>
+
       <view class="empty-state" v-else>
         <text>未获取到客户数据，请先登录</text>
       </view>
@@ -66,21 +80,8 @@ onShow(() => {
   }
 });
 
-const formatDate = (isoString) => {
-  if (!isoString) return '--';
-  try {
-    const date = new Date(isoString);
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-  } catch (e) {
-    return '--';
-  }
-};
-
-const getScoreClass = (score) => {
-  if (score === null || score === undefined) return '';
-  if (score >= 80) return 'text-green';
-  if (score >= 60) return 'text-orange';
-  return 'text-red';
+const goTo = (url) => {
+  uni.navigateTo({ url });
 };
 </script>
 
@@ -112,14 +113,12 @@ const getScoreClass = (score) => {
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  margin-bottom: 20px;
 }
 
 .card-header {
   display: flex;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #f1f5f9;
 }
 
 .avatar {
@@ -154,89 +153,50 @@ const getScoreClass = (score) => {
   color: #94a3b8;
 }
 
-.card-body {
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.module-item {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.data-item {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  font-size: 14px;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.02);
 }
 
-.label {
-  color: #64748b;
-}
-
-.value {
-  color: #1e293b;
-  font-weight: 500;
-}
-
-.value.score {
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.text-green { color: #10b981; }
-.text-orange { color: #f59e0b; }
-.text-red { color: #ef4444; }
-
-.status {
-  background: #f0fdf4;
-  color: #10b981;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-}
-
-.tags-list {
+.module-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
   display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
 }
 
-.tag {
-  background: #f1f5f9;
-  color: #64748b;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 12px;
+.icon-svg {
+  width: 24px;
+  height: 24px;
+  color: #fff;
 }
 
-.raw-data-section {
-  margin-top: 20px;
-  background: #f8fafc;
-  border-radius: 8px;
-  padding: 12px;
-  border: 1px dashed #e2e8f0;
-}
+.bg-purple { background: linear-gradient(135deg, #9B8BFF 0%, #B8AFFF 100%); }
+.bg-blue { background: linear-gradient(135deg, #6272FF 0%, #8A96FF 100%); }
+.bg-green { background: linear-gradient(135deg, #34D399 0%, #6EE7B7 100%); }
+.bg-orange { background: linear-gradient(135deg, #FBBF24 0%, #FCD34D 100%); }
+.bg-teal { background: linear-gradient(135deg, #2DD4BF 0%, #6EE7B7 100%); }
+.bg-yellow { background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%); }
 
-.raw-title {
-  font-size: 12px;
+.module-name {
+  font-size: 15px;
   font-weight: 600;
-  color: #64748b;
-  margin-bottom: 8px;
-}
-
-.raw-content {
-  height: 200px;
-  background: #1e293b;
-  border-radius: 6px;
-  padding: 10px;
-}
-
-.json-text {
-  font-family: monospace;
-  font-size: 11px;
-  color: #a7f3d0;
-  white-space: pre-wrap;
-  word-wrap: break-word;
+  color: #1a233a;
 }
 
 .empty-state {

@@ -49,6 +49,48 @@
       }
     },
     {
+      "path": "pages/mobile/health/sleep",
+      "style": {
+        "navigationBarTitleText": "睡眠情况",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/mobile/health/autonomic",
+      "style": {
+        "navigationBarTitleText": "自主神经检测结果",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/mobile/health/body",
+      "style": {
+        "navigationBarTitleText": "人体成分分析",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/mobile/health/exercise",
+      "style": {
+        "navigationBarTitleText": "运动建议",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/mobile/health/advice",
+      "style": {
+        "navigationBarTitleText": "健康建议",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/mobile/health/diet",
+      "style": {
+        "navigationBarTitleText": "饮食指南",
+        "navigationStyle": "custom"
+      }
+    },
+    {
       "path": "pages/mobile/plan/index",
       "style": {
         "navigationBarTitleText": "健康方案",
