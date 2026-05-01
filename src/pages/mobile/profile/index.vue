@@ -34,6 +34,10 @@
         </svg>
       </view>
     </view>
+
+    <view class="logout-btn-wrap">
+      <button class="logout-btn" @click="handleLogout">退出登录</button>
+    </view>
   </view>
 </template>
 
@@ -46,6 +50,12 @@ const menuItems = [
   { label: '设置', iconPath: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z' },
   { label: '帮助中心', iconPath: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z M12 8v4 M12 16h.01' }
 ];
+
+const handleLogout = () => {
+  uni.reLaunch({
+    url: '/pages/mobile/login/index'
+  });
+};
 </script>
 
 <style scoped>
@@ -164,5 +174,26 @@ const menuItems = [
   font-size: 15px;
   font-weight: 500;
   color: #1a233a;
+}
+
+.logout-btn-wrap {
+  margin: 30px 20px 40px;
+}
+
+.logout-btn {
+  background: #ffffff;
+  color: #f43f5e;
+  font-size: 16px;
+  font-weight: 600;
+  height: 54px;
+  border-radius: 27px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  border: none;
+}
+.logout-btn::after {
+  border: none;
 }
 </style>
