@@ -2822,18 +2822,22 @@ const exportReportForH5 = async () => {
           }
           .print-page .autonomic-age-panel,
           .print-page .stress-overview-charts {
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr);
-            gap: 8px;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr);
+            gap: 12px;
           }
           .print-page .autonomic-pie-svg {
-            width: 220px;
-            height: 172px;
+            width: 100%;
+            max-width: 250px;
+            height: auto;
+            aspect-ratio: 280/220;
           }
           .print-page .stress-type-wheel-svg {
-            max-width: 430px;
+            width: 100%;
+            height: auto;
           }
           .print-page .stress-energy-chart-svg {
-            width: min(100%, 270px);
+            width: 100%;
+            height: auto;
           }
           .print-page .autonomic-age-value {
             font-size: 28px;
