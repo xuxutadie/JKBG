@@ -75,19 +75,18 @@ const handleLogout = () => {
 <style scoped>
 .mobile-page {
   min-height: 100vh;
-  background-color: #f7f9fd;
+  background: linear-gradient(135deg, #f4f7fb 0%, #e0e8ff 100%);
   padding-bottom: 80px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 .nav-header {
   height: 88px;
-  background: #ffffff;
+  background: transparent;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   padding: 0 24px 14px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
   margin-bottom: 16px;
 }
 

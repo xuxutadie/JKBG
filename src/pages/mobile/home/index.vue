@@ -153,7 +153,7 @@ const bodyState = computed(() => {
 <style scoped>
 .mobile-page {
   min-height: 100vh;
-  background-color: #F4F7FB;
+  background: linear-gradient(135deg, #f4f7fb 0%, #e0e8ff 100%);
   padding: 44px 20px 80px;
   box-sizing: border-box;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;

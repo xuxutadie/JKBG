@@ -134,14 +134,14 @@ const goBack = () => {
 <style scoped>
 .mobile-page {
   min-height: 100vh;
-  background-color: #f4f7fb;
+  background: linear-gradient(135deg, #f4f7fb 0%, #e0e8ff 100%);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   padding-bottom: calc(40px + env(safe-area-inset-bottom));
 }
 
 .nav-header {
   height: 88px;
-  background: #f4f7fb;
+  background: transparent;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
