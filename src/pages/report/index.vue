@@ -3997,7 +3997,7 @@ const exportReport = async () => {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.95fr);
+  grid-template-columns: minmax(0, 0.95fr) minmax(320px, 1.25fr);
   gap: 16px;
   padding: 20px 22px;
   margin-bottom: 16px;
@@ -4031,7 +4031,7 @@ const exportReport = async () => {
 .reference-title-text h2 {
   margin: 0;
   color: #1555c7;
-  font-size: 36px;
+  font-size: 42px;
   line-height: 1.1;
   font-weight: 800;
 }
@@ -4044,7 +4044,7 @@ const exportReport = async () => {
 
 .reference-patient-panel {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 134px;
+  grid-template-columns: minmax(0, 1fr) 150px;
   gap: 14px;
   align-items: stretch;
 }
@@ -4058,7 +4058,7 @@ const exportReport = async () => {
 
 .reference-patient-item {
   display: grid;
-  grid-template-columns: 72px minmax(0, 1fr);
+  grid-template-columns: 80px minmax(0, 1fr);
   gap: 10px;
   align-items: center;
   padding: 5px 0;
