@@ -179,51 +179,50 @@
                 <div class="reference-section reference-section-full">
                   <div class="reference-section-title tone-green">自律神经年龄与总体评估</div>
                   <div class="reference-section-body">
-                    <div class="autonomic-age-panel" v-if="reportViewModel.stressOverview.hasAge || reportViewModel.stressOverview.hasBalance">
-                      <div class="autonomic-age-chart">
-                        <svg class="autonomic-pie-svg" viewBox="0 0 280 220" aria-hidden="true">
-                          <defs>
-                            <pattern :id="reportViewModel.stressOverview.symPatternId" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
-                              <rect width="8" height="8" fill="#ff2f2f" />
-                              <line x1="0" y1="0" x2="0" y2="8" stroke="#ffd5d5" stroke-width="2" />
-                            </pattern>
-                            <pattern :id="reportViewModel.stressOverview.vagPatternId" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
-                              <rect width="8" height="8" fill="#1f43ff" />
-                              <line x1="0" y1="0" x2="0" y2="8" stroke="#9fb3ff" stroke-width="2" />
-                            </pattern>
-                          </defs>
-                          <g class="autonomic-pie-scale">
-                            <g v-html="reportViewModel.stressOverview.ageTicksHtml"></g>
-                            <circle cx="132" cy="98" r="70" :fill="`url(#${reportViewModel.stressOverview.vagPatternId})`" />
-                            <path v-if="reportViewModel.stressOverview.sympatheticArcPath" :d="reportViewModel.stressOverview.sympatheticArcPath" :fill="`url(#${reportViewModel.stressOverview.symPatternId})`" />
-                            <circle cx="132" cy="98" r="70" fill="none" stroke="#dbe6fb" stroke-width="1.5" />
-                          </g>
-                        </svg>
-                        <div class="autonomic-legend">
-                          <span class="autonomic-legend-item tone-red">
-                            <i></i>
-                            交感 {{ reportViewModel.stressOverview.sympatheticValue }}
-                          </span>
-                          <span class="autonomic-legend-item tone-blue">
-                            <i></i>
-                            副交感 {{ reportViewModel.stressOverview.parasympatheticValue }}
-                          </span>
-                        </div>
-                      </div>
-                      <div class="autonomic-age-summary">
-                        <div class="autonomic-age-kicker">自律神经年龄</div>
-                        <div class="autonomic-age-value">{{ reportViewModel.stressOverview.ageDisplay }}</div>
-                        <div class="autonomic-age-caption">{{ reportViewModel.stressOverview.ageCaption }}</div>
-                        <div class="autonomic-age-note" v-if="reportViewModel.stressOverview.ageNote">{{ reportViewModel.stressOverview.ageNote }}</div>
-                      </div>
-                    </div>
-
                     <div class="stress-overview-box" v-if="reportViewModel.stressOverview.hasOverview">
-                      <div class="stress-overview-title">总体评估</div>
                       <div class="stress-overview-charts">
-                        <div class="stress-type-wheel-card" v-if="reportViewModel.stressOverview.typeWheel" v-html="reportViewModel.stressOverview.typeWheel.svgHtml">
+                        <div class="autonomic-age-panel stress-chart-card" v-if="reportViewModel.stressOverview.hasAge || reportViewModel.stressOverview.hasBalance">
+                          <div class="autonomic-age-chart">
+                            <svg class="autonomic-pie-svg" viewBox="0 0 280 220" aria-hidden="true">
+                              <defs>
+                                <pattern :id="reportViewModel.stressOverview.symPatternId" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+                                  <rect width="8" height="8" fill="#ff2f2f" />
+                                  <line x1="0" y1="0" x2="0" y2="8" stroke="#ffd5d5" stroke-width="2" />
+                                </pattern>
+                                <pattern :id="reportViewModel.stressOverview.vagPatternId" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+                                  <rect width="8" height="8" fill="#1f43ff" />
+                                  <line x1="0" y1="0" x2="0" y2="8" stroke="#9fb3ff" stroke-width="2" />
+                                </pattern>
+                              </defs>
+                              <g class="autonomic-pie-scale">
+                                <g v-html="reportViewModel.stressOverview.ageTicksHtml"></g>
+                                <circle cx="132" cy="98" r="70" :fill="`url(#${reportViewModel.stressOverview.vagPatternId})`" />
+                                <path v-if="reportViewModel.stressOverview.sympatheticArcPath" :d="reportViewModel.stressOverview.sympatheticArcPath" :fill="`url(#${reportViewModel.stressOverview.symPatternId})`" />
+                                <circle cx="132" cy="98" r="70" fill="none" stroke="#dbe6fb" stroke-width="1.5" />
+                              </g>
+                            </svg>
+                            <div class="autonomic-legend">
+                              <span class="autonomic-legend-item tone-red">
+                                <i></i>
+                                交感 {{ reportViewModel.stressOverview.sympatheticValue }}
+                              </span>
+                              <span class="autonomic-legend-item tone-blue">
+                                <i></i>
+                                副交感 {{ reportViewModel.stressOverview.parasympatheticValue }}
+                              </span>
+                            </div>
+                          </div>
+                          <div class="autonomic-age-summary">
+                            <div class="autonomic-age-kicker">自律神经年龄</div>
+                            <div class="autonomic-age-value">{{ reportViewModel.stressOverview.ageDisplay }}</div>
+                            <div class="autonomic-age-caption">{{ reportViewModel.stressOverview.ageCaption }}</div>
+                            <div class="autonomic-age-note" v-if="reportViewModel.stressOverview.ageNote">{{ reportViewModel.stressOverview.ageNote }}</div>
+                          </div>
                         </div>
-                        <div class="stress-energy-chart-card" v-if="reportViewModel.stressOverview.energyChart.metrics.length">
+
+                        <div class="stress-type-wheel-card stress-chart-card" v-if="reportViewModel.stressOverview.typeWheel" v-html="reportViewModel.stressOverview.typeWheel.svgHtml">
+                        </div>
+                        <div class="stress-energy-chart-card stress-chart-card" v-if="reportViewModel.stressOverview.energyChart.metrics.length">
                           <div v-html="reportViewModel.stressOverview.energyChart.svgHtml" style="width: 100%; display: flex; justify-content: center;"></div>
                           <div class="stress-energy-footnote">50-100分 正常范围（偏圆形较佳）</div>
                         </div>
@@ -2823,6 +2822,7 @@ const exportReportForH5 = async () => {
           }
           .print-page .autonomic-age-panel,
           .print-page .stress-overview-charts {
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr);
             gap: 8px;
           }
           .print-page .autonomic-pie-svg {
@@ -2845,8 +2845,7 @@ const exportReportForH5 = async () => {
             gap: 6px;
           }
           .print-page .stress-overview-note,
-          .print-page .stress-type-wheel-card,
-          .print-page .stress-energy-chart-card {
+          .print-page .stress-chart-card {
             padding: 7px 8px;
           }
           .print-page .stress-energy-footnote {
@@ -4405,13 +4404,10 @@ const exportReport = async () => {
 }
 
 .autonomic-age-panel {
-  display: grid;
-  grid-template-columns: minmax(160px, 0.95fr) minmax(0, 1.05fr);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 14px;
-  padding: 14px;
-  border-radius: 18px;
-  border: 1px solid #dfe8f6;
-  background: linear-gradient(135deg, #f7fbff 0%, #ffffff 100%);
 }
 
 .autonomic-age-chart {
@@ -4513,6 +4509,8 @@ const exportReport = async () => {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 .autonomic-age-value {
@@ -4556,13 +4554,12 @@ const exportReport = async () => {
 .stress-overview-charts {
   margin-top: 12px;
   display: grid;
-  grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 1.3fr) minmax(0, 1fr);
   gap: 16px;
   align-items: start;
 }
 
-.stress-type-wheel-card,
-.stress-energy-chart-card {
+.stress-chart-card {
   padding: 10px 12px 12px;
   border-radius: 18px;
   border: 1px solid #dde8f7;
