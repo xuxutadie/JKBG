@@ -2488,8 +2488,11 @@ const ensurePatientGuidance = async (patient) => {
 };
 
 const buildWeeklyFitnessPlan = (patient) => {
-  const bmiStr = getPatientMetric(patient, 'inbody', 'bmi') || '22';
-  const bmi = parseFloat(bmiStr);
+  const bmiMetric =
+    (getPatientSection(patient, 'obesity-analysis')?.rows || []).find(item => item && String(item.metric || '').includes('BMI')) ||
+    patient?.highlightMetrics?.find(item => item && String(item.label || '').includes('BMI')) ||
+    null;
+  const bmi = parseNumber(bmiMetric?.value) || 22;
   
   let mainGoal = '保持健康';
   if (bmi >= 28) mainGoal = '减脂燃脂';
