@@ -1931,10 +1931,10 @@ const buildStressOverview = (patient) => {
       `).join('')}
       <circle cx="180" cy="180" r="74" fill="#2d2d2f" />
       <circle cx="180" cy="180" r="61" fill="none" stroke="#f8f8f8" stroke-width="4" />
-      <text class="stress-energy-chart-side-text" x="180" y="100" text-anchor="middle" dominant-baseline="middle">情绪指数</text>
-      <text class="stress-energy-chart-side-text" x="260" y="180" text-anchor="middle" dominant-baseline="middle" transform="rotate(90, 260, 180)">抗压力指数</text>
-      <text class="stress-energy-chart-side-text" x="180" y="260" text-anchor="middle" dominant-baseline="middle">活力指数</text>
-      <text class="stress-energy-chart-side-text" x="100" y="180" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90, 100, 180)">睡眠指数</text>
+      <text class="stress-energy-chart-side-text" x="180" y="85" text-anchor="middle" dominant-baseline="middle">情绪指数</text>
+      <text class="stress-energy-chart-side-text" x="275" y="180" text-anchor="middle" dominant-baseline="middle" transform="rotate(90, 275, 180)">抗压力指数</text>
+      <text class="stress-energy-chart-side-text" x="180" y="275" text-anchor="middle" dominant-baseline="middle">活力指数</text>
+      <text class="stress-energy-chart-side-text" x="85" y="180" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90, 85, 180)">睡眠指数</text>
       <text class="stress-energy-chart-center" x="180" y="164" text-anchor="middle">身心</text>
       <text class="stress-energy-chart-center" x="180" y="204" text-anchor="middle">能量</text>
     </svg>
