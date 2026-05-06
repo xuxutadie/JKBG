@@ -1,5 +1,12 @@
 <template>
   <view class="mobile-page">
+    <!-- 动态背景层 -->
+    <view class="bg-animation">
+      <view class="blob blob-1"></view>
+      <view class="blob blob-2"></view>
+      <view class="blob blob-3"></view>
+    </view>
+
     <view class="nav-header">
       <view class="back-btn" @click="goBack">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="icon-back">
@@ -124,19 +131,19 @@ const goBack = () => {
 }
 
 .plan-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255, 255, 255, 0.9);
-  border-left: 1px solid rgba(255, 255, 255, 0.8);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-  border-right: 1px solid rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.7) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid rgba(255, 255, 255, 1);
+  border-left: 1px solid rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+  border-right: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 20px;
   padding: 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 10px 40px rgba(31, 38, 135, 0.06), 0 2px 10px rgba(0, 0, 0, 0.04), inset 0 2px 4px rgba(255, 255, 255, 0.6);
+  box-shadow: 0 12px 32px rgba(31, 38, 135, 0.08), 0 2px 10px rgba(0, 0, 0, 0.04), inset 0 2px 4px rgba(255, 255, 255, 0.8);
   margin-bottom: 24px;
 }
 

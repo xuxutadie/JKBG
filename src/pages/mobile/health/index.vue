@@ -1,5 +1,12 @@
 <template>
   <view class="mobile-page">
+    <!-- 动态背景层 -->
+    <view class="bg-animation">
+      <view class="blob blob-1"></view>
+      <view class="blob blob-2"></view>
+      <view class="blob blob-3"></view>
+    </view>
+
     <view class="nav-header">健康数据</view>
     <view class="content">
       <view class="patient-card" v-if="currentUser">
@@ -18,43 +25,43 @@
 
       <view class="modules-grid" v-if="currentUser">
         <view class="module-item" @click="goTo('/pages/mobile/health/sleep')">
-          <view class="module-icon bg-purple">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="icon-svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+          <view class="module-image-wrap">
+            <image src="@/static/睡眠情况.png" mode="aspectFit" class="module-img" />
           </view>
           <text class="module-name">睡眠情况</text>
         </view>
 
         <view class="module-item" @click="goTo('/pages/mobile/health/autonomic')">
-          <view class="module-icon bg-blue">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="icon-svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12h-4l-3 8-4-16-3 8H3" /></svg>
+          <view class="module-image-wrap">
+            <image src="@/static/自主神经.png" mode="aspectFit" class="module-img" />
           </view>
           <text class="module-name">自主神经</text>
         </view>
 
         <view class="module-item" @click="goTo('/pages/mobile/health/body')">
-          <view class="module-icon bg-green">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="icon-svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+          <view class="module-image-wrap">
+            <image src="@/static/人体成分.png" mode="aspectFit" class="module-img" />
           </view>
           <text class="module-name">人体成分</text>
         </view>
 
         <view class="module-item" @click="goTo('/pages/mobile/health/exercise')">
-          <view class="module-icon bg-orange">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="icon-svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          <view class="module-image-wrap">
+            <image src="@/static/运动建议.png" mode="aspectFit" class="module-img" />
           </view>
           <text class="module-name">运动建议</text>
         </view>
 
         <view class="module-item" @click="goTo('/pages/mobile/health/advice')">
-          <view class="module-icon bg-teal">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="icon-svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+          <view class="module-image-wrap">
+            <image src="@/static/健康建议.png" mode="aspectFit" class="module-img" />
           </view>
           <text class="module-name">健康建议</text>
         </view>
 
         <view class="module-item" @click="goTo('/pages/mobile/health/diet')">
-          <view class="module-icon bg-yellow">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="icon-svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+          <view class="module-image-wrap">
+            <image src="@/static/饮食指南.png" mode="aspectFit" class="module-img" />
           </view>
           <text class="module-name">饮食指南</text>
         </view>
@@ -70,13 +77,23 @@
 <script setup>
 import { ref } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
+import { getPatientDetail } from '@/utils/patientApi';
 
 const currentUser = ref(null);
 
-onShow(() => {
+onShow(async () => {
   const user = uni.getStorageSync('current_user');
   if (user) {
     currentUser.value = user;
+    if (user.id) {
+      try {
+        const latestUser = await getPatientDetail(user.id);
+        if (latestUser) {
+          currentUser.value = latestUser;
+          uni.setStorageSync('current_user', latestUser);
+        }
+      } catch (err) {}
+    }
   }
 });
 
@@ -109,16 +126,11 @@ const goTo = (url) => {
 }
 
 .patient-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255, 255, 255, 0.9);
-  border-left: 1px solid rgba(255, 255, 255, 0.8);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-  border-right: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 16px;
+  background: linear-gradient(135deg, #ffffff 0%, #f4f6f9 100%);
+  border-radius: 20px;
   padding: 20px;
-  box-shadow: 0 10px 40px rgba(31, 38, 135, 0.06), 0 2px 10px rgba(0, 0, 0, 0.04), inset 0 2px 4px rgba(255, 255, 255, 0.6);
+  border: 2px solid #ffffff;
+  box-shadow: 0 10px 24px rgba(112, 128, 150, 0.1), inset 0 4px 10px rgba(255, 255, 255, 1), inset 0 -4px 10px rgba(220, 226, 236, 0.5);
   margin-bottom: 20px;
 }
 
@@ -166,51 +178,42 @@ const goTo = (url) => {
 }
 
 .module-item {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255, 255, 255, 0.9);
-  border-left: 1px solid rgba(255, 255, 255, 0.8);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-  border-right: 1px solid rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.15) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255, 255, 255, 0.7);
+  border-left: 1px solid rgba(255, 255, 255, 0.6);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 16px;
   padding: 24px 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 24px rgba(31, 38, 135, 0.05), 0 2px 8px rgba(0, 0, 0, 0.03), inset 0 2px 4px rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 16px rgba(31, 38, 135, 0.03), inset 0 2px 4px rgba(255, 255, 255, 0.4);
   transition: all 0.2s ease;
 }
 
 .module-item:active {
   transform: scale(0.96);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.5) 100%);
-  box-shadow: 0 4px 12px rgba(31, 38, 135, 0.04), inset 0 2px 4px rgba(255, 255, 255, 0.6);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.25) 100%);
+  box-shadow: 0 2px 8px rgba(31, 38, 135, 0.02), inset 0 2px 4px rgba(255, 255, 255, 0.5);
 }
 
-.module-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 16px;
+.module-image-wrap {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 12px;
 }
 
-.icon-svg {
-  width: 24px;
-  height: 24px;
-  color: #fff;
+.module-img {
+  width: 100%;
+  height: 100%;
 }
-
-.bg-purple { background: linear-gradient(135deg, #9B8BFF 0%, #B8AFFF 100%); }
-.bg-blue { background: linear-gradient(135deg, #6272FF 0%, #8A96FF 100%); }
-.bg-green { background: linear-gradient(135deg, #34D399 0%, #6EE7B7 100%); }
-.bg-orange { background: linear-gradient(135deg, #FBBF24 0%, #FCD34D 100%); }
-.bg-teal { background: linear-gradient(135deg, #2DD4BF 0%, #6EE7B7 100%); }
-.bg-yellow { background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%); }
 
 .module-name {
   font-size: 15px;

@@ -1,61 +1,45 @@
 <template>
   <view class="mobile-page login-page">
-    <view class="login-header">
-      <view class="logo-box">
-        <!-- 还原设计图中的莲花/花瓣Logo -->
-        <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 22C12 22 7.5 16.5 7.5 10.5C7.5 6.5 10.5 4 12 2C13.5 4 16.5 6.5 16.5 10.5C16.5 16.5 12 22 12 22Z" fill="url(#paint0_linear)" opacity="0.9"/>
-          <path d="M12 22C12 22 5 18 3 11.5C1 5 7 4 7 4C7 4 9 8 12 11.5" fill="url(#paint1_linear)" opacity="0.7"/>
-          <path d="M12 22C12 22 19 18 21 11.5C23 5 17 4 17 4C17 4 15 8 12 11.5" fill="url(#paint2_linear)" opacity="0.7"/>
-          <defs>
-            <linearGradient id="paint0_linear" x1="12" y1="2" x2="12" y2="22" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#ffffff"/>
-              <stop offset="1" stop-color="#e0e8ff"/>
-            </linearGradient>
-            <linearGradient id="paint1_linear" x1="3" y1="4" x2="12" y2="22" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#ffffff"/>
-              <stop offset="1" stop-color="#d0ddff"/>
-            </linearGradient>
-            <linearGradient id="paint2_linear" x1="21" y1="4" x2="12" y2="22" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#ffffff"/>
-              <stop offset="1" stop-color="#d0ddff"/>
-            </linearGradient>
-          </defs>
-        </svg>
-      </view>
-      <text class="login-title">身心健康平台</text>
-      <text class="login-subtitle">关注身心 · 享受健康生活</text>
+    <!-- 动态背景层 -->
+    <view class="bg-animation">
+      <view class="blob blob-1"></view>
+      <view class="blob blob-2"></view>
+      <view class="blob blob-3"></view>
     </view>
-    
-    <view class="login-form">
-      <view class="input-group">
-        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-        </svg>
-        <input type="text" v-model="phone" placeholder="请输入手机号/姓名" placeholder-class="input-placeholder" class="input-control" />
+
+    <view class="login-card-wrapper">
+      <view class="login-header">
+        <view class="logo-box">
+          <image class="logo-icon" src="@/static/登录页.png" mode="aspectFit"></image>
+        </view>
+        <text class="login-title">身心健康平台</text>
+        <text class="login-subtitle">关注身心 · 享受健康生活</text>
       </view>
       
-      <view class="input-group">
-        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-        </svg>
-        <input type="password" v-model="password" placeholder="请输入验证码/密码" placeholder-class="input-placeholder" class="input-control" />
-        <text class="get-code-text">获取</text>
+      <view class="login-form">
+        <view class="input-group">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+          <input type="text" v-model="phone" placeholder="请输入手机号/姓名" placeholder-class="input-placeholder" class="input-control" />
+        </view>
+        
+        <view class="input-group">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+          <input type="password" v-model="password" placeholder="请输入验证码/密码" placeholder-class="input-placeholder" class="input-control" />
+          <text class="get-code-text">获取</text>
+        </view>
+        
+        <view class="agreement-box">
+          <radio color="#8192fb" style="transform:scale(0.65)" :checked="true" />
+          <text class="agreement-text">我已阅读并同意<text class="link">《用户协议》</text>和<text class="link">《隐私政策》</text></text>
+        </view>
+        
+        <button class="login-btn" @click="handleLogin">登录</button>
+        <view class="login-link">密码登录</view>
       </view>
-      
-      <view class="agreement-box">
-        <radio color="#8192fb" style="transform:scale(0.65)" :checked="true" />
-        <text class="agreement-text">我已阅读并同意<text class="link">《用户协议》</text>和<text class="link">《隐私政策》</text></text>
-      </view>
-      
-      <button class="login-btn" @click="handleLogin">登录</button>
-      <view class="login-link">密码登录</view>
-    </view>
-    
-    <!-- 底部装饰倒影 -->
-    <view class="bottom-decoration">
-      <text class="deco-text">身心健康平台</text>
-      <text class="deco-sub">关注身心 · 享受健康生活</text>
     </view>
   </view>
 </template>
@@ -135,57 +119,78 @@ const handleLogin = async () => {
   overflow: hidden;
 }
 
-/* 还原设计图：深蓝紫到浅蓝的柔和渐变 */
+/* 统一轻盈浅色背景 */
 .login-page {
-  background: linear-gradient(180deg, #7A88FF 0%, #9DA7FF 40%, #E8F0FE 100%);
+  background: #eff6ff;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 120px 36px 0;
+  justify-content: center;
+  padding: 0 20px;
+}
+
+.login-card-wrapper {
+  width: 100%;
+  max-width: 480px;
+  padding: 40px 24px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.7) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: 30px;
+  border-top: 1px solid rgba(255, 255, 255, 1);
+  border-left: 1px solid rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+  border-right: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 20px 60px rgba(31, 38, 135, 0.08), 0 2px 10px rgba(0, 0, 0, 0.02), inset 0 2px 4px rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  position: relative; /* 确保 z-index 生效 */
+  z-index: 10;
 }
 
 .login-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 50px;
+  margin-bottom: 40px;
 }
 
 .logo-box {
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
+  width: 130px;
+  height: 130px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.5) 100%);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: 50%;
-  border-top: 1px solid rgba(255, 255, 255, 0.8);
-  border-left: 1px solid rgba(255, 255, 255, 0.6);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 1);
+  border-left: 1px solid rgba(255, 255, 255, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+  border-right: 1px solid rgba(255, 255, 255, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10px 30px rgba(122, 136, 255, 0.4), inset 0 2px 6px rgba(255, 255, 255, 0.5);
+  box-shadow: 0 10px 30px rgba(31, 38, 135, 0.06), inset 0 2px 6px rgba(255, 255, 255, 0.8);
   margin-bottom: 20px;
 }
 
 .logo-icon {
-  width: 50px;
-  height: 50px;
+  width: 130px;
+  height: 130px;
 }
 
 .login-title {
   font-size: 26px;
-  font-weight: 700;
-  color: #ffffff;
-  margin-bottom: 10px;
+  font-weight: 800;
+  color: #1a233a;
+  margin-bottom: 8px;
   letter-spacing: 2px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .login-subtitle {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.85);
+  font-size: 14px;
+  color: #64748b;
   letter-spacing: 1px;
 }
 
@@ -197,47 +202,43 @@ const handleLogin = async () => {
 .input-group {
   width: 100%;
   height: 54px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-radius: 27px;
-  border-top: 1px solid rgba(255, 255, 255, 0.6);
-  border-left: 1px solid rgba(255, 255, 255, 0.5);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   display: flex;
   align-items: center;
   padding: 0 24px;
   margin-bottom: 20px;
   box-sizing: border-box;
-  box-shadow: 0 8px 24px rgba(31, 38, 135, 0.05), inset 0 2px 4px rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02), 0 4px 12px rgba(31, 38, 135, 0.03);
 }
 
 .input-icon {
   width: 20px;
   height: 20px;
-  color: #ffffff;
+  color: #64748b;
   margin-right: 12px;
-  opacity: 0.9;
 }
 
 .input-control {
   flex: 1;
   height: 100%;
   font-size: 15px;
-  color: #ffffff;
+  color: #1a233a;
 }
 
 .input-placeholder {
-  color: rgba(255, 255, 255, 0.7);
+  color: #94a3b8;
 }
 
 .get-code-text {
   font-size: 14px;
-  color: #ffffff;
-  font-weight: 500;
+  color: #5a67d8;
+  font-weight: 600;
   padding-left: 16px;
-  border-left: 1px solid rgba(255, 255, 255, 0.3);
+  border-left: 1px solid #cbd5e1;
 }
 
 .agreement-box {
@@ -250,14 +251,13 @@ const handleLogin = async () => {
 
 .agreement-text {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
+  color: #64748b;
 }
 
 .link {
-  color: #ffffff;
+  color: #5a67d8;
 }
 
-/* 还原设计图：渐变紫色按钮，白色文字 */
 .login-btn {
   width: 100%;
   height: 54px;
@@ -283,14 +283,10 @@ const handleLogin = async () => {
   border: none;
 }
 
-.get-code-text:active {
-  opacity: 0.7;
-}
-
 .login-link {
   text-align: center;
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.9);
+  color: #64748b;
   padding: 8px;
   margin-top: 10px;
 }
@@ -298,28 +294,10 @@ const handleLogin = async () => {
   opacity: 0.7;
 }
 
-/* 底部倒影效果 */
-.bottom-decoration {
-  position: absolute;
-  bottom: 40px;
-  left: 0;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  opacity: 0.15;
-  transform: scaleY(-1);
-}
-
-.deco-text {
-  font-size: 24px;
-  font-weight: bold;
-  color: #6272ff;
-  margin-bottom: 8px;
-}
-
-.deco-sub {
-  font-size: 12px;
-  color: #6272ff;
+/* PC端额外间距调整 */
+@media (min-width: 768px) {
+  .login-card-wrapper {
+    padding: 50px 40px;
+  }
 }
 </style>

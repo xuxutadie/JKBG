@@ -1,5 +1,12 @@
 <template>
   <view class="mobile-page">
+    <!-- 动态背景层 -->
+    <view class="bg-animation">
+      <view class="blob blob-1"></view>
+      <view class="blob blob-2"></view>
+      <view class="blob blob-3"></view>
+    </view>
+
     <view class="nav-header">
       <view class="back-btn" @click="goBack">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="icon-back">
@@ -107,6 +114,7 @@
 <script setup>
 import { ref } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
+import { getReportMetric } from '@/utils/reportHelper';
 
 const balanceScore = ref(76);
 const sympActivity = ref(45);
@@ -116,12 +124,26 @@ const stressIndex = ref(38);
 onShow(() => {
   const user = uni.getStorageSync('current_user');
   if (user && user.reportData) {
-    const stressData = user.reportData.fatigueIndex; // Map fatigue to stress balance for demo
-    if (stressData) {
-      balanceScore.value = stressData;
-      sympActivity.value = Math.round(stressData * 0.6);
-      parasympActivity.value = Math.round(stressData * 0.4);
-      stressIndex.value = Math.max(0, 100 - stressData);
+    const rd = user.reportData;
+    
+    const bs = getReportMetric(rd, ['自主神经平衡度', '抗压能力', '自主神经活性']);
+    if (bs) balanceScore.value = parseFloat(bs);
+    
+    const sa = getReportMetric(rd, ['交感神经活性', '交感神经']);
+    if (sa) sympActivity.value = parseFloat(sa);
+    
+    const pa = getReportMetric(rd, ['副交感神经活性', '副交感神经']);
+    if (pa) parasympActivity.value = parseFloat(pa);
+
+    const si = getReportMetric(rd, ['压力指数', '疲劳度', '精神压力']);
+    if (si) stressIndex.value = parseFloat(si);
+
+    // Fallback if some aren't available but we have fatigueIndex
+    if (!bs && rd.fatigueIndex) {
+      balanceScore.value = rd.fatigueIndex;
+      sympActivity.value = Math.round(rd.fatigueIndex * 0.6);
+      parasympActivity.value = Math.round(rd.fatigueIndex * 0.4);
+      stressIndex.value = Math.max(0, 100 - rd.fatigueIndex);
     }
   }
 });
@@ -246,16 +268,16 @@ const goBack = () => {
 }
 
 .overview-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255, 255, 255, 0.9);
-  border-left: 1px solid rgba(255, 255, 255, 0.8);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-  border-right: 1px solid rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.7) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid rgba(255, 255, 255, 1);
+  border-left: 1px solid rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+  border-right: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 24px;
   padding: 24px;
-  box-shadow: 0 10px 40px rgba(31, 38, 135, 0.06), 0 2px 10px rgba(0, 0, 0, 0.04), inset 0 2px 4px rgba(255, 255, 255, 0.6);
+  box-shadow: 0 12px 32px rgba(31, 38, 135, 0.08), 0 2px 10px rgba(0, 0, 0, 0.04), inset 0 2px 4px rgba(255, 255, 255, 0.8);
   margin-bottom: 20px;
 }
 
@@ -369,16 +391,16 @@ const goBack = () => {
 }
 
 .details-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255, 255, 255, 0.9);
-  border-left: 1px solid rgba(255, 255, 255, 0.8);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-  border-right: 1px solid rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.15) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255, 255, 255, 0.7);
+  border-left: 1px solid rgba(255, 255, 255, 0.6);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 20px;
   padding: 24px;
-  box-shadow: 0 8px 24px rgba(31, 38, 135, 0.05), inset 0 2px 4px rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 16px rgba(31, 38, 135, 0.03), inset 0 2px 4px rgba(255, 255, 255, 0.4);
   margin-bottom: 20px;
 }
 

@@ -1,5 +1,12 @@
 <template>
   <view class="mobile-page">
+    <!-- 动态背景层 -->
+    <view class="bg-animation">
+      <view class="blob blob-1"></view>
+      <view class="blob blob-2"></view>
+      <view class="blob blob-3"></view>
+    </view>
+
     <view class="nav-header">
       <view class="back-btn" @click="goBack">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="icon-back">
@@ -107,8 +114,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
+import { getReportMetric } from '@/utils/reportHelper';
 
 const sleepHours = ref(7);
 const sleepMinutes = ref(32);
@@ -123,8 +131,49 @@ const awakeCount = ref(2);
 onShow(() => {
   const user = uni.getStorageSync('current_user');
   if (user && user.reportData) {
-    const sleepData = user.reportData.sleepIndex;
-    if (sleepData) {
+    const rd = user.reportData;
+
+    // Helper to parse time strings like "120" (minutes) or "2小时15分"
+    const parseTime = (val) => {
+      const match = val.match(/(\d+)小时(\d+)分/);
+      if (match) return { h: parseInt(match[1]), m: parseInt(match[2]) };
+      const floatVal = parseFloat(val);
+      if (!isNaN(floatVal)) {
+        // Assume minutes if > 24, otherwise hours
+        if (floatVal > 24) {
+          return { h: Math.floor(floatVal / 60), m: Math.floor(floatVal % 60) };
+        } else {
+          return { h: Math.floor(floatVal), m: Math.round((floatVal - Math.floor(floatVal)) * 60) };
+        }
+      }
+      return null;
+    };
+
+    const totalSleep = getReportMetric(rd, ['总睡眠时间 TST', '睡眠时长', '总睡眠时间']);
+    if (totalSleep) {
+      const time = parseTime(totalSleep);
+      if (time) { sleepHours.value = time.h; sleepMinutes.value = time.m; }
+    }
+
+    const deepSleep = getReportMetric(rd, ['深睡时间', '深睡眠']);
+    if (deepSleep) {
+      const time = parseTime(deepSleep);
+      if (time) { deepHours.value = time.h; deepMinutes.value = time.m; }
+    }
+
+    const lightSleep = getReportMetric(rd, ['浅睡时间', '浅睡眠']);
+    if (lightSleep) {
+      const time = parseTime(lightSleep);
+      if (time) { lightHours.value = time.h; lightMinutes.value = time.m; }
+    }
+
+    const awake = getReportMetric(rd, ['觉醒次数 NWAL', '清醒次数']);
+    if (awake) {
+      awakeCount.value = parseInt(awake) || 0;
+    }
+
+    const sleepData = parseFloat(rd.sleepIndex || getReportMetric(rd, ['睡眠质量评分', '睡眠效率 SE']));
+    if (!isNaN(sleepData)) {
       if (sleepData >= 80) sleepQualityText.value = '良好';
       else if (sleepData >= 60) sleepQualityText.value = '一般';
       else sleepQualityText.value = '较差';
@@ -252,16 +301,16 @@ const goBack = () => {
 }
 
 .sleep-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255, 255, 255, 0.9);
-  border-left: 1px solid rgba(255, 255, 255, 0.8);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-  border-right: 1px solid rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.7) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid rgba(255, 255, 255, 1);
+  border-left: 1px solid rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+  border-right: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 24px;
   padding: 24px;
-  box-shadow: 0 10px 40px rgba(31, 38, 135, 0.06), 0 2px 10px rgba(0, 0, 0, 0.04), inset 0 2px 4px rgba(255, 255, 255, 0.6);
+  box-shadow: 0 12px 32px rgba(31, 38, 135, 0.08), 0 2px 10px rgba(0, 0, 0, 0.04), inset 0 2px 4px rgba(255, 255, 255, 0.8);
   margin-bottom: 20px;
 }
 
@@ -407,16 +456,16 @@ const goBack = () => {
 }
 
 .advice-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255, 255, 255, 0.9);
-  border-left: 1px solid rgba(255, 255, 255, 0.8);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-  border-right: 1px solid rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.15) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255, 255, 255, 0.7);
+  border-left: 1px solid rgba(255, 255, 255, 0.6);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 20px;
   padding: 20px;
-  box-shadow: 0 8px 24px rgba(31, 38, 135, 0.05), inset 0 2px 4px rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 16px rgba(31, 38, 135, 0.03), inset 0 2px 4px rgba(255, 255, 255, 0.4);
 }
 
 .advice-header {

@@ -28,3 +28,89 @@ page {
   border-radius: 40rpx;
   box-shadow: 0 20rpx 50rpx rgba(0, 0, 0, 0.1);
 }
+
+/* 全局动态背景特效 */
+.bg-animation {
+  position: fixed; /* 使用fixed确保滚动时背景不随之滚动 */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 0; /* 修改为0或更低，确保不会遮挡普通文档流文本 */
+  pointer-events: none; /* 防止遮挡点击事件 */
+}
+
+/* 顶部曲线与装饰球背景 */
+.bg-decoration-line {
+  position: absolute;
+  top: -150px;
+  right: -50px;
+  width: 500px;
+  height: 350px;
+  background: radial-gradient(circle at center, transparent 60%, rgba(255, 255, 255, 0.6) 61%, transparent 62%);
+  border-radius: 50%;
+  transform: rotate(-15deg);
+  opacity: 0.8;
+  z-index: 1;
+}
+
+.bg-decoration-line-2 {
+  position: absolute;
+  top: 150px;
+  right: -50px;
+  width: 300px;
+  height: 100px;
+  border-top: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  transform: rotate(-10deg);
+  opacity: 0.6;
+  z-index: 1;
+}
+
+.mobile-page > *:not(.bg-animation) {
+  position: relative;
+  z-index: 1;
+}
+
+.blob {
+  position: absolute;
+  filter: blur(40px);
+  border-radius: 50%;
+  opacity: 0.8;
+  animation: float 8s infinite ease-in-out alternate;
+}
+
+.blob-1 {
+  top: 0%;
+  left: -10%;
+  width: 250px;
+  height: 250px;
+  background: #a5b4fc;
+  animation-delay: 0s;
+}
+
+.blob-2 {
+  bottom: 10%;
+  right: -10%;
+  width: 300px;
+  height: 300px;
+  background: #60a5fa;
+  animation-delay: -2s;
+}
+
+.blob-3 {
+  top: 30%;
+  left: 50%;
+  width: 200px;
+  height: 200px;
+  background: #fbcfe8; /* Changed from deeper #f472b6 to a very soft pink */
+  animation-delay: -4s;
+}
+
+@keyframes float {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(50px, -80px) scale(1.2); }
+  66% { transform: translate(-40px, 40px) scale(0.8); }
+  100% { transform: translate(0, 0) scale(1); }
+}

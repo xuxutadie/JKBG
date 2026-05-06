@@ -103,6 +103,55 @@
         "navigationBarTitleText": "我的",
         "navigationStyle": "custom"
       }
+    },
+    {
+      "path": "pages/mobile/settings/index",
+      "style": {
+        "navigationBarTitleText": "设置",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/mobile/settings/profile",
+      "style": {
+        "navigationBarTitleText": "个人信息",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/mobile/settings/security",
+      "style": {
+        "navigationBarTitleText": "账号与安全",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/mobile/settings/privacy",
+      "style": {
+        "navigationBarTitleText": "隐私设置",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/mobile/settings/general",
+      "style": {
+        "navigationBarTitleText": "通用",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/mobile/settings/about",
+      "style": {
+        "navigationBarTitleText": "关于我们",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/mobile/help/index",
+      "style": {
+        "navigationBarTitleText": "帮助中心",
+        "navigationStyle": "custom"
+      }
     }
   ],
   "tabBar": {

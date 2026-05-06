@@ -1,4 +1,5 @@
 import { api } from './api';
+import { buildPatientRecord } from './reportParser';
 
 const LOCAL_STORAGE_KEY = 'health_reports';
 
@@ -59,18 +60,22 @@ const buildLocalPatientRecord = (payload) => {
 export const listPatients = async () => {
   try {
     const response = await api.get('/patients');
-    return response?.data || [];
+    const data = response?.data || [];
+    return data.map(record => buildPatientRecord(record));
   } catch (_error) {
-    return sortByCreatedAtDesc(readLocalPatients());
+    const data = sortByCreatedAtDesc(readLocalPatients());
+    return data.map(record => buildPatientRecord(record));
   }
 };
 
 export const getPatientDetail = async (id) => {
   try {
     const response = await api.get(`/patients/${id}`);
-    return response?.data || null;
+    const data = response?.data || null;
+    return data ? buildPatientRecord(data) : null;
   } catch (_error) {
-    return readLocalPatients().find(item => item.id === id) || null;
+    const localData = readLocalPatients().find(item => item.id === id) || null;
+    return localData ? buildPatientRecord(localData) : null;
   }
 };
 

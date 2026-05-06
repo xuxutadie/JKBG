@@ -1,5 +1,12 @@
 <template>
   <view class="mobile-page">
+    <!-- 动态背景层 -->
+    <view class="bg-animation">
+      <view class="blob blob-1"></view>
+      <view class="blob blob-2"></view>
+      <view class="blob blob-3"></view>
+    </view>
+
     <view class="nav-header">
       <view class="back-btn" @click="goBack">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="icon-back">
@@ -95,6 +102,7 @@
 <script setup>
 import { ref } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
+import { getReportMetric } from '@/utils/reportHelper';
 
 const bodyScore = ref(68);
 const weight = ref(78.5);
@@ -109,29 +117,31 @@ const whr = ref(0.95);
 onShow(() => {
   const user = uni.getStorageSync('current_user');
   if (user && user.reportData) {
-    // Attempt to read from reportData.inbodyProfile if available
-    const inbody = user.reportData.inbodyProfile;
-    if (inbody && inbody.length) {
-      const getVal = (label) => {
-        const item = inbody.find(i => i.label === label);
-        return item ? item.value : null;
-      };
-      
-      const w = getVal('体重');
-      if (w) weight.value = w;
-      
-      const bf = getVal('体脂率');
-      if (bf) bodyFat.value = bf;
+    const rd = user.reportData;
+    
+    const sc = getReportMetric(rd, ['InBody评分', '综合评分']);
+    if (sc) bodyScore.value = parseFloat(sc) || 68;
 
-      const mm = getVal('骨骼肌');
-      if (mm) muscleMass.value = mm;
+    const w = getReportMetric(rd, ['体重']);
+    if (w) weight.value = parseFloat(w);
+    
+    const bf = getReportMetric(rd, ['体脂率', '体脂百分比']);
+    if (bf) bodyFat.value = parseFloat(bf);
 
-      const bm = getVal('BMI');
-      if (bm) bmi.value = bm;
+    const mm = getReportMetric(rd, ['骨骼肌', '肌肉量']);
+    if (mm) muscleMass.value = parseFloat(mm);
 
-      const vf = getVal('内脏脂肪面积') || getVal('内脏脂肪等级');
-      if (vf) vfat.value = vf;
-    }
+    const bmStr = getReportMetric(rd, ['基础代谢', '基础代谢率']);
+    if (bmStr) bmr.value = parseFloat(bmStr);
+
+    const bm = getReportMetric(rd, ['BMI', '身体质量指数(BMI)']);
+    if (bm) bmi.value = parseFloat(bm);
+
+    const vf = getReportMetric(rd, ['内脏脂肪等级', '内脏脂肪面积']);
+    if (vf) vfat.value = parseFloat(vf);
+
+    const wr = getReportMetric(rd, ['腰臀比']);
+    if (wr) whr.value = parseFloat(wr);
   }
 });
 
@@ -197,16 +207,16 @@ const goBack = () => {
 }
 
 .body-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255, 255, 255, 0.9);
-  border-left: 1px solid rgba(255, 255, 255, 0.8);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-  border-right: 1px solid rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.7) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid rgba(255, 255, 255, 1);
+  border-left: 1px solid rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+  border-right: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 24px;
   padding: 24px;
-  box-shadow: 0 10px 40px rgba(31, 38, 135, 0.06), 0 2px 10px rgba(0, 0, 0, 0.04), inset 0 2px 4px rgba(255, 255, 255, 0.6);
+  box-shadow: 0 12px 32px rgba(31, 38, 135, 0.08), 0 2px 10px rgba(0, 0, 0, 0.04), inset 0 2px 4px rgba(255, 255, 255, 0.8);
   margin-bottom: 20px;
   display: flex;
   justify-content: space-between;
@@ -305,16 +315,16 @@ const goBack = () => {
 }
 
 .obesity-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255, 255, 255, 0.9);
-  border-left: 1px solid rgba(255, 255, 255, 0.8);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-  border-right: 1px solid rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.15) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255, 255, 255, 0.7);
+  border-left: 1px solid rgba(255, 255, 255, 0.6);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 20px;
   padding: 24px;
-  box-shadow: 0 8px 24px rgba(31, 38, 135, 0.05), inset 0 2px 4px rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 16px rgba(31, 38, 135, 0.03), inset 0 2px 4px rgba(255, 255, 255, 0.4);
   margin-bottom: 20px;
 }
 
