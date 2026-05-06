@@ -346,6 +346,10 @@ const getValueByLabels = (items, labels) => {
   return '';
 };
 
+const getPatientSection = (patient, key) => {
+  return patient?.sections?.find(section => section.key === key) || null;
+};
+
 const getManualMetricItem = (patient, label) => {
   return (getPatientSection(patient, 'manual-metrics')?.items || []).find(item => item?.label === label) || null;
 };
