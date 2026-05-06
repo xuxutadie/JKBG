@@ -569,7 +569,7 @@ const tabs = [
   { label: '已完成', value: 'done' }
 ];
 
-import { buildPatientRecord, hasMeaningfulValue, normalizeValue, getReportIconPaths, parseNumber } from '@/utils/reportParser';
+import { buildPatientRecord, hasMeaningfulValue, normalizeValue, getReportIconPaths, parseNumber, getPatientMeta, hasPatientReportContent } from '@/utils/reportParser';
 
 const loadPatients = async () => {
   const currentActiveId = activePatient.value?.id;

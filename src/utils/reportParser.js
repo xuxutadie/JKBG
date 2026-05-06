@@ -836,13 +836,48 @@ const getPatientMeta = (patient) => {
   return parts.join(' | ');
 };
 
+const sectionHasContent = (section) => {
+  if (!section) return false;
+
+  if (section.type === 'text') {
+    return hasMeaningfulValue(section.text);
+  }
+
+  if (section.type === 'kv' || section.type === 'cards' || section.type === 'profile') {
+    return Array.isArray(section.items) && section.items.some(item => hasMeaningfulValue(item?.label) && hasMeaningfulValue(item?.value));
+  }
+
+  if (section.type === 'table') {
+    return Array.isArray(section.rows) && section.rows.some(row => {
+      return Object.values(row || {}).some(hasMeaningfulValue);
+    });
+  }
+
+  if (section.type === 'matrix') {
+    return (
+      (Array.isArray(section.headers) && section.headers.some(hasMeaningfulValue)) ||
+      (Array.isArray(section.rows) && section.rows.some(row => Array.isArray(row) && row.some(hasMeaningfulValue)))
+    );
+  }
+
+  return false;
+};
+
 const hasPatientReportContent = (patient) => {
   return !!(
     patient &&
     (
-      patient.reportGroups.length ||
-      patient.profileSummary.length ||
-      patient.metricSummary.length
+      (Array.isArray(patient.reportGroups) && patient.reportGroups.length) ||
+      (Array.isArray(patient.profileSummary) && patient.profileSummary.length) ||
+      (Array.isArray(patient.metricSummary) && patient.metricSummary.length) ||
+      (Array.isArray(patient.sections) && patient.sections.some(sectionHasContent)) ||
+      (Array.isArray(patient.highlightMetrics) && patient.highlightMetrics.length) ||
+      (Array.isArray(patient.basicInfo) && patient.basicInfo.length) ||
+      (Array.isArray(patient.biochemicalAssessment?.statuses) && patient.biochemicalAssessment.statuses.length) ||
+      hasMeaningfulValue(patient.name) ||
+      hasMeaningfulValue(patient.gender) ||
+      hasMeaningfulValue(patient.age) ||
+      hasMeaningfulValue(patient.date)
     )
   );
 };
@@ -901,4 +936,4 @@ const buildPatientRecord = (rawRecord) => {
   };
 };
 
-export { buildPatientRecord, hasMeaningfulValue, normalizeValue, getReportIconPaths, parseNumber };
+export { buildPatientRecord, hasMeaningfulValue, normalizeValue, getReportIconPaths, parseNumber, getPatientMeta, hasPatientReportContent };
