@@ -46,6 +46,11 @@ const getReportIconPaths = (key) => {
   return reportIconPathMap[key] || reportIconPathMap['metric-default'];
 };
 
+const parseNumber = (value) => {
+  const matched = String(value || '').match(/-?\d+(\.\d+)?/);
+  return matched ? Number(matched[0]) : null;
+};
+
 const getGroupIconKey = (groupKey) => {
   const iconMap = {
     sleep: 'sleep',
@@ -892,4 +897,4 @@ const buildPatientRecord = (rawRecord) => {
   };
 };
 
-export { buildPatientRecord, hasMeaningfulValue, normalizeValue, getReportIconPaths };
+export { buildPatientRecord, hasMeaningfulValue, normalizeValue, getReportIconPaths, parseNumber };

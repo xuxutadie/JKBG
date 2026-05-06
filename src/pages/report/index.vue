@@ -569,7 +569,7 @@ const tabs = [
   { label: '已完成', value: 'done' }
 ];
 
-import { buildPatientRecord, hasMeaningfulValue, normalizeValue, getReportIconPaths } from '@/utils/reportParser';
+import { buildPatientRecord, hasMeaningfulValue, normalizeValue, getReportIconPaths, parseNumber } from '@/utils/reportParser';
 
 const loadPatients = async () => {
   const currentActiveId = activePatient.value?.id;
@@ -1251,11 +1251,6 @@ const buildManualMetricsPairs = (patient) => {
     }));
 
   return toPairRows(profileItems);
-};
-
-const parseNumber = (value) => {
-  const matched = String(value || '').match(/-?\d+(\.\d+)?/);
-  return matched ? Number(matched[0]) : null;
 };
 
 const calcBarPercent = (value) => {
