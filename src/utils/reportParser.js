@@ -936,4 +936,4 @@ const buildPatientRecord = (rawRecord) => {
   };
 };
 
-export { buildPatientRecord, hasMeaningfulValue, normalizeValue, getReportIconPaths, parseNumber, getPatientMeta, hasPatientReportContent };
+export { buildPatientRecord, hasMeaningfulValue, normalizeValue, getReportIconPaths, parseNumber, getPatientMeta, hasPatientReportContent, getMetricIconKey, weightedAverage, buildProfileSummary, getScoreColor };

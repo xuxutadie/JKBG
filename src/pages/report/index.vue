@@ -28,7 +28,7 @@
         <div class="panel-title" style="display: flex; justify-content: space-between; align-items: center;">
           <span>待生成报告档案列表</span>
           <div style="display: flex; gap: 8px;">
-            <button class="add-btn" @click="showAdminModal = true">管理员</button>
+            <button class="add-btn" @click="showAdminModal = true">添加管理员</button>
           </div>
         </div>
 
@@ -410,7 +410,9 @@
                 <div class="reference-section reference-section-half">
                   <div class="reference-section-title tone-orange">饮食指南</div>
                   <div class="reference-section-body">
-                    <div class="guidance-summary guidance-summary-diet" v-if="reportViewModel.guidanceSummary && reportViewModel.dietAdvice.length">{{ reportViewModel.guidanceSummary }}</div>
+                    <div class="guidance-status" v-if="reportViewModel.aiGuidanceLoading">AI 正在生成更贴合当前档案的饮食策略...</div>
+                    <div class="guidance-status guidance-status-warning" v-else-if="reportViewModel.aiGuidanceError">AI 饮食建议生成失败，当前展示本地分析建议</div>
+                    <div class="guidance-summary guidance-summary-diet" v-if="reportViewModel.dietSummary">{{ reportViewModel.dietSummary }}</div>
                     <div class="recommend-list" v-if="reportViewModel.dietAdvice.length">
                       <div class="recommend-item" v-for="(item, index) in reportViewModel.dietAdvice" :key="`diet-advice-${index}`">
                         <div class="recommend-icon tone-orange" aria-hidden="true">
@@ -455,7 +457,7 @@
       <div class="modal-mask" @click="showAdminModal = false"></div>
       <div class="modal-content">
         <div class="modal-header">
-          <h3>管理员设置</h3>
+          <h3>添加管理员</h3>
           <button class="close-btn" @click="showAdminModal = false">×</button>
         </div>
         <div class="modal-body">
@@ -466,7 +468,7 @@
             </div>
           </div>
           <div class="add-admin-form">
-            <h4>任命新管理员</h4>
+            <h4>新增管理员账号</h4>
             <input type="text" v-model="newAdminUsername" placeholder="账号" />
             <input type="password" v-model="newAdminPassword" placeholder="密码" />
             <button class="primary-btn" @click="addAdmin">添加</button>
@@ -569,7 +571,7 @@ const tabs = [
   { label: '已完成', value: 'done' }
 ];
 
-import { buildPatientRecord, hasMeaningfulValue, normalizeValue, getReportIconPaths, parseNumber, getPatientMeta, hasPatientReportContent } from '@/utils/reportParser';
+import { buildPatientRecord, hasMeaningfulValue, normalizeValue, getReportIconPaths, parseNumber, getPatientMeta, hasPatientReportContent, getMetricIconKey, weightedAverage, buildProfileSummary, getScoreColor } from '@/utils/reportParser';
 
 const loadPatients = async () => {
   const currentActiveId = activePatient.value?.id;
@@ -1412,6 +1414,49 @@ const normalizeAiAdviceItems = (items, fallbackIconKey) => {
     .slice(0, 6);
 };
 
+const buildDietSummary = (dietAdvice, dietTags) => {
+  const adviceList = Array.isArray(dietAdvice) ? dietAdvice : [];
+  const tags = (Array.isArray(dietTags) ? dietTags : []).filter(Boolean).slice(0, 4);
+  if (!adviceList.length && !tags.length) return '';
+
+  const titles = adviceList
+    .map(item => normalizeValue(item?.title))
+    .filter(Boolean)
+    .slice(0, 2);
+
+  if (tags.length && titles.length) {
+    return `AI 饮食策略重点围绕 ${tags.join('、')} 展开，当前优先建议从“${titles.join('”与“')}”开始落实。`;
+  }
+
+  if (tags.length) {
+    return `AI 饮食策略重点围绕 ${tags.join('、')} 展开，建议优先从三餐结构、食材选择和进食节律入手持续调整。`;
+  }
+
+  return `AI 饮食策略当前优先建议从“${titles.join('”与“')}”开始落实，并结合实际作息和指标变化持续观察。`;
+};
+
+const normalizeAdviceFingerprint = (text) => {
+  return String(text || '')
+    .replace(/[，。；：、,.!！?？\s]/g, '')
+    .trim();
+};
+
+const removeOverlappingAdviceItems = (primaryItems, secondaryItems) => {
+  const primary = Array.isArray(primaryItems) ? primaryItems : [];
+  const secondary = Array.isArray(secondaryItems) ? secondaryItems : [];
+  const seenTitles = new Set(primary.map(item => normalizeValue(item?.title)).filter(Boolean));
+  const seenTexts = primary.map(item => normalizeAdviceFingerprint(item?.text)).filter(Boolean);
+
+  return secondary.filter(item => {
+    const title = normalizeValue(item?.title);
+    const fingerprint = normalizeAdviceFingerprint(item?.text);
+    if (!fingerprint) return false;
+    if (title && seenTitles.has(title)) return false;
+    if (seenTexts.some(text => text === fingerprint || text.includes(fingerprint) || fingerprint.includes(text))) return false;
+    return true;
+  });
+};
+
 const normalizeAiCrossAnalysis = (items) => {
   const tones = ['red', 'orange', 'purple', 'blue', 'green'];
   return (Array.isArray(items) ? items : [])
@@ -1744,10 +1789,19 @@ const reportViewModel = computed(() => {
   const fallbackDietAdvice = buildAdviceItems(patient, 'diet');
   const aiGuidance = aiGuidanceMap.value[patient.id] || null;
   const crossAnalysis = aiGuidance?.crossAnalysis?.length ? aiGuidance.crossAnalysis : buildCrossAnalysis(patient);
-  const healthAdvice = aiGuidance?.healthAdvice?.length ? aiGuidance.healthAdvice : buildAdviceItems(patient, 'health');
-  const dietAdvice = aiGuidance?.dietAdvice?.length ? aiGuidance.dietAdvice : fallbackDietAdvice;
+  const rawHealthAdvice = aiGuidance?.healthAdvice?.length ? aiGuidance.healthAdvice : buildAdviceItems(patient, 'health');
+  const rawDietAdvice = aiGuidance?.dietAdvice?.length ? aiGuidance.dietAdvice : fallbackDietAdvice;
+  const healthAdvice = rawHealthAdvice.slice(0, 6);
+  let dietAdvice = removeOverlappingAdviceItems(healthAdvice, rawDietAdvice).slice(0, 6);
+  if (!dietAdvice.length) {
+    dietAdvice = fallbackDietAdvice.slice(0, 6);
+  }
+  if (!dietAdvice.length) {
+    dietAdvice = rawDietAdvice.slice(0, 6);
+  }
   const exerciseAdvice = aiGuidance?.exerciseAdvice?.length ? aiGuidance.exerciseAdvice : buildExerciseAdvice(patient);
   const dietTags = aiGuidance?.dietTags?.length ? aiGuidance.dietTags : buildDietTags(dietAdvice);
+  const dietSummary = buildDietSummary(dietAdvice, dietTags);
   const exerciseAdvicePreview = exerciseAdvice.slice(0, 4);
 
   return {
@@ -1770,6 +1824,7 @@ const reportViewModel = computed(() => {
     healthAdvice,
     dietAdvice,
     dietTags,
+    dietSummary,
     guidanceSummary: aiGuidance?.summary || '',
     aiGuidanceLoading: aiGuidanceLoading.value,
     aiGuidanceError: aiGuidanceError.value

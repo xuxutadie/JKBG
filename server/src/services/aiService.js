@@ -89,7 +89,11 @@ export const generateHealthGuidance = async (patientPayload) => {
 6. 每条 text 控制在 70-160 字之间，明确频率、时长、控制方式、适用前提或注意事项。
 7. 若某项数据缺失，只能依据已有数据保守建议，不能编造检验结果；若能判断风险趋势，也要说明判断依据来自哪些已知数据。
 8. dietTags 返回 4-8 个短标签，例如“控糖控油”“规律三餐”“优质蛋白”“低嘌呤”“限盐管理”。
-9. 严格返回合法 JSON，不要 markdown，不要解释文字。
+9. healthAdvice 必须侧重生活方式、作息、监测、恢复、压力管理、行为调整，不能把饮食方案当作主体内容。
+10. dietAdvice 必须侧重食物选择、三餐分配、烹调方式、摄入限制、饮食节律与禁忌，不能重复 healthAdvice 的标题和正文。
+11. healthAdvice 与 dietAdvice 两个数组之间禁止出现相同或近似的标题、句式和核心建议；如果主题相同，也必须从不同角度展开，一个偏生活管理，一个偏饮食执行。
+12. summary 是整份报告的综合总结，只能概括整体风险和联动关系，不要把它改写成 healthAdvice 或 dietAdvice 的任一条内容。
+13. 严格返回合法 JSON，不要 markdown，不要解释文字。
 
 用户健康档案如下：
 ${JSON.stringify(patientPayload)}`;
