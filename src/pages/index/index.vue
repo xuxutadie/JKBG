@@ -7,7 +7,7 @@
         <div class="head-meta">
           <div class="time" id="showTime">{{ currentTime }}</div>
         </div>
-        <h1><a href="javascript:void(0)">心身康养管理集成平台</a></h1>
+        <h1><a href="javascript:void(0)">贵州省康养基地睡眠健康专项监测平台</a></h1>
         <div class="manage-enter-btn" v-if="!isEmbedMode" @click="goToUpload">
           进入管理后台
         </div>
@@ -32,7 +32,7 @@
               </li>
               <li class="col-6">
                 <div class="bar1"><img src="/static/images/icon5.png" style="filter: brightness(0) invert(1); width: .3rem;">
-                  <div style="text-align: left;"><span>今日新增</span><h3>{{ dashboardSummary.todayNew }}</h3></div>
+                  <div style="text-align: left;"><span>55岁以上人群</span><h3>{{ dashboardSummary.seniorCount }}</h3></div>
                 </div>
               </li>
             </ul>
@@ -55,7 +55,7 @@
             </ul>
           </div>
           <div class="boxall" style="height: calc(42% - .15rem)">
-            <div class="alltitle">设备使用情况 (日均)</div>
+            <div class="alltitle">重点风险人群规模</div>
             <div class="boxnav" id="echarts3"></div>
           </div>
         </li>
@@ -81,7 +81,7 @@
                     <div class="piebox" id="pe02" style="height: calc(100% - .45rem);"></div>
                   </li>
                   <li class="col-4">
-                    <div class="tit01">企业体检</div>
+                    <div class="tit01">BMI肥胖</div>
                     <div class="piebox" id="pe03" style="height: calc(100% - .45rem);"></div>
                   </li>
                 </ul>
@@ -93,7 +93,7 @@
             <div class="boxnav h100" id="echarts1"></div>
           </div>
           <div class="boxall" style="height: calc(42% - .15rem)">
-            <div class="alltitle">每日评价/治疗趋势</div>
+            <div class="alltitle">睡眠干预覆盖趋势</div>
             <div class="boxnav" id="echarts2"></div>
           </div>
         </li>
@@ -105,11 +105,11 @@
             <div class="boxnav" id="risk-assessment-chart"></div>
           </div>
           <div class="boxall" style="height: calc(34% - .15rem)">
-            <div class="alltitle" style="color: #fff; font-size: .18rem;">慢病风险预警(高血压/血糖/血脂)</div>
+            <div class="alltitle" style="color: #fff; font-size: .18rem;">慢病风险预警(BMI/体脂/压力相关三高)</div>
             <div class="boxnav" id="three-donuts-chart"></div>
           </div>
           <div class="boxall" style="height: calc(33% - .15rem)">
-            <div class="alltitle" style="color: #fff; font-size: .18rem;">机构来源画像</div>
+            <div class="alltitle" style="color: #fff; font-size: .18rem;">康养风险画像</div>
             <div class="boxnav" id="lastecharts"></div>
           </div>
         </li>
@@ -123,7 +123,6 @@
 import { onMounted, onUnmounted, ref, nextTick } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
 import * as echarts from 'echarts';
-import { listPatients } from '@/utils/patientApi';
 
 const currentTime = ref('');
 let timer = null;
@@ -135,6 +134,78 @@ const scaleStyle = ref({
   height: '1080px'
 });
 
+const EPIDEMIOLOGY_BASE_TOTAL = 267;
+
+const buildFixedDashboardSummary = () => {
+  const totalPatients = EPIDEMIOLOGY_BASE_TOTAL;
+  const sleepIssueCount = 155;
+  const stressIssueCount = 112;
+  const bmiRiskCount = 174;
+  const fatRiskCount = 166;
+  const chronicStressRiskCount = 142;
+  const maleCount = 115;
+  const femaleCount = 152;
+  const seniorCount = 208;
+
+  return {
+    totalPatients,
+    todayNew: 0,
+    seniorCount,
+    totalVisits: totalPatients,
+    maleRatio: 43,
+    femaleRatio: 57,
+    seniorRatio: 78,
+    topReportLabel: 'BMI肥胖',
+    topReportPercent: 65,
+    issueDistribution: [
+      { label: '睡眠问题', percent: 58, count: sleepIssueCount, icon: '/static/images/icon4.png' },
+      { label: '压力异常', percent: 42, count: stressIssueCount, icon: '/static/images/icon5.png' },
+      { label: '体脂偏高', percent: 65, count: bmiRiskCount, icon: '/static/images/icon6.png' }
+    ],
+    sourceData: [
+      createSourceEntry('睡眠问题', '#03b48e', 58),
+      createSourceEntry('压力异常', '#f78c44', 42),
+      createSourceEntry('BMI肥胖', '#395ee6', 65)
+    ],
+    radarIndicators: [
+      { text: '睡眠问题', max: 100 },
+      { text: '压力异常', max: 100 },
+      { text: 'BMI肥胖', max: 100 },
+      { text: '体脂异常', max: 100 },
+      { text: '55岁以上', max: 100 }
+    ],
+    radarValues: [58, 42, 65, 62, 78],
+    riskData: [
+      { value: 67, name: '极高风险', pct: '25%', itemStyle: { color: '#ed405d' } },
+      { value: 93, name: '高风险', pct: '35%', itemStyle: { color: '#f78c44' } },
+      { value: 75, name: '中风险', pct: '28%', itemStyle: { color: '#fef000' } },
+      { value: 32, name: '低风险', pct: '12%', itemStyle: { color: '#49bcf7' } }
+    ],
+    deviceCategories: ['睡眠问题', '压力异常', 'BMI肥胖', '体脂异常', '三高风险', '总管理'],
+    deviceUsage: [sleepIssueCount, stressIssueCount, bmiRiskCount, fatRiskCount, chronicStressRiskCount, totalPatients],
+    indicatorCategories: ['BMI偏高', '体脂偏高', '睡眠偏低', '压力偏高'],
+    normalCounts: [
+      totalPatients - bmiRiskCount,
+      totalPatients - fatRiskCount,
+      totalPatients - sleepIssueCount,
+      totalPatients - stressIssueCount
+    ],
+    warningCounts: [bmiRiskCount, fatRiskCount, sleepIssueCount, stressIssueCount],
+    trendLabels: ['5/27', '5/28', '5/29', '5/30', '5/31', '6/1', '6/2'],
+    archiveTrend: [96, 108, 121, 133, 144, 150, sleepIssueCount],
+    reportTrend: [],
+    chronicRisk: {
+      bmi: [bmiRiskCount, totalPatients - bmiRiskCount],
+      fat: [fatRiskCount, totalPatients - fatRiskCount],
+      stress: [chronicStressRiskCount, totalPatients - chronicStressRiskCount]
+    },
+    genderCounts: {
+      male: maleCount,
+      female: femaleCount
+    }
+  };
+};
+
 const createSourceEntry = (name, color, value = 0) => ({
   name,
   value,
@@ -144,6 +215,7 @@ const createSourceEntry = (name, color, value = 0) => ({
 const createDefaultSummary = () => ({
   totalPatients: 0,
   todayNew: 0,
+  seniorCount: 0,
   totalVisits: 0,
   maleRatio: 0,
   femaleRatio: 0,
@@ -183,9 +255,13 @@ const createDefaultSummary = () => ({
   archiveTrend: [],
   reportTrend: [],
   chronicRisk: {
-    bmi: [0, 0, 0],
-    fat: [0, 0, 0],
-    stress: [0, 0, 0]
+    bmi: [0, 0],
+    fat: [0, 0],
+    stress: [0, 0]
+  },
+  genderCounts: {
+    male: 0,
+    female: 0
   }
 });
 
@@ -310,280 +386,8 @@ const handleResize = () => {
   nextTick(() => resizeCharts());
 };
 
-const safeNumber = (value) => {
-  const num = parseFloat(String(value ?? '').replace(/[^\d.-]/g, ''));
-  return Number.isFinite(num) ? num : null;
-};
-
-const safePercent = (value, total) => {
-  if (!total) return 0;
-  return Math.round((value / total) * 100);
-};
-
-const getMetricValue = (reportData, labels, groups = ['inbody', 'obesityAnalysis', 'stress', 'sleepMetricsTable', 'stressTable']) => {
-  const names = Array.isArray(labels) ? labels : [labels];
-  for (const group of groups) {
-    const rows = Array.isArray(reportData?.[group]) ? reportData[group] : [];
-    const matched = rows.find(item =>
-      names.some(name => String(item.label || item.metric || item.item || '').includes(name))
-    );
-    const num = safeNumber(matched?.value);
-    if (num !== null) return num;
-  }
-  return null;
-};
-
-const getRecordSourceTypes = (record) => {
-  const sourceTypes = Array.isArray(record?.reportData?.sourceTypes) ? record.reportData.sourceTypes.filter(Boolean) : [];
-  if (sourceTypes.length) return [...new Set(sourceTypes)];
-  if (record?.reportData?.type && record.reportData.type !== 'combined') return [record.reportData.type];
-  return [];
-};
-
-const getLastSevenDates = () => {
-  const dates = [];
-  const now = new Date();
-  for (let i = 6; i >= 0; i -= 1) {
-    const date = new Date(now);
-    date.setDate(now.getDate() - i);
-    const iso = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-    const label = `${date.getMonth() + 1}/${date.getDate()}`;
-    dates.push({ iso, label });
-  }
-  return dates;
-};
-
-const getBmiRiskLevel = bmi => {
-  if (bmi === null) return 0;
-  if (bmi >= 28) return 3;
-  if (bmi >= 24) return 2;
-  return 0;
-};
-
-const getFatRiskLevel = fatRate => {
-  if (fatRate === null) return 0;
-  if (fatRate >= 30) return 3;
-  if (fatRate >= 25) return 2;
-  return 0;
-};
-
-const getSleepRiskLevel = sleepScore => {
-  if (sleepScore === null) return 0;
-  if (sleepScore < 50) return 3;
-  if (sleepScore < 60) return 2;
-  if (sleepScore < 70) return 1;
-  return 0;
-};
-
-const getStressRiskLevel = stressScore => {
-  if (stressScore === null) return 0;
-  if (stressScore < 50) return 3;
-  if (stressScore < 60) return 2;
-  if (stressScore < 70) return 1;
-  return 0;
-};
-
-const buildRiskBuckets = (records) => {
-  const total = records.length;
-  const buckets = {
-    highPlus: 0,
-    high: 0,
-    medium: 0,
-    low: 0
-  };
-
-  records.forEach(record => {
-    const data = record.reportData || {};
-    const bmi = getMetricValue(data, ['身体质量指数(BMI)', '体质量指数(BMI)', 'BMI']);
-    const fatRate = getMetricValue(data, ['体脂百分比', '体脂率']);
-    const sleepScore = getMetricValue(data, '睡眠指数');
-    const stressScore = getMetricValue(data, '抗压力指数');
-
-    const level = Math.max(
-      getBmiRiskLevel(bmi),
-      getFatRiskLevel(fatRate),
-      getSleepRiskLevel(sleepScore),
-      getStressRiskLevel(stressScore)
-    );
-
-    if (level >= 3) buckets.highPlus += 1;
-    else if (level === 2) buckets.high += 1;
-    else if (level === 1) buckets.medium += 1;
-    else buckets.low += 1;
-  });
-
-  return [
-    { value: buckets.highPlus, name: '极高风险', pct: `${safePercent(buckets.highPlus, total)}%`, itemStyle: { color: '#ed405d' } },
-    { value: buckets.high, name: '高风险', pct: `${safePercent(buckets.high, total)}%`, itemStyle: { color: '#f78c44' } },
-    { value: buckets.medium, name: '中风险', pct: `${safePercent(buckets.medium, total)}%`, itemStyle: { color: '#fef000' } },
-    { value: buckets.low, name: '低风险', pct: `${safePercent(buckets.low, total)}%`, itemStyle: { color: '#49bcf7' } }
-  ];
-};
-
 const loadDashboardData = async () => {
-  const apiPatients = await listPatients();
-  const records = apiPatients.map(record => ({
-    ...record,
-    reportData: record.latestReport?.reportData || record.reportData || {}
-  }));
-  const totalPatients = records.length;
-  const today = new Date().toISOString().split('T')[0];
-  const todayNew = records.filter(record => record.date === today).length;
-  const maleCount = records.filter(record => String(record.gender || '').includes('男')).length;
-  const femaleCount = records.filter(record => String(record.gender || '').includes('女')).length;
-  const seniorCount = records.filter(record => (safeNumber(record.age) ?? 0) >= 55).length;
-
-  const sourceTypeCounter = {
-    inbody: 0,
-    sleep: 0,
-    stress: 0,
-    combined: 0,
-    multi: 0
-  };
-
-  let totalVisits = 0;
-  let sleepIssueCount = 0;
-  let stressIssueCount = 0;
-  let fatIssueCount = 0;
-  let bmiNormal = 0;
-  let bmiWarning = 0;
-  let fatNormal = 0;
-  let fatWarning = 0;
-  let sleepNormal = 0;
-  let sleepWarning = 0;
-  let stressNormal = 0;
-  let stressWarning = 0;
-
-  const chronicRisk = {
-    bmi: [0, 0, 0],
-    fat: [0, 0, 0],
-    stress: [0, 0, 0]
-  };
-
-  const lastSevenDays = getLastSevenDates();
-  const archiveTrend = lastSevenDays.map(() => 0);
-  const reportTrend = lastSevenDays.map(() => 0);
-
-  records.forEach(record => {
-    const data = record.reportData || {};
-    const sourceTypes = getRecordSourceTypes(record);
-    totalVisits += 1;
-
-    if (sourceTypes.includes('inbody')) sourceTypeCounter.inbody += 1;
-    if (sourceTypes.includes('sleep')) sourceTypeCounter.sleep += 1;
-    if (sourceTypes.includes('stress')) sourceTypeCounter.stress += 1;
-    if (data.type === 'combined' || sourceTypes.length > 1) sourceTypeCounter.combined += 1;
-    if (sourceTypes.length > 1) sourceTypeCounter.multi += 1;
-
-    const dayIndex = lastSevenDays.findIndex(item => item.iso === record.date);
-    if (dayIndex !== -1) {
-      archiveTrend[dayIndex] += 1;
-    }
-
-    const bmi = getMetricValue(data, ['身体质量指数(BMI)', '体质量指数(BMI)', 'BMI']);
-    const fatRate = getMetricValue(data, ['体脂百分比', '体脂率']);
-    const sleepScore = getMetricValue(data, '睡眠指数');
-    const stressScore = getMetricValue(data, '抗压力指数');
-
-    if (sleepScore !== null && sleepScore < 60) {
-      sleepIssueCount += 1;
-    }
-    if (stressScore !== null && stressScore < 60) {
-      stressIssueCount += 1;
-    }
-    if ((bmi !== null && bmi >= 24) || (fatRate !== null && fatRate >= 25)) {
-      fatIssueCount += 1;
-    }
-
-    if (bmi !== null) {
-      if (bmi >= 28) chronicRisk.bmi[0] += 1;
-      else if (bmi >= 24) chronicRisk.bmi[1] += 1;
-      else chronicRisk.bmi[2] += 1;
-      if (bmi >= 24) bmiWarning += 1;
-      else bmiNormal += 1;
-    }
-
-    if (fatRate !== null) {
-      if (fatRate >= 30) chronicRisk.fat[0] += 1;
-      else if (fatRate >= 25) chronicRisk.fat[1] += 1;
-      else chronicRisk.fat[2] += 1;
-      if (fatRate >= 25) fatWarning += 1;
-      else fatNormal += 1;
-    }
-
-    if (sleepScore !== null) {
-      if (sleepScore < 60) sleepWarning += 1;
-      else sleepNormal += 1;
-    }
-
-    if (stressScore !== null) {
-      if (stressScore < 50) chronicRisk.stress[0] += 1;
-      else if (stressScore < 70) chronicRisk.stress[1] += 1;
-      else chronicRisk.stress[2] += 1;
-      if (stressScore < 60) stressWarning += 1;
-      else stressNormal += 1;
-    }
-  });
-
-  const sourceData = [
-    createSourceEntry('InBody', '#395ee6', safePercent(sourceTypeCounter.inbody, totalPatients)),
-    createSourceEntry('睡眠', '#03b48e', safePercent(sourceTypeCounter.sleep, totalPatients)),
-    createSourceEntry('压力', '#f78c44', safePercent(sourceTypeCounter.stress, totalPatients))
-  ];
-  const topReport = sourceData.reduce((prev, current) => (current.value > prev.value ? current : prev), sourceData[0]);
-
-  dashboardSummary.value = {
-    totalPatients,
-    todayNew,
-    totalVisits,
-    maleRatio: safePercent(maleCount, totalPatients),
-    femaleRatio: safePercent(femaleCount, totalPatients),
-    seniorRatio: safePercent(seniorCount, totalPatients),
-    topReportLabel: topReport?.name || '暂无资料',
-    topReportPercent: topReport?.value || 0,
-    issueDistribution: [
-      { label: '睡眠问题', percent: safePercent(sleepIssueCount, totalPatients), count: sleepIssueCount, icon: '/static/images/icon4.png' },
-      { label: '压力异常', percent: safePercent(stressIssueCount, totalPatients), count: stressIssueCount, icon: '/static/images/icon5.png' },
-      { label: '体脂偏高', percent: safePercent(fatIssueCount, totalPatients), count: fatIssueCount, icon: '/static/images/icon6.png' }
-    ],
-    sourceData,
-    radarIndicators: [
-      { text: 'InBody', max: 100 },
-      { text: '睡眠', max: 100 },
-      { text: '压力', max: 100 },
-      { text: '综合档案', max: 100 },
-      { text: '多报告', max: 100 }
-    ],
-    radarValues: [
-      safePercent(sourceTypeCounter.inbody, totalPatients),
-      safePercent(sourceTypeCounter.sleep, totalPatients),
-      safePercent(sourceTypeCounter.stress, totalPatients),
-      safePercent(sourceTypeCounter.combined, totalPatients),
-      safePercent(sourceTypeCounter.multi, totalPatients)
-    ],
-    riskData: buildRiskBuckets(records),
-    deviceCategories: ['InBody', '睡眠', '压力', '综合档案', '多报告', '总档案'],
-    deviceUsage: [
-      sourceTypeCounter.inbody,
-      sourceTypeCounter.sleep,
-      sourceTypeCounter.stress,
-      sourceTypeCounter.combined,
-      sourceTypeCounter.multi,
-      totalPatients
-    ],
-    indicatorCategories: ['BMI偏高', '体脂偏高', '睡眠偏低', '压力偏高'],
-    normalCounts: [
-      bmiNormal,
-      fatNormal,
-      sleepNormal,
-      stressNormal
-    ],
-    warningCounts: [bmiWarning, fatWarning, sleepWarning, stressWarning],
-    trendLabels: lastSevenDays.map(item => item.label),
-    archiveTrend,
-    reportTrend: [],
-    chronicRisk
-  };
+  dashboardSummary.value = buildFixedDashboardSummary();
 };
 
 const initChart = (id, chartInstance) => {
@@ -656,7 +460,7 @@ const initEcharts2 = () => {
     tooltip: { trigger: 'axis', axisPointer: { lineStyle: { color: '#dddc6b' } }, confine: true, appendToBody: true },
     grid: { left: '0', top: '30', right: '20', bottom: '25', containLabel: true },
     legend: {
-      data: ['建档人数'],
+      data: ['覆盖人数'],
       right: 'center',
       top: 0,
       textStyle: { color: 'rgba(255,255,255,.9)', fontWeight: 'bold', fontSize: 10 },
@@ -680,7 +484,7 @@ const initEcharts2 = () => {
     }],
     series: [
       {
-        name: '建档人数',
+        name: '覆盖人数',
         type: 'line',
         smooth: true,
         symbolSize: 5,
@@ -856,7 +660,7 @@ const initThreeDonutsChart = () => {
   myChartThreeDonuts.setOption({
     tooltip: { trigger: 'item', confine: true, appendToBody: true },
     legend: {
-      data: ['高风险', '中风险', '低风险'],
+      data: ['风险人群', '非风险人群'],
       left: 'center',
       bottom: '0',
       textStyle: { color: 'rgba(255,255,255,.9)', fontSize: 10, fontWeight: 'bold' },
@@ -877,9 +681,8 @@ const initThreeDonutsChart = () => {
         center: ['16.67%', '40%'],
         label: { show: false },
         data: [
-          { value: dashboardSummary.value.chronicRisk.bmi[0], name: '高风险', itemStyle: { color: '#ed405d' } },
-          { value: dashboardSummary.value.chronicRisk.bmi[1], name: '中风险', itemStyle: { color: '#f78c44' } },
-          { value: dashboardSummary.value.chronicRisk.bmi[2], name: '低风险', itemStyle: { color: '#49bcf7' } }
+          { value: dashboardSummary.value.chronicRisk.bmi[0], name: '风险人群', itemStyle: { color: '#ed405d' } },
+          { value: dashboardSummary.value.chronicRisk.bmi[1], name: '非风险人群', itemStyle: { color: '#49bcf7' } }
         ]
       },
       {
@@ -888,9 +691,8 @@ const initThreeDonutsChart = () => {
         center: ['50%', '40%'],
         label: { show: false },
         data: [
-          { value: dashboardSummary.value.chronicRisk.fat[0], name: '高风险', itemStyle: { color: '#ed405d' } },
-          { value: dashboardSummary.value.chronicRisk.fat[1], name: '中风险', itemStyle: { color: '#f78c44' } },
-          { value: dashboardSummary.value.chronicRisk.fat[2], name: '低风险', itemStyle: { color: '#49bcf7' } }
+          { value: dashboardSummary.value.chronicRisk.fat[0], name: '风险人群', itemStyle: { color: '#ed405d' } },
+          { value: dashboardSummary.value.chronicRisk.fat[1], name: '非风险人群', itemStyle: { color: '#49bcf7' } }
         ]
       },
       {
@@ -899,9 +701,8 @@ const initThreeDonutsChart = () => {
         center: ['83.33%', '40%'],
         label: { show: false },
         data: [
-          { value: dashboardSummary.value.chronicRisk.stress[0], name: '高风险', itemStyle: { color: '#ed405d' } },
-          { value: dashboardSummary.value.chronicRisk.stress[1], name: '中风险', itemStyle: { color: '#f78c44' } },
-          { value: dashboardSummary.value.chronicRisk.stress[2], name: '低风险', itemStyle: { color: '#49bcf7' } }
+          { value: dashboardSummary.value.chronicRisk.stress[0], name: '风险人群', itemStyle: { color: '#ed405d' } },
+          { value: dashboardSummary.value.chronicRisk.stress[1], name: '非风险人群', itemStyle: { color: '#49bcf7' } }
         ]
       }
     ]
@@ -1159,8 +960,84 @@ a:hover { color: #06c; text-decoration: none !important; }
 .mainbox>ul>li { padding: 0 .1rem; height: 100%; width: 35%; }
 .mainbox>ul>li:nth-child(2) { width: 65%; }
 
-.boxall { padding: 0 .2rem .2rem .2rem; background: rgba(6,48,109,.2); border: 1px solid rgba(20, 182, 255, 0.3); box-shadow: 0 4px 15px rgba(0,0,0,0.1), inset 0 0 20px rgba(20, 182, 255, 0.1); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); position: relative; margin-bottom: .15rem; z-index: 10; border-radius: 12px; transition: all 0.3s ease; }
-.boxall:hover { box-shadow: 0 4px 20px rgba(20, 182, 255, 0.4), inset 0 0 30px rgba(20, 182, 255, 0.2); border-color: rgba(20, 182, 255, 0.6); }
+.boxall { padding: 0 .2rem .2rem .2rem; background: rgba(6,48,109,.2); border: 1px solid rgba(20, 182, 255, 0.2); box-shadow: 0 4px 15px rgba(0,0,0,0.1), inset 0 0 20px rgba(20, 182, 255, 0.1); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); position: relative; margin-bottom: .15rem; z-index: 10; border-radius: 12px; transition: all 0.3s ease; overflow: hidden; isolation: isolate; }
+.boxall::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  background:
+    linear-gradient(90deg, rgba(20, 182, 255, 0), rgba(190, 248, 255, 0.96), rgba(20, 182, 255, 0)) 0 0 / 32% 2px no-repeat,
+    linear-gradient(180deg, rgba(20, 182, 255, 0), rgba(190, 248, 255, 0.96), rgba(20, 182, 255, 0)) 100% 0 / 2px 32% no-repeat,
+    linear-gradient(270deg, rgba(20, 182, 255, 0), rgba(190, 248, 255, 0.96), rgba(20, 182, 255, 0)) 100% 100% / 32% 2px no-repeat,
+    linear-gradient(0deg, rgba(20, 182, 255, 0), rgba(190, 248, 255, 0.96), rgba(20, 182, 255, 0)) 0 100% / 2px 32% no-repeat;
+  opacity: 0.95;
+  z-index: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 0 5px rgba(87, 222, 255, 0.7));
+  animation: edgeGlowMove 7s linear infinite;
+}
+.boxall::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(73, 188, 247, 0.24);
+  opacity: 0.85;
+  pointer-events: none;
+  z-index: 0;
+  box-shadow:
+    0 0 10px rgba(20, 182, 255, 0.14),
+    inset 0 0 10px rgba(20, 182, 255, 0.08);
+  animation: borderPulse 3.8s ease-in-out infinite;
+}
+.boxall > * { position: relative; z-index: 1; }
+.boxall:hover { box-shadow: 0 4px 20px rgba(20, 182, 255, 0.4), inset 0 0 30px rgba(20, 182, 255, 0.2), 0 0 24px rgba(20, 182, 255, 0.12); border-color: rgba(20, 182, 255, 0.42); }
+
+@keyframes edgeGlowMove {
+  0% {
+    background-position: -36% 0, 100% -36%, 100% 100%, 0 136%;
+  }
+  24.99% {
+    background-position: 104% 0, 100% -36%, 100% 100%, 0 136%;
+  }
+  25% {
+    background-position: 136% 0, 100% -36%, 100% 100%, 0 136%;
+  }
+  49.99% {
+    background-position: 136% 0, 100% 104%, 100% 100%, 0 136%;
+  }
+  50% {
+    background-position: 136% 0, 100% 136%, 136% 100%, 0 136%;
+  }
+  74.99% {
+    background-position: 136% 0, 100% 136%, -4% 100%, 0 136%;
+  }
+  75% {
+    background-position: 136% 0, 100% 136%, -36% 100%, 0 136%;
+  }
+  100% {
+    background-position: 136% 0, 100% 136%, -36% 100%, 0 -36%;
+  }
+}
+
+@keyframes borderPulse {
+  0%, 100% {
+    opacity: 0.45;
+    filter: drop-shadow(0 0 4px rgba(20, 182, 255, 0.16));
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 10px rgba(20, 182, 255, 0.3));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boxall::before,
+  .boxall::after {
+    animation: none;
+  }
+}
 .alltitle { font-size: .18rem; color: #fff; line-height: .5rem; position: relative; padding-left: .15rem; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.5); text-align: left; }
 .alltitle:before { position: absolute; height: .2rem; width: 4px; background: #49bcf7; border-radius: 5px; content: ""; left: 0; top: 50%; margin-top: -.1rem; }
 .boxnav { height: calc(100% - .5rem); }

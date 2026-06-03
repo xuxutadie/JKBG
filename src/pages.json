@@ -10,7 +10,7 @@
     {
       "path": "pages/index/index",
       "style": {
-        "navigationBarTitleText": "康养实时大屏",
+        "navigationBarTitleText": "贵州省康养基地睡眠健康专项监测平台",
         "navigationBarBackgroundColor": "#101d36",
         "navigationBarTextStyle": "white",
         "navigationStyle": "custom"
