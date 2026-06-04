@@ -174,6 +174,17 @@ const writeLocalPatients = (records) => {
   uni.setStorageSync(LOCAL_STORAGE_KEY, Array.isArray(records) ? records : []);
 };
 
+const upsertLocalPatients = (records) => {
+  if (!Array.isArray(records) || !records.length) return;
+  const current = readLocalPatients();
+  const mapped = new Map(current.map(item => [item?.id, item]));
+  records.forEach((item) => {
+    if (!item?.id) return;
+    mapped.set(item.id, item);
+  });
+  writeLocalPatients(sortByCreatedAtDesc(Array.from(mapped.values())));
+};
+
 const sortByCreatedAtDesc = (records) => {
   return [...records].sort((a, b) => {
     const aTime = new Date(a?.createdAt || a?.updatedAt || 0).getTime();
@@ -219,6 +230,7 @@ export const listPatients = async () => {
   try {
     const response = await api.get('/patients');
     const data = response?.data || [];
+    upsertLocalPatients(data);
     return data.map(record => buildPatientRecord(record));
   } catch (_error) {
     const data = sortByCreatedAtDesc(readLocalPatients());
@@ -230,6 +242,9 @@ export const getPatientDetail = async (id) => {
   try {
     const response = await api.get(`/patients/${id}`);
     const data = response?.data || null;
+    if (data?.id) {
+      upsertLocalPatients([data]);
+    }
     return data ? buildPatientRecord(data) : null;
   } catch (_error) {
     const localData = readLocalPatients().find(item => item.id === id) || null;

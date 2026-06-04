@@ -129,6 +129,7 @@ const handleLogin = async () => {
 
     uni.setStorageSync('current_role', 'user');
     uni.setStorageSync('current_user', matched);
+    uni.setStorageSync('user_refresh_cooldown_until', Date.now() + 8000);
     uni.hideLoading();
     uni.switchTab({
       url: '/pages/mobile/home/index'

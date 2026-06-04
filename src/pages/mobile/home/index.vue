@@ -187,6 +187,11 @@ import { onShow } from '@dcloudio/uni-app';
 import { getReportMetric } from '@/utils/reportHelper';
 import { getPatientDetail } from '@/utils/patientApi';
 
+const shouldSkipImmediateRefresh = () => {
+  const cooldownUntil = Number(uni.getStorageSync('user_refresh_cooldown_until') || 0);
+  return cooldownUntil && Date.now() < cooldownUntil;
+};
+
 const currentUser = ref({
   name: '张小明',
   score: 78,
@@ -197,6 +202,9 @@ onShow(async () => {
   const user = uni.getStorageSync('current_user');
   if (user) {
     currentUser.value = user;
+    if (shouldSkipImmediateRefresh()) {
+      return;
+    }
     // Fetch latest data from API/storage to keep it synced with Management side
     if (user.id) {
       try {

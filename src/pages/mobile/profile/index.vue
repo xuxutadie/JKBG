@@ -54,6 +54,11 @@ import { ref } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
 import { getPatientDetail } from '@/utils/patientApi';
 
+const shouldSkipImmediateRefresh = () => {
+  const cooldownUntil = Number(uni.getStorageSync('user_refresh_cooldown_until') || 0);
+  return cooldownUntil && Date.now() < cooldownUntil;
+};
+
 const currentUser = ref({
   name: '张小明'
 });
@@ -62,6 +67,9 @@ onShow(async () => {
   const user = uni.getStorageSync('current_user');
   if (user) {
     currentUser.value = user;
+    if (shouldSkipImmediateRefresh()) {
+      return;
+    }
     if (user.id) {
       try {
         const latestUser = await getPatientDetail(user.id);
