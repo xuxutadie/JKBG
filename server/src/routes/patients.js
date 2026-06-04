@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { createGuidanceSchema, createPatientSchema } from '../schemas/patient.js';
-import { createGuidanceRecord, createPatientWithReport, deletePatientById, getPatientById, listPatients } from '../services/patientService.js';
+import { createGuidanceSchema, createPatientSchema, updatePatientSchema } from '../schemas/patient.js';
+import { createGuidanceRecord, createPatientWithReport, deletePatientById, getPatientById, listPatients, updatePatientById } from '../services/patientService.js';
 import { generateHealthGuidance } from '../services/aiService.js';
 
 const router = Router();
@@ -28,6 +28,16 @@ router.post('/', async (req, res, next) => {
     const payload = createPatientSchema.parse(req.body);
     const patient = await createPatientWithReport(payload);
     res.status(201).json({ data: patient });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.put('/:id', async (req, res, next) => {
+  try {
+    const payload = updatePatientSchema.parse(req.body);
+    const patient = await updatePatientById(req.params.id, payload);
+    res.json({ data: patient });
   } catch (error) {
     next(error);
   }

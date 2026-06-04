@@ -2,6 +2,7 @@ const sourceTypeLabelMap = {
   inbody: 'InBody',
   sleep: '睡眠监测',
   stress: '压力检测',
+  eye: '眼象检测',
   combined: '综合档案'
 };
 
@@ -88,7 +89,7 @@ const getArrayItemValue = (items, label) => {
   return items.find(item => item.label === label)?.value || '';
 };
 
-const getReportValue = (reportData, labels, sources = ['profile', 'sleepProfile', 'inbodyProfile', 'sleepMonitorInfo', 'sleepMonitorParams']) => {
+const getReportValue = (reportData, labels, sources = ['profile', 'sleepProfile', 'inbodyProfile', 'eyeProfile', 'sleepMonitorInfo', 'sleepMonitorParams']) => {
   const labelList = Array.isArray(labels) ? labels : [labels];
   for (const source of sources) {
     const items = reportData?.[source];
@@ -194,7 +195,7 @@ const buildCardItems = (items) => {
 
 const buildBasicInfo = (reportData) => {
   return buildUniqueItems(
-    [reportData?.profile, reportData?.sleepProfile, reportData?.inbodyProfile],
+    [reportData?.profile, reportData?.sleepProfile, reportData?.inbodyProfile, reportData?.eyeProfile],
     basicInfoLabels
   );
 };
@@ -229,6 +230,11 @@ const buildHighlightMetrics = (reportData) => {
     pushMetric(item.metric, item.value, item.unit, '睡眠监测');
   });
 
+  (reportData?.eyeFindingsTable || []).forEach(item => {
+    if (item?.left) pushMetric(`${item.item}(左眼)`, item.left, '', '眼象检测');
+    if (item?.right) pushMetric(`${item.item}(右眼)`, item.right, '', '眼象检测');
+  });
+
   if (reportData?.manualMetrics) {
     if (reportData.manualMetrics.bloodGlucose) pushMetric('血糖', reportData.manualMetrics.bloodGlucose, 'mmol/L', '生化指标');
     if (reportData.manualMetrics.bloodPressure) pushMetric('血压', reportData.manualMetrics.bloodPressure, 'mmHg', '生化指标');
@@ -251,6 +257,7 @@ const buildSections = (reportData) => {
   const sleepProfileItems = buildUniqueItems([reportData?.sleepProfile]);
   const sleepMonitorInfoItems = buildUniqueItems([reportData?.sleepMonitorInfo]);
   const sleepMonitorParamItems = buildUniqueItems([reportData?.sleepMonitorParams]);
+  const eyeProfileItems = buildUniqueItems([reportData?.eyeProfile]);
 
   pushSection(inbodyProfileItems.length ? { key: 'inbody-profile', title: 'InBody基础资料', type: 'kv', items: inbodyProfileItems } : null);
   pushSection(buildCardItems(reportData?.inbody).length ? { key: 'inbody-metrics', title: 'InBody核心指标', type: 'cards', items: buildCardItems(reportData?.inbody) } : null);
@@ -294,6 +301,19 @@ const buildSections = (reportData) => {
   pushSection(buildDynamicTableSection('sleep-statistics', reportData?.sleepStatistics, '睡眠数据统计'));
   pushSection(buildDynamicTableSection('daily-statistics', reportData?.dailyStatistics, '每日统计'));
   pushSection(buildTextSection('sleep-summary', '睡眠总结', reportData?.sleepSummaryText));
+  pushSection(eyeProfileItems.length ? { key: 'eye-profile', title: '眼象基础资料', type: 'kv', items: eyeProfileItems } : null);
+  pushSection(buildTableSection('eye-findings', '眼象采集结果', reportData?.eyeFindingsTable, [
+    { key: 'item', label: '项目' },
+    { key: 'left', label: '左眼' },
+    { key: 'right', label: '右眼' }
+  ]));
+  pushSection(buildTextSection('eye-summary', '综合分析结论', reportData?.eyeSummaryText));
+  pushSection(buildTextSection('eye-advice', '眼象健康建议', reportData?.eyeAdviceText));
+  if (Array.isArray(reportData?.eyeDetailSections)) {
+    reportData.eyeDetailSections.forEach((section, index) => {
+      pushSection(buildTextSection(`eye-detail-${index}`, normalizeValue(section?.title) || `眼象补充说明 ${index + 1}`, section?.content));
+    });
+  }
 
   if (reportData?.manualMetrics) {
     const manualItems = [];
@@ -896,9 +916,9 @@ const buildPatientRecord = (rawRecord) => {
     reportData: rawRecord.latestReport?.reportData || rawRecord.reportData || {}
   };
   const reportData = record.reportData || {};
-  const name = getReportValue(reportData, ['姓名', 'ID'], ['profile', 'sleepProfile', 'inbodyProfile']) || normalizeValue(record.name) || '未命名档案';
-  const gender = getReportValue(reportData, '性别') || normalizeValue(record.gender);
-  const age = getReportValue(reportData, '年龄') || normalizeValue(record.age);
+  const name = getReportValue(reportData, ['姓名', 'ID'], ['profile', 'sleepProfile', 'inbodyProfile', 'eyeProfile']) || normalizeValue(record.name) || '未命名档案';
+  const gender = getReportValue(reportData, '性别', ['profile', 'sleepProfile', 'inbodyProfile', 'eyeProfile']) || normalizeValue(record.gender);
+  const age = getReportValue(reportData, '年龄', ['profile', 'sleepProfile', 'inbodyProfile', 'eyeProfile']) || normalizeValue(record.age);
   const date = getReportValue(reportData, ['测试日期', '报告时间', '开始时间', '结束时间']) || normalizeValue(record.date);
   const inbodyScore = parseScore(getReportValue(reportData, 'InBody评分', ['inbodyProfile']));
   const sourceTypes = Array.isArray(reportData.sourceTypes)

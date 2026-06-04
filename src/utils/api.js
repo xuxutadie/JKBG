@@ -57,5 +57,6 @@ const request = ({ url, method = 'GET', data }) => {
 export const api = {
   get: (url) => request({ url, method: 'GET' }),
   post: (url, data) => request({ url, method: 'POST', data }),
+  put: (url, data) => request({ url, method: 'PUT', data }),
   delete: (url) => request({ url, method: 'DELETE' })
 };

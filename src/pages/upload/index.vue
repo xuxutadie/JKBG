@@ -351,6 +351,75 @@
               </table>
             </div>
           </div>
+
+          <div class="data-section anim-slide-up" style="margin-top: 20px;" v-if="report.eyeProfile">
+            <h4 class="section-title"><span class="indicator"></span>眼象基础资料</h4>
+            <div class="profile-grid">
+              <div class="data-card" v-for="item in report.eyeProfile" :key="item.label">
+                <span class="label">{{ item.label }}</span>
+                <div class="value-wrapper">
+                  <input class="value-input" v-model="item.value" />
+                  <small class="unit">{{ item.unit || '' }}</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="data-section anim-slide-up" style="margin-top: 20px;" v-if="report.eyeImages && report.eyeImages.pageOverview">
+            <h4 class="section-title"><span class="indicator"></span>眼象原始图片</h4>
+            <div class="eye-image-grid">
+              <div class="eye-image-card" v-if="report.eyeImages.pageOverview">
+                <div class="eye-image-title">第一页关键信息</div>
+                <img class="eye-image-preview" :src="report.eyeImages.pageOverview" alt="第一页关键信息" />
+              </div>
+            </div>
+          </div>
+
+          <div class="data-section anim-slide-up" style="margin-top: 20px;" v-if="report.eyeFindingsTable && report.eyeFindingsTable.length">
+            <h4 class="section-title"><span class="indicator"></span>眼象采集结果</h4>
+            <div class="stress-table-wrapper">
+              <table class="stress-table">
+                <thead>
+                  <tr>
+                    <th>项目</th>
+                    <th>左眼</th>
+                    <th>右眼</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(row, index) in report.eyeFindingsTable" :key="`${row.item}-${index}`">
+                    <td><input class="table-input" v-model="row.item" /></td>
+                    <td><input class="table-input" v-model="row.left" /></td>
+                    <td><input class="table-input" v-model="row.right" /></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="data-section anim-slide-up" style="margin-top: 20px;" v-if="report.eyeSummaryText">
+            <h4 class="section-title"><span class="indicator"></span>综合分析结论</h4>
+            <div class="text-block-card">
+              <textarea class="text-block-input" v-model="report.eyeSummaryText"></textarea>
+            </div>
+          </div>
+
+          <div class="data-section anim-slide-up" style="margin-top: 20px;" v-if="report.eyeAdviceText">
+            <h4 class="section-title"><span class="indicator"></span>眼象健康建议</h4>
+            <div class="text-block-card">
+              <textarea class="text-block-input" v-model="report.eyeAdviceText"></textarea>
+            </div>
+          </div>
+
+          <div class="data-section anim-slide-up" style="margin-top: 20px;" v-if="report.eyeDetailSections && report.eyeDetailSections.length">
+            <h4 class="section-title"><span class="indicator"></span>眼象正文分章节预览</h4>
+            <div class="text-section-list">
+              <div class="text-section-card" v-for="(section, index) in report.eyeDetailSections" :key="`eye-detail-section-${index}`">
+                <div class="text-section-header">{{ section.title }}</div>
+                <textarea class="text-block-input text-section-input" v-model="section.content"></textarea>
+              </div>
+            </div>
+          </div>
           </div>
         </div>
         
@@ -485,6 +554,12 @@ const detectReportType = (fileName) => {
   const lowerName = fileName.toLowerCase();
   if (lowerName.includes('inbody') || fileName.includes('体成分')) return 'inbody';
   if (
+    fileName.includes('眼象') ||
+    fileName.includes('目测仪') ||
+    fileName.includes('眼诊') ||
+    lowerName.includes('eye')
+  ) return 'eye';
+  if (
     fileName.includes('睡眠') ||
     fileName.includes('生理参数') ||
     fileName.includes('监测报告') ||
@@ -557,7 +632,7 @@ const startParsing = async () => {
       const result = await parseHealthReport(contentObj, reportType);
       
       // 3. 将结果映射到 UI
-      const reportData = applyAIResult(result, reportType, file.name);
+      const reportData = applyAIResult(result, reportType, file.name, contentObj);
       parsedReports.value.push(reportData);
       
       file.progress = 100;
@@ -575,7 +650,7 @@ const startParsing = async () => {
   }
 };
 
-const applyAIResult = (result, type, fileName) => {
+const applyAIResult = (result, type, fileName, contentObj = {}) => {
   const reportData = generateMockData(type, fileName);
 
   if (type === 'inbody') {
@@ -744,6 +819,56 @@ const applyAIResult = (result, type, fileName) => {
     reportData.sleepStatistics = normalizeDynamicTable(result.sleepStatistics, '睡眠数据统计');
     reportData.dailyStatistics = normalizeDynamicTable(result.dailyStatistics, '每日统计');
     reportData.sleepSummaryText = result.summary || reportData.sleepSummaryText;
+  } else if (type === 'eye') {
+    const eyeProfileMapping = {
+      name: '姓名',
+      gender: '性别',
+      age: '年龄',
+      birthDate: '出生日期',
+      phone: '手机号',
+      idCard: '身份证号码'
+    };
+
+    if (result.profile) {
+      (reportData.eyeProfile || []).forEach(item => {
+        for (const [key, label] of Object.entries(eyeProfileMapping)) {
+          if (item.label === label && result.profile[key] !== undefined) {
+            item.value = result.profile[key] || '--';
+          }
+        }
+      });
+    }
+
+    if (Array.isArray(result.eyeFindings)) {
+      reportData.eyeFindingsTable = result.eyeFindings.map(row => ({
+        item: row.item || '--',
+        left: row.left || '--',
+        right: row.right || '--'
+      }));
+    }
+
+    reportData.eyeSummaryText = result.summary || '';
+    reportData.eyeAdviceText = [
+      result.healthAdvice,
+      result.dietAdvice,
+      result.lifestyleAdvice
+    ].filter(hasMeaningfulValue).join('\n\n');
+    reportData.eyeDetailSections = Array.isArray(result.detailSections)
+      ? result.detailSections
+          .map(section => ({
+            title: hasMeaningfulValue(section?.title) ? String(section.title).trim() : '',
+            content: hasMeaningfulValue(section?.content) ? String(section.content).trim() : ''
+          }))
+          .filter(section => section.title && section.content)
+      : [];
+
+    if (contentObj?.preservedImages) {
+      reportData.eyeImages = {
+        pageOverview: contentObj.preservedImages.pageOverview || '',
+        zoneChart: contentObj.preservedImages.zoneChart || '',
+        captureResult: contentObj.preservedImages.captureResult || ''
+      };
+    }
   } else {
     const profileMapping = {
       name: '姓名',
@@ -881,7 +1006,24 @@ const generateMockData = (type, fileName = '') => {
       { label: '活力指数', value: '--', unit: '分', isWarning: false },
       { label: '抗压力指数', value: '--', unit: '分', isWarning: false }
     ] : null,
-    stressTable: []
+    stressTable: [],
+    eyeProfile: type === 'eye' ? [
+      { label: '姓名', value: '--', unit: '' },
+      { label: '性别', value: '--', unit: '' },
+      { label: '年龄', value: '--', unit: '岁' },
+      { label: '出生日期', value: '--', unit: '' },
+      { label: '手机号', value: '--', unit: '' },
+      { label: '身份证号码', value: '--', unit: '' }
+    ] : null,
+    eyeFindingsTable: [],
+    eyeSummaryText: '',
+    eyeAdviceText: '',
+    eyeDetailSections: [],
+    eyeImages: {
+      pageOverview: '',
+      zoneChart: '',
+      captureResult: ''
+    }
   };
 };
 
@@ -1010,11 +1152,28 @@ const sanitizeMergedReport = (report) => {
     muscleFatAnalysis: sanitizeTableRows(report.muscleFatAnalysis, ['metric', 'value', 'unit', 'status']),
     obesityAnalysis: sanitizeTableRows(report.obesityAnalysis, ['metric', 'value', 'unit', 'status']),
     stress: sanitizeLabeledItems(report.stress),
-    stressTable: sanitizeTableRows(report.stressTable, ['item', 'value', 'result', 'standard'])
+    stressTable: sanitizeTableRows(report.stressTable, ['item', 'value', 'result', 'standard']),
+    eyeProfile: sanitizeLabeledItems(report.eyeProfile),
+    eyeFindingsTable: sanitizeTableRows(report.eyeFindingsTable, ['item', 'left', 'right']),
+    eyeSummaryText: hasMeaningfulValue(report.eyeSummaryText) ? String(report.eyeSummaryText).trim() : '',
+    eyeAdviceText: hasMeaningfulValue(report.eyeAdviceText) ? String(report.eyeAdviceText).trim() : '',
+    eyeDetailSections: Array.isArray(report.eyeDetailSections)
+      ? report.eyeDetailSections
+          .map(section => ({
+            title: hasMeaningfulValue(section?.title) ? String(section.title).trim() : '',
+            content: hasMeaningfulValue(section?.content) ? String(section.content).trim() : ''
+          }))
+          .filter(section => section.title && section.content)
+      : [],
+    eyeImages: {
+      pageOverview: hasMeaningfulValue(report?.eyeImages?.pageOverview) ? String(report.eyeImages.pageOverview).trim() : '',
+      zoneChart: hasMeaningfulValue(report?.eyeImages?.zoneChart) ? String(report.eyeImages.zoneChart).trim() : '',
+      captureResult: hasMeaningfulValue(report?.eyeImages?.captureResult) ? String(report.eyeImages.captureResult).trim() : ''
+    }
   };
 };
 
-const getMergedReportValue = (mergedReport, labels, sources = ['profile', 'sleepProfile', 'inbodyProfile', 'sleepMonitorInfo']) => {
+const getMergedReportValue = (mergedReport, labels, sources = ['profile', 'sleepProfile', 'inbodyProfile', 'eyeProfile', 'sleepMonitorInfo']) => {
   const labelList = Array.isArray(labels) ? labels : [labels];
 
   for (const source of sources) {
@@ -1054,7 +1213,17 @@ const mergeParsedReports = (reports) => {
     muscleFatAnalysis: [],
     obesityAnalysis: [],
     stress: null,
-    stressTable: []
+    stressTable: [],
+    eyeProfile: null,
+    eyeFindingsTable: [],
+    eyeSummaryText: '',
+    eyeAdviceText: '',
+    eyeDetailSections: [],
+    eyeImages: {
+      pageOverview: '',
+      zoneChart: '',
+      captureResult: ''
+    }
   };
 
   reports.forEach(report => {
@@ -1073,6 +1242,14 @@ const mergeParsedReports = (reports) => {
     if (Array.isArray(report.obesityAnalysis) && report.obesityAnalysis.length) merged.obesityAnalysis = report.obesityAnalysis;
     if (Array.isArray(report.stress) && report.stress.length) merged.stress = report.stress;
     if (Array.isArray(report.stressTable) && report.stressTable.length) merged.stressTable = report.stressTable;
+    if (Array.isArray(report.eyeProfile) && report.eyeProfile.length) merged.eyeProfile = report.eyeProfile;
+    if (Array.isArray(report.eyeFindingsTable) && report.eyeFindingsTable.length) merged.eyeFindingsTable = report.eyeFindingsTable;
+    if (hasMeaningfulValue(report.eyeSummaryText)) merged.eyeSummaryText = report.eyeSummaryText;
+    if (hasMeaningfulValue(report.eyeAdviceText)) merged.eyeAdviceText = report.eyeAdviceText;
+    if (Array.isArray(report.eyeDetailSections) && report.eyeDetailSections.length) merged.eyeDetailSections = report.eyeDetailSections;
+    if (hasMeaningfulValue(report?.eyeImages?.pageOverview)) merged.eyeImages.pageOverview = report.eyeImages.pageOverview;
+    if (hasMeaningfulValue(report?.eyeImages?.zoneChart)) merged.eyeImages.zoneChart = report.eyeImages.zoneChart;
+    if (hasMeaningfulValue(report?.eyeImages?.captureResult)) merged.eyeImages.captureResult = report.eyeImages.captureResult;
   });
 
   return merged;
@@ -1115,10 +1292,11 @@ const saveToDatabase = () => {
       manualMetrics: manualMetrics.value
     }
   })
-    .then(() => {
+    .then((savedRecord) => {
+      const isUpdatedArchive = savedRecord?.archiveAction === 'updated';
       uni.hideLoading();
       uni.showToast({
-        title: '已存入客户档案库',
+        title: isUpdatedArchive ? '已补充到现有档案' : '已新建客户档案',
         icon: 'success'
       });
       setTimeout(() => {
@@ -1621,6 +1799,58 @@ const saveToDatabase = () => {
   font-size: 13px;
   line-height: 1.8;
   resize: vertical;
+}
+
+.text-section-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.text-section-card {
+  background: rgba(0,0,0,0.24);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.text-section-header {
+  color: #dbeafe;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.text-section-input {
+  min-height: 140px;
+}
+
+.eye-image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.eye-image-card {
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.eye-image-title {
+  color: #dbeafe;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.eye-image-preview {
+  display: block;
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.96);
 }
 
 .status-badge {

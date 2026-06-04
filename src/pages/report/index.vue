@@ -110,7 +110,7 @@
                     <strong>{{ item.value }}</strong>
                   </div>
                 </div>
-                <div class="reference-badge-panel">
+                <div class="reference-badge-panel" v-if="!reportViewModel.isEyeOnly">
                   <div class="seal-icon-wrap">
                     <svg class="seal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                       <path v-for="(path, index) in getReportIconPaths('score')" :key="`score-${index}`" :d="path" />
@@ -125,11 +125,11 @@
             </div>
 
             <div class="reference-report" v-if="reportViewModel && reportViewModel.hasContent">
-              <div class="reference-row">
-                <div class="reference-section reference-section-main">
+              <div class="reference-row" v-if="reportViewModel.sleepPairs.length || reportViewModel.sleepInsights.length">
+                <div class="reference-section reference-section-main" v-if="reportViewModel.sleepPairs.length">
                   <div class="reference-section-title tone-blue">1 睡眠分析</div>
                   <div class="reference-section-body">
-                    <table class="reference-pairs-table" v-if="reportViewModel.sleepPairs.length">
+                    <table class="reference-pairs-table">
                       <tbody>
                         <tr v-for="(row, index) in reportViewModel.sleepPairs" :key="`sleep-${index}`">
                           <th>{{ row.left.label }}</th>
@@ -139,14 +139,13 @@
                         </tr>
                       </tbody>
                     </table>
-                    <div class="reference-empty-block" v-else>暂无可展示的睡眠检测数据</div>
                   </div>
                 </div>
 
-                <div class="reference-section reference-section-side">
+                <div class="reference-section reference-section-side" v-if="reportViewModel.sleepInsights.length">
                   <div class="reference-section-title tone-yellow">1.2 睡眠分析解读</div>
                   <div class="reference-section-body">
-                    <div class="insight-list" v-if="reportViewModel.sleepInsights.length">
+                    <div class="insight-list">
                       <div class="insight-item" v-for="(item, index) in reportViewModel.sleepInsights" :key="`sleep-insight-${index}`">
                         <div class="insight-icon" :class="`tone-${item.tone}`" aria-hidden="true">
                           <svg class="report-inline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -159,16 +158,15 @@
                         </div>
                       </div>
                     </div>
-                    <div class="reference-empty-block" v-else>暂无可展示的睡眠分析解读</div>
                   </div>
                 </div>
               </div>
 
-              <div class="reference-row reference-row-single reference-row-stress-table">
+              <div class="reference-row reference-row-single reference-row-stress-table" v-if="reportViewModel.stressTable.rows.length">
                 <div class="reference-section reference-section-full">
                   <div class="reference-section-title tone-blue">2 自律神经检测结果</div>
                   <div class="reference-section-body">
-                    <table class="reference-data-table" v-if="reportViewModel.stressTable.rows.length">
+                    <table class="reference-data-table">
                       <thead>
                         <tr>
                           <th v-for="column in reportViewModel.stressTable.columns" :key="`stress-col-${column.key}`">{{ column.label }}</th>
@@ -180,12 +178,11 @@
                         </tr>
                       </tbody>
                     </table>
-                    <div class="reference-empty-block" v-else>暂无可展示的自律神经检测数据</div>
                   </div>
                 </div>
               </div>
 
-              <div class="reference-row reference-row-single reference-row-page-break reference-row-stress-overview-page" data-print-page-break-before="true">
+              <div class="reference-row reference-row-single reference-row-page-break reference-row-stress-overview-page" data-print-page-break-before="true" v-if="reportViewModel.stressStats.length || reportViewModel.stressOverview.hasAge || reportViewModel.stressOverview.hasOverview">
                 <div class="reference-section reference-section-full">
                   <div class="reference-section-title tone-green">自律神经年龄与总体评估</div>
                   <div class="reference-section-body">
@@ -261,13 +258,12 @@
                         <div class="reference-stat-note" v-if="item.note">{{ item.note }}</div>
                       </div>
                     </div>
-                    <div class="reference-empty-block" v-if="!reportViewModel.stressStats.length && !reportViewModel.stressOverview.hasAge && !reportViewModel.stressOverview.hasOverview">当前档案暂无可提取的自律神经评估摘要</div>
                   </div>
                 </div>
               </div>
 
-              <div class="reference-row">
-                <div class="reference-section reference-section-main">
+              <div class="reference-row" v-if="reportViewModel.bodyPairs.length || reportViewModel.bodyBars.length || reportViewModel.obesityCards.length || reportViewModel.exerciseAdvicePreview.length">
+                <div class="reference-section reference-section-main" v-if="reportViewModel.bodyPairs.length || reportViewModel.bodyBars.length">
                   <div class="reference-section-title tone-blue">3 人体成分分析</div>
                   <div class="reference-section-body">
                     <table class="reference-pairs-table" v-if="reportViewModel.bodyPairs.length">
@@ -292,11 +288,10 @@
                         <div class="metric-bar-note">{{ item.note }}</div>
                       </div>
                     </div>
-                    <div class="reference-empty-block" v-if="!reportViewModel.bodyPairs.length && !reportViewModel.bodyBars.length">暂无可展示的人体成分数据</div>
                   </div>
                 </div>
 
-                <div class="reference-section reference-section-side">
+                <div class="reference-section reference-section-side" v-if="reportViewModel.obesityCards.length || reportViewModel.exerciseAdvicePreview.length">
                   <div class="reference-section-title tone-blue">4 肥胖分析</div>
                   <div class="reference-section-body">
                     <div class="obesity-list" v-if="reportViewModel.obesityCards.length">
@@ -311,7 +306,6 @@
                         <div class="obesity-note">{{ item.note }}</div>
                       </div>
                     </div>
-                    <div class="reference-empty-block" v-else>暂无可展示的肥胖分析数据</div>
                     <div class="exercise-advice-box" v-if="reportViewModel.exerciseAdvicePreview.length">
                       <div class="exercise-advice-title">AI运动建议</div>
                       <div class="exercise-advice-list">
@@ -332,8 +326,8 @@
                 </div>
               </div>
 
-              <div class="reference-row" v-if="reportViewModel.manualMetricsPairs.length || reportViewModel.weeklyFitnessPlan.length">
-                <div class="reference-section reference-section-main">
+              <div class="reference-row" v-if="reportViewModel.manualMetricsPairs.length || reportViewModel.crossAnalysis.length || reportViewModel.weeklyFitnessPlan.length">
+                <div class="reference-section reference-section-main" v-if="reportViewModel.manualMetricsPairs.length || reportViewModel.crossAnalysis.length">
                   <div class="reference-section-title tone-red">生化指标</div>
                   <div class="reference-section-body">
                     <table class="reference-pairs-table" v-if="reportViewModel.manualMetricsPairs.length">
@@ -346,8 +340,6 @@
                         </tr>
                       </tbody>
                     </table>
-                    <div class="reference-empty-block" v-else>暂无可展示的生化指标数据</div>
-                    
                     <div class="insight-list" v-if="reportViewModel.crossAnalysis.length" style="margin-top: 18px;">
                       <div class="insight-item" v-for="(item, index) in reportViewModel.crossAnalysis" :key="`cross-analysis-${index}`">
                         <div class="insight-icon" :class="`tone-${item.tone}`" aria-hidden="true">
@@ -364,7 +356,7 @@
                   </div>
                 </div>
 
-                <div class="reference-section reference-section-side">
+                <div class="reference-section reference-section-side" v-if="reportViewModel.weeklyFitnessPlan.length">
                   <div class="reference-section-title tone-purple">一周健身计划表</div>
                   <div class="reference-section-body">
                     <div class="fitness-plan-list">
@@ -383,8 +375,58 @@
                 </div>
               </div>
 
-              <div class="reference-row reference-row-bottom">
-                <div class="reference-section reference-section-half">
+              <div class="reference-row" v-if="reportViewModel.eye.hasContent">
+                <div class="reference-section reference-section-main" v-if="reportViewModel.eye.pageOverview || reportViewModel.eye.findings.rows.length">
+                  <div class="reference-section-title tone-teal">{{ reportViewModel.isEyeOnly ? '1 眼象检测' : '5 眼象检测' }}</div>
+                  <div class="reference-section-body">
+                    <div class="eye-visual-grid" v-if="reportViewModel.eye.pageOverview">
+                      <div class="eye-visual-card">
+                        <div class="eye-visual-title">第一页关键信息</div>
+                        <img class="eye-visual-image" :src="reportViewModel.eye.pageOverview" alt="第一页关键信息" />
+                      </div>
+                    </div>
+
+                    <table class="reference-data-table" v-if="reportViewModel.eye.findings.rows.length">
+                      <thead>
+                        <tr>
+                          <th v-for="column in reportViewModel.eye.findings.columns" :key="`eye-col-${column.key}`">{{ column.label }}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="(row, rowIndex) in reportViewModel.eye.findings.rows" :key="`eye-row-${rowIndex}`">
+                          <td v-for="column in reportViewModel.eye.findings.columns" :key="`eye-${rowIndex}-${column.key}`">{{ row[column.key] || '--' }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="reference-section reference-section-side" v-if="reportViewModel.eye.textSections.length">
+                  <div class="reference-section-title tone-cyan">{{ reportViewModel.isEyeOnly ? '1.2 眼象解读' : '5.2 眼象解读' }}</div>
+                  <div class="reference-section-body">
+                    <div class="eye-text-section-list">
+                      <div class="eye-text-section-card" v-for="(item, index) in reportViewModel.eye.textSections" :key="`eye-text-${index}`">
+                        <h5>{{ item.title }}</h5>
+                        <div class="eye-text-paragraphs">
+                          <p
+                            v-for="(paragraph, paragraphIndex) in item.paragraphs"
+                            :key="`eye-text-${index}-${paragraphIndex}`"
+                            :class="[
+                              { 'eye-text-bullet': paragraph.isBullet },
+                              paragraph.isBullet ? `eye-text-bullet-${paragraph.tone}` : ''
+                            ]"
+                          >
+                            {{ paragraph.text }}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="reference-row reference-row-bottom" v-if="reportViewModel.guidanceSummary || reportViewModel.healthAdvice.length || reportViewModel.dietSummary || reportViewModel.dietAdvice.length || reportViewModel.dietTags.length">
+                <div class="reference-section reference-section-half" v-if="reportViewModel.guidanceSummary || reportViewModel.healthAdvice.length">
                   <div class="reference-section-title tone-green">健康建议</div>
                   <div class="reference-section-body">
                     <div class="guidance-status" v-if="reportViewModel.aiGuidanceLoading">AI 正在结合当前档案生成更完整的个性化建议...</div>
@@ -403,11 +445,10 @@
                         </div>
                       </div>
                     </div>
-                    <div class="reference-empty-block" v-else>暂无可输出的健康建议</div>
                   </div>
                 </div>
 
-                <div class="reference-section reference-section-half">
+                <div class="reference-section reference-section-half" v-if="reportViewModel.dietSummary || reportViewModel.dietAdvice.length || reportViewModel.dietTags.length">
                   <div class="reference-section-title tone-orange">饮食指南</div>
                   <div class="reference-section-body">
                     <div class="guidance-status" v-if="reportViewModel.aiGuidanceLoading">AI 正在生成更贴合当前档案的饮食策略...</div>
@@ -429,7 +470,6 @@
                     <div class="reference-tag-row" v-if="reportViewModel.dietTags.length">
                       <span class="reference-tag" v-for="tag in reportViewModel.dietTags" :key="tag">{{ tag }}</span>
                     </div>
-                    <div class="reference-empty-block" v-if="!reportViewModel.dietAdvice.length && !reportViewModel.dietTags.length">暂无可输出的饮食指南</div>
                   </div>
                 </div>
               </div>
@@ -823,6 +863,49 @@ const getStressSignals = (patient) => {
   return [...metricSignals, ...tableSignals];
 };
 
+const getPatientSourceTypes = (patient) => {
+  const sourceTypes = Array.isArray(patient?.reportData?.sourceTypes)
+    ? patient.reportData.sourceTypes
+    : [];
+  if (sourceTypes.length) return sourceTypes.filter(Boolean);
+  return Array.isArray(patient?.sourceLabels) ? patient.sourceLabels.filter(Boolean) : [];
+};
+
+const isEyeOnlyPatient = (patient) => {
+  const sourceTypes = getPatientSourceTypes(patient);
+  return sourceTypes.length === 1 && (sourceTypes[0] === 'eye' || sourceTypes[0] === '眼象报告');
+};
+
+const hasStressSourceData = (patient) => getStressSignals(patient).length > 0;
+
+const hasBodySourceData = (patient) => {
+  const bodyRows = getPatientSection(patient, 'muscle-fat')?.rows || [];
+  const obesityRows = getPatientSection(patient, 'obesity-analysis')?.rows || [];
+  const inbodyItems = getPatientSection(patient, 'inbody-metrics')?.items || [];
+  return !!(
+    bodyRows.some(item => item && hasMeaningfulValue(item.metric) && hasMeaningfulValue(item.value)) ||
+    obesityRows.some(item => item && hasMeaningfulValue(item.metric) && hasMeaningfulValue(item.value)) ||
+    inbodyItems.some(item => item && hasMeaningfulValue(item.label) && hasMeaningfulValue(item.value))
+  );
+};
+
+const hasBiochemicalSourceData = (patient) => {
+  const manualItems = getPatientSection(patient, 'manual-metrics')?.items || [];
+  return manualItems.some(item => item && hasMeaningfulValue(item.label) && hasMeaningfulValue(item.value));
+};
+
+const hasAdviceSourceData = (patient) => {
+  const warningMetrics = Array.isArray(patient?.highlightMetrics) ? patient.highlightMetrics.filter(item => item?.isWarning) : [];
+  const sleepSummary = normalizeValue(getPatientSection(patient, 'sleep-summary')?.text);
+  return !!(
+    sleepSummary ||
+    warningMetrics.length ||
+    hasBodySourceData(patient) ||
+    hasBiochemicalSourceData(patient) ||
+    hasStressSourceData(patient)
+  );
+};
+
 const findStressSignal = (signals, keywords) => {
   const list = Array.isArray(keywords) ? keywords : [keywords];
   return signals.find(item => list.some(keyword => String(item.label || '').includes(keyword))) || null;
@@ -993,6 +1076,31 @@ const buildEnergyChart = (metrics) => {
 
 const buildStressOverview = (patient) => {
   const signals = getStressSignals(patient);
+  if (!signals.length) {
+    return {
+      hasAge: false,
+      hasBalance: false,
+      hasOverview: false,
+      ageDisplay: '--',
+      ageCaption: '',
+      ageNote: '',
+      balanceText: '',
+      sympatheticValue: '--',
+      parasympatheticValue: '--',
+      sympatheticArcPath: '',
+      ageTicksHtml: '',
+      symPatternId: '',
+      vagPatternId: '',
+      overviewType: '',
+      overviewWheelLabel: '',
+      overviewDescription: '',
+      energyScore: null,
+      energyMetrics: [],
+      typeWheel: { selectedLabel: '', sectors: [], svgHtml: '' },
+      energyChart: { backgroundSectors: [], metrics: [], svgHtml: '' },
+      notes: []
+    };
+  }
   const ageSignal = findStressSignal(signals, ['自律神经年龄', 'ANS Age']);
   const balanceSignal = findStressSignal(signals, ['偏向', 'Balance']);
   const ansSignal = findStressSignal(signals, ['总体功能', '(ANS)']);
@@ -1255,6 +1363,95 @@ const buildManualMetricsPairs = (patient) => {
   return toPairRows(profileItems);
 };
 
+const formatEyeTextParagraphs = (content) => {
+  const text = normalizeValue(content);
+  if (!text) return [];
+
+  const getBulletTone = (value) => {
+    const normalized = String(value || '');
+    if (/(注意|禁忌|避免|警惕|慎|风险)/.test(normalized)) return 'warning';
+    if (/(饮食|食疗|膳食|营养|进食|食物)/.test(normalized)) return 'diet';
+    if (/(运动|锻炼|训练|活动)/.test(normalized)) return 'exercise';
+    if (/(作息|起居|睡眠|生活|情志|情绪)/.test(normalized)) return 'lifestyle';
+    return 'default';
+  };
+
+  const listMarkerPattern = /(?:\d+[、.．)]|（\d+）|[一二三四五六七八九十]+[、.．])/;
+  const normalizedText = text
+    .replace(/\r/g, '')
+    .replace(/■/g, '\n■')
+    // 常见编号项单独成段，避免 OCR 后整段挤在一起
+    .replace(new RegExp(`([。；;])\\s*(${listMarkerPattern.source})`, 'g'), '$1\n$2')
+    // 只在真正的段首/行首编号处断开，避免把 0.8-1.5 寸这类续写内容误拆成标题
+    .replace(new RegExp(`(^|\\n)\\s*(${listMarkerPattern.source})\\s*`, 'g'), '$1$2 ')
+    // 小标题或提示词后换段，便于阅读
+    .replace(/(注意事项[:：]?|健康建议[:：]?|饮食建议[:：]?|生活起居[:：]?|情志调适[:：]?|运动建议[:：]?|调理建议[:：]?)/g, '\n$1\n');
+
+  return normalizedText
+    .split(/\n+/)
+    .map(item => item.trim())
+    .filter(Boolean)
+    .map(item => ({
+      text: item,
+      isBullet: item.startsWith('■'),
+      tone: item.startsWith('■') ? getBulletTone(item) : 'default'
+    }));
+};
+
+const buildEyeReport = (patient) => {
+  const eyeSummary = normalizeValue(getPatientSection(patient, 'eye-summary')?.text);
+  const eyeAdvice = normalizeValue(getPatientSection(patient, 'eye-advice')?.text);
+  const shouldHideEyeSection = (section) => {
+    const title = normalizeValue(section?.title);
+    const content = normalizeValue(section?.content);
+    const combined = `${title} ${content}`;
+
+    return (
+      /眼象分区图示|眼象采集结果/.test(combined) ||
+      /图示为双眼眼象分区|包含左眼、右眼的眼象实拍采集图像/.test(combined)
+    );
+  };
+
+  const detailSections = Array.isArray(patient?.reportData?.eyeDetailSections)
+    ? patient.reportData.eyeDetailSections
+        .map(section => ({
+          title: normalizeValue(section?.title),
+          content: normalizeValue(section?.content)
+        }))
+        .filter(section => section.title && section.content)
+        .filter(section => !shouldHideEyeSection(section))
+    : [];
+  const findings = getPatientSection(patient, 'eye-findings') || {
+    columns: [
+      { key: 'item', label: '项目' },
+      { key: 'left', label: '左眼' },
+      { key: 'right', label: '右眼' }
+    ],
+    rows: []
+  };
+
+  return {
+    hasContent: !!(
+      normalizeValue(patient?.reportData?.eyeImages?.pageOverview) ||
+      findings.rows.length ||
+      eyeSummary ||
+      eyeAdvice ||
+      detailSections.length
+    ),
+    pageOverview: normalizeValue(patient?.reportData?.eyeImages?.pageOverview),
+    findings,
+    detailSections,
+    textSections: [
+      eyeSummary ? { title: '综合分析结论', content: eyeSummary } : null,
+      eyeAdvice ? { title: '眼象健康建议', content: eyeAdvice } : null,
+      ...detailSections
+    ].filter(Boolean).map(section => ({
+      ...section,
+      paragraphs: formatEyeTextParagraphs(section.content)
+    }))
+  };
+};
+
 const calcBarPercent = (value) => {
   const number = parseNumber(value);
   if (number === null) return 50;
@@ -1319,6 +1516,16 @@ const buildExerciseAdvice = (patient) => {
   const bloodGlucoseStatus = biochemicalAssessment.statuses?.find(item => item.label === '血糖');
   const bloodPressureStatus = biochemicalAssessment.statuses?.find(item => item.label === '血压');
   const uricAcidStatus = biochemicalAssessment.statuses?.find(item => item.label === '尿酸');
+  if (
+    bmi === null &&
+    bodyFat === null &&
+    weight === null &&
+    !bloodGlucoseStatus &&
+    !bloodPressureStatus &&
+    !uricAcidStatus
+  ) {
+    return [];
+  }
   const suggestions = [];
 
   if (bmi !== null || bodyFat !== null) {
@@ -1476,6 +1683,9 @@ const buildCrossAnalysis = (patient) => {
   const insights = Array.isArray(biochemicalAssessment?.insights) ? [...biochemicalAssessment.insights] : [];
   const sleepSummary = getPatientSection(patient, 'sleep-summary')?.text || '';
   const stressStats = buildStressStats(patient);
+  if (!insights.length && !hasMeaningfulValue(sleepSummary) && !stressStats.length && !(patient?.score !== null && patient?.highlightMetrics?.length)) {
+    return [];
+  }
 
   if (hasMeaningfulValue(sleepSummary) && stressStats.length) {
     insights.push({
@@ -1537,6 +1747,9 @@ const buildAdviceItems = (patient, type) => {
   const bloodPressureStatus = biochemicalAssessment.statuses?.find(item => item.label === '血压');
   const bloodLipidsStatus = biochemicalAssessment.statuses?.find(item => item.label === '血脂');
   const uricAcidStatus = biochemicalAssessment.statuses?.find(item => item.label === '尿酸');
+  if (!hasAdviceSourceData(patient)) {
+    return [];
+  }
 
   if (hasMeaningfulValue(sleepSummary)) {
     pushUniqueAdviceItem(healthAdvice, {
@@ -1730,6 +1943,7 @@ const buildDietTags = (dietAdvice) => {
 
 const ensurePatientGuidance = async (patient) => {
   if (!patient?.id) return;
+  if (isEyeOnlyPatient(patient)) return;
   if (aiGuidanceMap.value[patient.id]) return;
 
   aiGuidanceLoading.value = true;
@@ -1761,6 +1975,9 @@ const buildWeeklyFitnessPlan = (patient) => {
     (getPatientSection(patient, 'obesity-analysis')?.rows || []).find(item => item && String(item.metric || '').includes('BMI')) ||
     patient?.highlightMetrics?.find(item => item && String(item.label || '').includes('BMI')) ||
     null;
+  if (!bmiMetric) {
+    return [];
+  }
   const bmi = parseNumber(bmiMetric?.value) || 22;
   
   let mainGoal = '保持健康';
@@ -1782,50 +1999,53 @@ const buildWeeklyFitnessPlan = (patient) => {
 const reportViewModel = computed(() => {
   const patient = activePatient.value;
   if (!patient) return null;
+  const isEyeOnly = isEyeOnlyPatient(patient);
 
-  const stressTable = getPatientSection(patient, 'stress-table') || { columns: [], rows: [] };
-  const stressStats = buildStressStats(patient);
-  const stressOverview = buildStressOverview(patient);
-  const fallbackDietAdvice = buildAdviceItems(patient, 'diet');
-  const aiGuidance = aiGuidanceMap.value[patient.id] || null;
-  const crossAnalysis = aiGuidance?.crossAnalysis?.length ? aiGuidance.crossAnalysis : buildCrossAnalysis(patient);
-  const rawHealthAdvice = aiGuidance?.healthAdvice?.length ? aiGuidance.healthAdvice : buildAdviceItems(patient, 'health');
-  const rawDietAdvice = aiGuidance?.dietAdvice?.length ? aiGuidance.dietAdvice : fallbackDietAdvice;
+  const stressTable = isEyeOnly ? { columns: [], rows: [] } : (getPatientSection(patient, 'stress-table') || { columns: [], rows: [] });
+  const stressStats = isEyeOnly ? [] : buildStressStats(patient);
+  const stressOverview = isEyeOnly ? buildStressOverview(null) : buildStressOverview(patient);
+  const fallbackDietAdvice = isEyeOnly ? [] : buildAdviceItems(patient, 'diet');
+  const aiGuidance = isEyeOnly ? null : (aiGuidanceMap.value[patient.id] || null);
+  const crossAnalysis = isEyeOnly ? [] : (aiGuidance?.crossAnalysis?.length ? aiGuidance.crossAnalysis : buildCrossAnalysis(patient));
+  const rawHealthAdvice = isEyeOnly ? [] : (aiGuidance?.healthAdvice?.length ? aiGuidance.healthAdvice : buildAdviceItems(patient, 'health'));
+  const rawDietAdvice = isEyeOnly ? [] : (aiGuidance?.dietAdvice?.length ? aiGuidance.dietAdvice : fallbackDietAdvice);
   const healthAdvice = rawHealthAdvice.slice(0, 6);
   let dietAdvice = removeOverlappingAdviceItems(healthAdvice, rawDietAdvice).slice(0, 6);
-  if (!dietAdvice.length) {
+  if (!isEyeOnly && !dietAdvice.length) {
     dietAdvice = fallbackDietAdvice.slice(0, 6);
   }
-  if (!dietAdvice.length) {
+  if (!isEyeOnly && !dietAdvice.length) {
     dietAdvice = rawDietAdvice.slice(0, 6);
   }
-  const exerciseAdvice = aiGuidance?.exerciseAdvice?.length ? aiGuidance.exerciseAdvice : buildExerciseAdvice(patient);
-  const dietTags = aiGuidance?.dietTags?.length ? aiGuidance.dietTags : buildDietTags(dietAdvice);
-  const dietSummary = buildDietSummary(dietAdvice, dietTags);
+  const exerciseAdvice = isEyeOnly ? [] : (aiGuidance?.exerciseAdvice?.length ? aiGuidance.exerciseAdvice : buildExerciseAdvice(patient));
+  const dietTags = isEyeOnly ? [] : (aiGuidance?.dietTags?.length ? aiGuidance.dietTags : buildDietTags(dietAdvice));
+  const dietSummary = isEyeOnly ? '' : buildDietSummary(dietAdvice, dietTags);
   const exerciseAdvicePreview = exerciseAdvice.slice(0, 4);
 
   return {
+    isEyeOnly,
     hasContent: hasPatientReportContent(patient),
     patientFields: buildProfileSummary(patient, patient.basicInfo).slice(0, 6),
-    sleepPairs: buildSleepPairs(patient),
-    sleepInsights: buildSleepInsights(patient),
+    sleepPairs: isEyeOnly ? [] : buildSleepPairs(patient),
+    sleepInsights: isEyeOnly ? [] : buildSleepInsights(patient),
     stressTable,
     stressStats,
     stressOverview,
     stressMarkers: buildStressMarkers(stressStats),
-    bodyPairs: buildBodyPairs(patient),
-    bodyBars: buildBodyBars(patient),
-    obesityCards: buildObesityCards(patient),
-    manualMetricsPairs: buildManualMetricsPairs(patient),
+    bodyPairs: isEyeOnly ? [] : buildBodyPairs(patient),
+    bodyBars: isEyeOnly ? [] : buildBodyBars(patient),
+    obesityCards: isEyeOnly ? [] : buildObesityCards(patient),
+    manualMetricsPairs: isEyeOnly ? [] : buildManualMetricsPairs(patient),
+    eye: buildEyeReport(patient),
     crossAnalysis,
-    weeklyFitnessPlan: buildWeeklyFitnessPlan(patient),
+    weeklyFitnessPlan: isEyeOnly ? [] : buildWeeklyFitnessPlan(patient),
     exerciseAdvice,
     exerciseAdvicePreview,
     healthAdvice,
     dietAdvice,
     dietTags,
     dietSummary,
-    guidanceSummary: aiGuidance?.summary || '',
+    guidanceSummary: isEyeOnly ? '' : (aiGuidance?.summary || ''),
     aiGuidanceLoading: aiGuidanceLoading.value,
     aiGuidanceError: aiGuidanceError.value
   };
@@ -3567,6 +3787,109 @@ const exportReport = async () => {
   border-radius: 14px;
   border: 1px solid #e3eaf8;
   background: linear-gradient(180deg, #fbfdff 0%, #f6faff 100%);
+}
+
+.eye-visual-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.eye-visual-card {
+  border-radius: 14px;
+  border: 1px solid #e3ebfb;
+  background: linear-gradient(180deg, #fbfdff 0%, #f5f9ff 100%);
+  padding: 10px;
+}
+
+.eye-visual-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #2d67bb;
+  margin-bottom: 8px;
+}
+
+.eye-visual-image {
+  display: block;
+  width: 100%;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #ebf1fa;
+}
+
+.eye-text-section-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.eye-text-section-card {
+  border-radius: 12px;
+  border: 1px solid #ebf1fa;
+  background: #f9fbff;
+  padding: 14px 16px;
+}
+
+.eye-text-section-card h5 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #2b3956;
+}
+
+.eye-text-section-card p {
+  margin: 0;
+  word-break: break-word;
+  line-height: 1.75;
+  color: #50627d;
+  font-size: 13px;
+}
+
+.eye-text-paragraphs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.eye-text-bullet {
+  margin-top: 4px;
+  padding: 10px 12px;
+  border-top: 1px dashed #d9e5f5;
+  border-left: 4px solid #3b82f6;
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0.04) 100%);
+  color: #1f4f8f;
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.08);
+}
+
+.eye-text-bullet-warning {
+  border-left-color: #f59e0b;
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.16) 0%, rgba(245, 158, 11, 0.05) 100%);
+  color: #9a5800;
+  box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.1);
+}
+
+.eye-text-bullet-diet {
+  border-left-color: #10b981;
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.16) 0%, rgba(16, 185, 129, 0.05) 100%);
+  color: #0f766e;
+  box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.1);
+}
+
+.eye-text-bullet-exercise {
+  border-left-color: #3b82f6;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.16) 0%, rgba(59, 130, 246, 0.05) 100%);
+  color: #1d4ed8;
+  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.1);
+}
+
+.eye-text-bullet-lifestyle {
+  border-left-color: #8b5cf6;
+  background: linear-gradient(90deg, rgba(139, 92, 246, 0.16) 0%, rgba(139, 92, 246, 0.05) 100%);
+  color: #6d28d9;
+  box-shadow: inset 0 0 0 1px rgba(139, 92, 246, 0.1);
 }
 
 .exercise-advice-title {

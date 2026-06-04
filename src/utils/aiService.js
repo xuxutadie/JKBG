@@ -1,5 +1,5 @@
-import * as pdfjsLib from 'pdfjs-dist';
-import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
+import pdfWorkerUrl from 'pdfjs-dist/legacy/build/pdf.worker.min.mjs?url';
 import { requestPatientGuidance } from './patientApi';
 
 // 使用 Vite 的 ?url 方式让 worker 作为静态资源被正确打包
@@ -74,6 +74,15 @@ const getCropPreset = (reportType, width, height) => {
     };
   }
 
+  if (reportType === 'eye') {
+    return {
+      x: Math.round(width * 0.04),
+      y: Math.round(height * 0.04),
+      width: Math.round(width * 0.92),
+      height: Math.round(height * 0.90)
+    };
+  }
+
   return { x: 0, y: 0, width, height };
 };
 
@@ -138,6 +147,49 @@ const getSleepPageCropPreset = (pageIndex, width, height) => {
     y: Math.round(height * 0.03),
     width: Math.round(width * 0.94),
     height: Math.round(height * 0.92)
+  };
+};
+
+const getEyeImageCropPresets = (width, height) => {
+  const zoneChart = {
+    // 扩大首张“眼象分区图示”的截取范围，避免两侧与标题说明被裁掉
+    x: Math.round(width * 0.06),
+    y: Math.round(height * 0.10),
+    width: Math.round(width * 0.88),
+    height: Math.round(height * 0.20)
+  };
+
+  const captureResult = {
+    // 将“眼象采集结果图片”整体下移并放宽，尽量保留完整眼部图片及下方说明
+    x: Math.round(width * 0.06),
+    y: Math.round(height * 0.27),
+    width: Math.round(width * 0.88),
+    height: Math.round(height * 0.30)
+  };
+
+  const pageOverviewTop = Math.round(height * 0.28);
+  const pageOverviewBottom = Math.round(height * 0.72);
+
+  return {
+    pageOverview: {
+      // 第一页顶部裁切轻微下移，兼顾眼象分区图示与采集结果区域
+      x: Math.round(width * 0.05),
+      y: pageOverviewTop,
+      width: Math.round(width * 0.90),
+      height: pageOverviewBottom - pageOverviewTop
+    },
+    zoneChart,
+    captureResult
+  };
+};
+
+const getEyeTextDetailCrop = (width, height) => {
+  return {
+    // 放大正文密集区，优先覆盖中下部建议、调理、注意事项等文字内容。
+    x: Math.round(width * 0.05),
+    y: Math.round(height * 0.42),
+    width: Math.round(width * 0.90),
+    height: Math.round(height * 0.52)
   };
 };
 
@@ -340,6 +392,16 @@ const detectReportTypeFromText = (rawText = '') => {
     text.includes('肥胖分析')
   ) {
     return 'inbody';
+  }
+
+  if (
+    text.includes('眼象健康评估报告') ||
+    text.includes('眼象采集结果') ||
+    text.includes('眼象分区图示') ||
+    text.includes('目测仪') ||
+    text.includes('眼象')
+  ) {
+    return 'eye';
   }
 
   if (
@@ -582,10 +644,61 @@ export const extractContentFromPDF = async (fileObj, reportType = 'generic') => 
       }
     }
     
-    // 2. InBody 固定走图片识别；其余类型在无有效文本时走图片 OCR
-    if (resolvedReportType === 'inbody' || !hasText || fullText.trim().length < 20) {
+    // 2. InBody 固定走图片识别；眼象优先尝试图片识别，失败时降级为文本解析
+    if (resolvedReportType === 'inbody' || resolvedReportType === 'eye' || !hasText || fullText.trim().length < 20) {
       console.log('检测到扫描件或特殊编码 PDF，正在进行视觉化渲染...');
       try {
+        if (resolvedReportType === 'eye') {
+          const images = [];
+          // 眼象报告正文常位于后续页面，至少覆盖前 6 页，避免图片页正文漏采。
+          const pageCount = Math.min(pdf.numPages, 6);
+          let preservedImages = {
+            pageOverview: '',
+            zoneChart: '',
+            captureResult: ''
+          };
+
+          for (let pageIndex = 1; pageIndex <= pageCount; pageIndex++) {
+            const page = await pdf.getPage(pageIndex);
+            const viewport = page.getViewport({ scale: 1.3 });
+            const canvas = createRenderCanvas(viewport.width, viewport.height);
+            const context = canvas.getContext('2d');
+            if (!context) {
+              throw new Error('无法创建 Canvas 上下文');
+            }
+
+            await page.render({ canvasContext: context, viewport }).promise;
+            const base64Image = await canvasToBase64(canvas);
+            images.push(base64Image);
+
+            if (pageIndex >= 2) {
+              const textDetailCrop = getEyeTextDetailCrop(canvas.width, canvas.height);
+              const textDetailCanvas = cropCanvas(canvas, textDetailCrop);
+              images.push(await canvasToBase64(textDetailCanvas));
+            }
+
+            if (pageIndex === 1) {
+              const cropPresets = getEyeImageCropPresets(canvas.width, canvas.height);
+              const overviewCanvas = cropCanvas(canvas, cropPresets.pageOverview);
+              const zoneCanvas = cropCanvas(canvas, cropPresets.zoneChart);
+              const captureCanvas = cropCanvas(canvas, cropPresets.captureResult);
+              preservedImages = {
+                pageOverview: await canvasToBase64(overviewCanvas),
+                zoneChart: await canvasToBase64(zoneCanvas),
+                captureResult: await canvasToBase64(captureCanvas)
+              };
+            }
+          }
+
+          return {
+            type: 'image',
+            data: images,
+            reportType: resolvedReportType,
+            preservedImages,
+            rawText: fullText
+          };
+        }
+
         if (resolvedReportType === 'sleep') {
           const images = [];
           const pageCount = Math.min(pdf.numPages, 3);
@@ -638,7 +751,24 @@ export const extractContentFromPDF = async (fileObj, reportType = 'generic') => 
         return { type: 'image', data: base64Image, reportType: resolvedReportType };
       } catch (renderErr) {
         console.error('Canvas 渲染失败:', renderErr);
-        throw new Error('无法渲染 PDF 预览，请确保文件未损坏。');
+
+        // 眼象报告即使原图提取失败，也尽量继续走文本表格解析，避免整份档案无法生成。
+        if (resolvedReportType === 'eye' && fullText.trim().length >= 20) {
+          console.warn('眼象报告原图提取失败，已自动降级为文本解析。');
+          return {
+            type: 'text',
+            data: fullText,
+            reportType: resolvedReportType,
+            preservedImages: {
+              pageOverview: '',
+              zoneChart: '',
+              captureResult: ''
+            },
+            imageExtractionFailed: true
+          };
+        }
+
+        throw new Error('PDF 页面转图片失败，当前文件仍可尝试通过文本内容解析。');
       }
     }
     
@@ -796,6 +926,40 @@ export const parseHealthReport = async (contentObj, type) => {
 4. sleepStatistics.headers 和 dailyStatistics.headers 必须按表头原顺序返回；rows 必须按原表行顺序返回，格式为二维数组。
 5. 必须提取“1.1 指标摘要”表格里的所有指标，不允许遗漏。
 6. 总结部分返回完整自然语言段落。请极其注意：所有字符串（尤其是 summary）内部若有换行或引号，必须使用 \\n 和 \\" 进行严格转义，确保最终输出的是合法的 JSON 字符串！若某张统计表不存在，请返回空数组。`
+    : type === 'eye'
+    ? `请提取“眼象健康评估报告 / 目测仪检测报告”中的关键信息，并返回如下 JSON：
+{
+  "profile": {
+    "name": "",
+    "gender": "",
+    "age": "",
+    "birthDate": "",
+    "phone": "",
+    "idCard": ""
+  },
+  "eyeFindings": [
+    { "item": "", "left": "", "right": "" }
+  ],
+  "summary": "",
+  "healthAdvice": "",
+  "dietAdvice": "",
+  "lifestyleAdvice": "",
+  "detailSections": [
+    { "title": "", "content": "" }
+  ]
+}
+要求：
+1. 只提取与用户健康评估有关的信息，不要返回审核者、审核日期、报告生成日期、签字信息。
+2. 基础资料仅保留姓名、性别、年龄、出生日期、手机号、身份证号；没有就返回空字符串。
+3. 必须提取“眼象采集结果”表格，按原顺序返回 item、left、right；如果表格某列是“左/右”或“左眼/右眼”，都统一映射成 left、right。
+4. 必须提取“综合分析结论”并写入 summary。
+5. 如果报告中还有“健康干预要点 / 食疗指导 / 生活起居 / 情志调适”等建议内容，请优先汇总到 healthAdvice、dietAdvice、lifestyleAdvice；没有则返回空字符串。
+6. 除 summary 和 advice 外，还要尽量完整提取正文中的其他有效章节，例如“综合分析结论”“健康干预指导”“饮食调理”“生活起居”“运动建议”“调养方案”等，按原文标题和正文写入 detailSections，不要拆成过短碎句。
+7. 必须逐页识别图片中可见文字，不能只提取首页或局部截图；后续页面中的正文、条目、分点、调理建议、注意事项都要纳入提取。
+8. 如果图片里出现长段文字，请优先按原文标题归类到 detailSections，正文尽量保留原句，不要只压缩成一句摘要。
+9. 若同时提供了“图片内容”和“可提取文本”，请交叉校对，优先补齐图片中的遗漏信息。
+10. 输入图片可能包含“整页图 + 下半页文字放大图”，请把它们视为同一份报告的互补视角，优先利用放大图补齐下方密集文字。
+11. 只返回合法 JSON，不要输出解释文字。`
     : `请提取“心率变异分析(自主神经)报告”中的两类数据，并返回如下 JSON：
 {
   "profile": {
@@ -839,13 +1003,16 @@ export const parseHealthReport = async (contentObj, type) => {
     const imageContents = Array.isArray(contentObj.data)
       ? contentObj.data.map((url) => ({ type: "image_url", image_url: { url } }))
       : [{ type: "image_url", image_url: { url: contentObj.data } }];
+    const supplementalText = type === 'eye' && contentObj.rawText
+      ? `\n以下是从 PDF 中额外提取到的文本，可用于补充校对图片识别结果，但不能忽略图片里独有的正文内容：\n${contentObj.rawText}`
+      : '';
 
     messages = [
       { role: "system", content: systemPrompt },
       {
         role: "user",
         content: [
-          { type: "text", text: userPrompt },
+          { type: "text", text: `${userPrompt}${supplementalText}` },
           ...imageContents
         ]
       }

@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 const nullableString = z.union([z.string(), z.null()]).optional();
 
-export const createPatientSchema = z.object({
+const patientBaseSchema = z.object({
   patientCode: z.string().trim().min(1).optional(),
   name: z.string().trim().min(1, '姓名不能为空'),
   gender: nullableString,
@@ -14,9 +14,11 @@ export const createPatientSchema = z.object({
   sourceLabels: z.array(z.string()).optional(),
   reportData: z.record(z.any()),
   rawRecord: z.record(z.any()).optional()
-});
+}).passthrough();
 
-export const updatePatientSchema = createPatientSchema.partial();
+export const createPatientSchema = patientBaseSchema;
+
+export const updatePatientSchema = patientBaseSchema.partial();
 
 export const guidancePayloadSchema = z.object({
   patient: z.record(z.any()),
