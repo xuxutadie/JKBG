@@ -20,6 +20,18 @@ const normalizePhone = (value) => {
   return digits.length > 11 ? digits.slice(-11) : digits;
 };
 const normalizeIdCard = (value) => String(value || '').trim().replace(/\s+/g, '').toUpperCase();
+const normalizeBirthDate = (value) => {
+  const text = String(value || '').trim();
+  if (!text) return '';
+  const digits = text.replace(/\D/g, '');
+  if (digits.length === 8) return digits;
+  return text
+    .replace(/[年/.]/g, '-')
+    .replace(/月/g, '-')
+    .replace(/日/g, '')
+    .replace(/\s+/g, '')
+    .toLowerCase();
+};
 
 const createDynamicTable = (title = '') => ({
   title,
@@ -90,7 +102,7 @@ const extractIdentifiers = (recordLike) => {
     name: normalizeMatchText(getReportValue(reportData, ['姓名']) || recordLike?.name),
     phone: normalizePhone(getReportValue(reportData, ['手机号', '手机号码', '联系电话', '电话'])),
     idCard: normalizeIdCard(getReportValue(reportData, ['身份证号码', '身份证号', '证件号码', '证件号'])),
-    birthDate: normalizeMatchText(getReportValue(reportData, ['出生日期', '生日'])),
+    birthDate: normalizeBirthDate(getReportValue(reportData, ['出生日期', '生日'])),
     gender: normalizeMatchText(getReportValue(reportData, '性别') || recordLike?.gender),
     age: String(getReportValue(reportData, '年龄') || recordLike?.age || '').trim()
   };
@@ -138,30 +150,12 @@ const findLocalMatchedRecord = (records, payload) => {
   const incoming = extractIdentifiers(payload);
   const candidates = records.map(record => ({ record, identifiers: extractIdentifiers(record) }));
 
-  if (incoming.idCard) {
-    const idCardMatches = candidates.filter(item => item.identifiers.idCard && item.identifiers.idCard === incoming.idCard);
-    if (idCardMatches.length === 1) return idCardMatches[0].record;
-  }
-
-  if (incoming.phone) {
-    const phoneMatches = candidates.filter(item => item.identifiers.phone && item.identifiers.phone === incoming.phone);
-    if (phoneMatches.length === 1) return phoneMatches[0].record;
-  }
-
-  if (incoming.name) {
-    const sameName = candidates.filter(item => item.identifiers.name && item.identifiers.name === incoming.name);
-    if (sameName.length === 1) return sameName[0].record;
-
-    const supported = sameName.filter(item => {
+  if (incoming.name && incoming.birthDate) {
+    const matched = candidates.filter(item => {
       const current = item.identifiers;
-      return (
-        (incoming.birthDate && current.birthDate && incoming.birthDate === current.birthDate) ||
-        (incoming.gender && current.gender && incoming.gender === current.gender && incoming.age && current.age && incoming.age === current.age) ||
-        (incoming.gender && current.gender && incoming.gender === current.gender) ||
-        (incoming.age && current.age && incoming.age === current.age)
-      );
+      return current.name && current.birthDate && current.name === incoming.name && current.birthDate === incoming.birthDate;
     });
-    if (supported.length === 1) return supported[0].record;
+    if (matched.length === 1) return matched[0].record;
   }
 
   return null;

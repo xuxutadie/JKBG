@@ -19,17 +19,17 @@
       <view class="login-form">
         <view class="input-group">
           <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 14c2.761 0 5 2.239 5 5v1H3v-1c0-2.761 2.239-5 5-5h8z" />
+            <circle cx="12" cy="7" r="4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
           </svg>
-          <input type="text" v-model="phone" placeholder="请输入手机号/姓名" placeholder-class="input-placeholder" class="input-control" />
+          <input type="text" v-model="name" placeholder="请输入姓名" placeholder-class="input-placeholder" class="input-control" />
         </view>
         
         <view class="input-group">
           <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
           </svg>
-          <input type="password" v-model="password" placeholder="请输入验证码/密码" placeholder-class="input-placeholder" class="input-control" />
-          <text class="get-code-text">获取</text>
+          <input type="password" v-model="birthday" placeholder="请输入生日" placeholder-class="input-placeholder" class="input-control" />
         </view>
         
         <view class="agreement-box">
@@ -38,7 +38,7 @@
         </view>
         
         <button class="login-btn" @click="handleLogin">登录</button>
-        <view class="login-link">密码登录</view>
+        <view class="login-link">输入姓名和生日即可查看对应报告</view>
       </view>
     </view>
   </view>
@@ -48,12 +48,52 @@
 import { ref } from 'vue';
 import { listPatients } from '@/utils/patientApi';
 
-const phone = ref('');
-const password = ref('');
+const name = ref('');
+const birthday = ref('');
+
+const normalizeName = (value) => String(value || '').trim().replace(/\s+/g, '').toLowerCase();
+const normalizeBirthDate = (value) => {
+  const text = String(value || '').trim();
+  if (!text) return '';
+  const digits = text.replace(/\D/g, '');
+  if (digits.length === 8) return digits;
+  return text
+    .replace(/[年/.]/g, '-')
+    .replace(/月/g, '-')
+    .replace(/日/g, '')
+    .replace(/\s+/g, '')
+    .toLowerCase();
+};
+
+const getPatientBirthDate = (patient) => {
+  const sources = ['profile', 'sleepProfile', 'inbodyProfile', 'eyeProfile', 'sleepMonitorInfo', 'sleepMonitorParams'];
+  const labels = ['出生日期', '生日'];
+  const reportData = patient?.reportData || patient?.latestReport?.reportData || {};
+
+  for (const source of sources) {
+    const items = Array.isArray(reportData?.[source]) ? reportData[source] : [];
+    for (const item of items) {
+      const label = String(item?.label || '').trim();
+      if (labels.includes(label) && item?.value) {
+        return normalizeBirthDate(item.value);
+      }
+    }
+  }
+
+  return normalizeBirthDate(patient?.birthDate);
+};
 
 const handleLogin = async () => {
-  if (!phone.value) {
-    return uni.showToast({ title: '请输入账号', icon: 'none' });
+  if (!name.value) {
+    return uni.showToast({ title: '请输入姓名', icon: 'none' });
+  }
+
+  if (!birthday.value) {
+    return uni.showToast({ title: '请输入生日', icon: 'none' });
+  }
+
+  if (!normalizeBirthDate(birthday.value)) {
+    return uni.showToast({ title: '请输入正确生日', icon: 'none' });
   }
 
   // 1. Check if it's an admin account
@@ -63,7 +103,7 @@ const handleLogin = async () => {
     uni.setStorageSync('admin_accounts', adminAccounts);
   }
 
-  const isAdmin = adminAccounts.find(a => a.username === phone.value && a.password === password.value);
+  const isAdmin = adminAccounts.find(a => a.username === name.value && a.password === birthday.value);
   if (isAdmin) {
     uni.showLoading({ title: '管理员登录中...' });
     uni.setStorageSync('current_role', 'admin');
@@ -78,35 +118,31 @@ const handleLogin = async () => {
   // 2. Mobile User Login
   try {
     uni.showLoading({ title: '登录中...' });
-    // Fetch patients from the backend
     const patients = await listPatients();
-    if (patients && patients.length > 0) {
-      // For demo purposes, if the user enters a phone number that matches a patient's name or phone, we log them in.
-      // Otherwise, we just pick the first patient as the logged-in user.
-      let currentUser = patients[0];
-      if (phone.value) {
-        const matched = patients.find(p => p.phone === phone.value || p.name === phone.value);
-        if (matched) currentUser = matched;
-      }
-      uni.setStorageSync('current_role', 'user');
-      uni.setStorageSync('current_user', currentUser);
-    } else {
-      // If no patients exist, we create a mock one or clear it
-      uni.setStorageSync('current_role', 'user');
-      uni.setStorageSync('current_user', {
-        name: '测试用户',
-        score: 100,
-        gender: '男',
-        age: 30
-      });
+
+    if (!patients || !patients.length) {
+      throw new Error('暂无可查看的健康报告');
     }
+
+    const inputName = normalizeName(name.value);
+    const inputBirthDate = normalizeBirthDate(birthday.value);
+    const matched = patients.find(patient => {
+      return normalizeName(patient?.name) === inputName && getPatientBirthDate(patient) === inputBirthDate;
+    });
+
+    if (!matched) {
+      throw new Error('未找到对应姓名和生日的报告');
+    }
+
+    uni.setStorageSync('current_role', 'user');
+    uni.setStorageSync('current_user', matched);
     uni.hideLoading();
     uni.switchTab({
       url: '/pages/mobile/home/index'
     });
   } catch (error) {
     uni.hideLoading();
-    uni.showToast({ title: '登录失败', icon: 'none' });
+    uni.showToast({ title: error?.message || '登录失败', icon: 'none' });
   }
 };
 </script>
@@ -231,14 +267,6 @@ const handleLogin = async () => {
 
 .input-placeholder {
   color: #94a3b8;
-}
-
-.get-code-text {
-  font-size: 14px;
-  color: #5a67d8;
-  font-weight: 600;
-  padding-left: 16px;
-  border-left: 1px solid #cbd5e1;
 }
 
 .agreement-box {

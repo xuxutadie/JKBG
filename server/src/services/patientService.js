@@ -73,6 +73,19 @@ const normalizeIdCard = (value) => {
   return normalizeString(value).replace(/\s+/g, '').toUpperCase();
 };
 
+const normalizeBirthDate = (value) => {
+  const text = normalizeString(value);
+  if (!text) return '';
+  const digits = text.replace(/\D/g, '');
+  if (digits.length === 8) return digits;
+  return text
+    .replace(/[年/.]/g, '-')
+    .replace(/月/g, '-')
+    .replace(/日/g, '')
+    .replace(/\s+/g, '')
+    .toLowerCase();
+};
+
 const getProfileItemValue = (items, labels) => {
   const labelList = Array.isArray(labels) ? labels : [labels];
   const rows = Array.isArray(items) ? items : [];
@@ -155,7 +168,7 @@ const extractIdentifiers = (entity) => {
     idCard: normalizeIdCard(
       getReportValue(reportData, ['身份证号码', '身份证号', '证件号码', '证件号'])
     ),
-    birthDate: normalizeMatchText(
+    birthDate: normalizeBirthDate(
       getReportValue(reportData, ['出生日期', '生日'])
     ),
     gender: normalizeMatchText(
@@ -264,38 +277,19 @@ const findMatchingPatient = async (payload, excludeId = null) => {
     identifiers: extractIdentifiers(patient)
   }));
 
-  if (incoming.idCard) {
-    const idCardMatches = candidates.filter(item => item.identifiers.idCard && item.identifiers.idCard === incoming.idCard);
-    if (idCardMatches.length === 1) {
-      return { patient: idCardMatches[0].patient, matchedBy: 'idCard' };
-    }
-  }
-
-  if (incoming.phone) {
-    const phoneMatches = candidates.filter(item => item.identifiers.phone && item.identifiers.phone === incoming.phone);
-    if (phoneMatches.length === 1) {
-      return { patient: phoneMatches[0].patient, matchedBy: 'phone' };
-    }
-  }
-
-  if (incoming.name) {
-    const sameNameCandidates = candidates.filter(item => item.identifiers.name && item.identifiers.name === incoming.name);
-    if (sameNameCandidates.length === 1) {
-      return { patient: sameNameCandidates[0].patient, matchedBy: 'name' };
-    }
-
-    const supportedCandidates = sameNameCandidates.filter(item => {
+  if (incoming.name && incoming.birthDate) {
+    const matchedCandidates = candidates.filter(item => {
       const current = item.identifiers;
       return (
-        (incoming.birthDate && current.birthDate && incoming.birthDate === current.birthDate) ||
-        (incoming.gender && current.gender && incoming.gender === current.gender && incoming.age && current.age && incoming.age === current.age) ||
-        (incoming.gender && current.gender && incoming.gender === current.gender) ||
-        (incoming.age && current.age && incoming.age === current.age)
+        current.name &&
+        current.birthDate &&
+        current.name === incoming.name &&
+        current.birthDate === incoming.birthDate
       );
     });
 
-    if (supportedCandidates.length === 1) {
-      return { patient: supportedCandidates[0].patient, matchedBy: 'name+profile' };
+    if (matchedCandidates.length === 1) {
+      return { patient: matchedCandidates[0].patient, matchedBy: 'name+birthDate' };
     }
   }
 
