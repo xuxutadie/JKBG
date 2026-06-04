@@ -29,7 +29,7 @@
           <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
           </svg>
-          <input type="password" v-model="reportDate" placeholder="请输入报告生成日期" placeholder-class="input-placeholder" class="input-control" />
+          <input type="password" v-model="archiveDate" placeholder="请输入建档日期" placeholder-class="input-placeholder" class="input-control" />
         </view>
         
         <view class="agreement-box">
@@ -38,7 +38,7 @@
         </view>
         
         <button class="login-btn" @click="handleLogin">登录</button>
-        <view class="login-link">输入姓名和报告生成日期即可查看对应报告</view>
+        <view class="login-link">输入姓名和建档日期即可查看对应报告</view>
       </view>
     </view>
   </view>
@@ -49,12 +49,19 @@ import { ref } from 'vue';
 import { listPatients } from '@/utils/patientApi';
 
 const name = ref('');
-const reportDate = ref('');
+const archiveDate = ref('');
 
 const normalizeName = (value) => String(value || '').trim().replace(/\s+/g, '').toLowerCase();
 const normalizeDateText = (value) => {
   const text = String(value || '').trim();
   if (!text) return '';
+  const nativeDate = new Date(text);
+  if (!Number.isNaN(nativeDate.getTime())) {
+    const year = nativeDate.getFullYear();
+    const month = String(nativeDate.getMonth() + 1).padStart(2, '0');
+    const day = String(nativeDate.getDate()).padStart(2, '0');
+    return `${year}${month}${day}`;
+  }
   const digits = text.replace(/\D/g, '');
   if (digits.length === 8) return digits;
   return text
@@ -65,22 +72,8 @@ const normalizeDateText = (value) => {
     .toLowerCase();
 };
 
-const getPatientReportDate = (patient) => {
-  const sources = ['profile', 'sleepProfile', 'inbodyProfile', 'eyeProfile', 'sleepMonitorInfo', 'sleepMonitorParams'];
-  const labels = ['报告生成日期', '报告时间', '测试日期', '开始时间', '结束时间'];
-  const reportData = patient?.reportData || patient?.latestReport?.reportData || {};
-
-  for (const source of sources) {
-    const items = Array.isArray(reportData?.[source]) ? reportData[source] : [];
-    for (const item of items) {
-      const label = String(item?.label || '').trim();
-      if (labels.includes(label) && item?.value) {
-        return normalizeDateText(item.value);
-      }
-    }
-  }
-
-  return normalizeDateText(patient?.date || patient?.reportDate || patient?.latestReport?.reportDate);
+const getPatientArchiveDate = (patient) => {
+  return normalizeDateText(patient?.createdAt);
 };
 
 const handleLogin = async () => {
@@ -88,12 +81,12 @@ const handleLogin = async () => {
     return uni.showToast({ title: '请输入姓名', icon: 'none' });
   }
 
-  if (!reportDate.value) {
-    return uni.showToast({ title: '请输入报告生成日期', icon: 'none' });
+  if (!archiveDate.value) {
+    return uni.showToast({ title: '请输入建档日期', icon: 'none' });
   }
 
-  if (!normalizeDateText(reportDate.value)) {
-    return uni.showToast({ title: '请输入正确的报告生成日期', icon: 'none' });
+  if (!normalizeDateText(archiveDate.value)) {
+    return uni.showToast({ title: '请输入正确的建档日期', icon: 'none' });
   }
 
   // 1. Check if it's an admin account
@@ -103,7 +96,7 @@ const handleLogin = async () => {
     uni.setStorageSync('admin_accounts', adminAccounts);
   }
 
-  const isAdmin = adminAccounts.find(a => a.username === name.value && a.password === reportDate.value);
+  const isAdmin = adminAccounts.find(a => a.username === name.value && a.password === archiveDate.value);
   if (isAdmin) {
     uni.showLoading({ title: '管理员登录中...' });
     uni.setStorageSync('current_role', 'admin');
@@ -125,13 +118,13 @@ const handleLogin = async () => {
     }
 
     const inputName = normalizeName(name.value);
-    const inputReportDate = normalizeDateText(reportDate.value);
+    const inputArchiveDate = normalizeDateText(archiveDate.value);
     const matched = patients.find(patient => {
-      return normalizeName(patient?.name) === inputName && getPatientReportDate(patient) === inputReportDate;
+      return normalizeName(patient?.name) === inputName && getPatientArchiveDate(patient) === inputArchiveDate;
     });
 
     if (!matched) {
-      throw new Error('未找到对应姓名和报告生成日期的报告');
+      throw new Error('未找到对应姓名和建档日期的报告');
     }
 
     uni.setStorageSync('current_role', 'user');

@@ -67,6 +67,7 @@
               </div>
             </div>
             <div class="card-actions">
+              <div class="archive-date-chip">建档日期：{{ getArchiveDateLabel(patient) }}</div>
               <button class="delete-btn" @click.stop="deletePatient(patient)">删除</button>
             </div>
           </div>
@@ -670,6 +671,24 @@ const filteredPatients = computed(() => {
     return matchSearch && matchTab;
   });
 });
+
+const getArchiveDateLabel = (patient) => {
+  const value = patient?.createdAt;
+  if (!value) return '--';
+  const date = new Date(value);
+  if (!Number.isNaN(date.getTime())) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+  const text = String(value).trim();
+  const digits = text.replace(/\D/g, '');
+  if (digits.length >= 8) {
+    return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;
+  }
+  return text || '--';
+};
 
 const joinItemValue = (item) => {
   if (!item || !hasMeaningfulValue(item.value)) return '--';
@@ -2948,6 +2967,18 @@ const exportReport = async () => {
   box-shadow: 0 0 10px rgba(237, 64, 93, 0.25);
 }
 
+.archive-date-chip {
+  min-width: 158px;
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 149, 0, 0.78);
+  border-radius: 4px;
+  color: #ffd18c;
+  font-size: 12px;
+  text-align: center;
+  background: rgba(255, 149, 0, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 149, 0, 0.12);
+}
+
 .badge {
   font-size: 10px;
   padding: 2px 6px;
@@ -4800,7 +4831,8 @@ const exportReport = async () => {
 
 .card-actions {
   display: flex;
-  gap: 6px;
+  align-items: center;
+  gap: 12px;
 }
 .edit-btn {
   background: rgba(43, 213, 107, 0.2);
