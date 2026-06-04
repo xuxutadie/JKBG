@@ -264,6 +264,7 @@ const findMatchingPatient = async (payload, excludeId = null) => {
   const incoming = extractIdentifiers(payload);
   const patients = await prisma.patient.findMany({
     where: excludeId ? { id: { not: excludeId } } : undefined,
+    orderBy: { updatedAt: 'desc' },
     include: {
       reports: {
         orderBy: { createdAt: 'desc' },
@@ -277,19 +278,14 @@ const findMatchingPatient = async (payload, excludeId = null) => {
     identifiers: extractIdentifiers(patient)
   }));
 
-  if (incoming.name && incoming.birthDate) {
+  if (incoming.name) {
     const matchedCandidates = candidates.filter(item => {
       const current = item.identifiers;
-      return (
-        current.name &&
-        current.birthDate &&
-        current.name === incoming.name &&
-        current.birthDate === incoming.birthDate
-      );
+      return current.name && current.name === incoming.name;
     });
 
-    if (matchedCandidates.length === 1) {
-      return { patient: matchedCandidates[0].patient, matchedBy: 'name+birthDate' };
+    if (matchedCandidates.length) {
+      return { patient: matchedCandidates[0].patient, matchedBy: 'name' };
     }
   }
 

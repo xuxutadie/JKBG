@@ -150,10 +150,10 @@ const findLocalMatchedRecord = (records, payload) => {
   const incoming = extractIdentifiers(payload);
   const candidates = records.map(record => ({ record, identifiers: extractIdentifiers(record) }));
 
-  if (incoming.name && incoming.birthDate) {
+  if (incoming.name) {
     const matched = candidates.filter(item => {
       const current = item.identifiers;
-      return current.name && current.birthDate && current.name === incoming.name && current.birthDate === incoming.birthDate;
+      return current.name && current.name === incoming.name;
     });
     if (matched.length === 1) return matched[0].record;
   }
