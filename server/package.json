@@ -9,6 +9,8 @@
   "scripts": {
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
+    "import:folder-pdfs": "node scripts/import-folder-pdfs.js",
+    "repair:imported-pdfs": "node scripts/repair-imported-pdfs.js",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:migrate": "prisma migrate dev",
